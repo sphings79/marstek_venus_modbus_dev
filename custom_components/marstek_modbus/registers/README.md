@@ -65,9 +65,12 @@ All registers below were read back and cross-checked on real hardware, but are *
 integration — following the same policy applied to Venus A/E, which integrates only per-pack SoC and
 per-pack cell voltages, not the remaining per-pack scalars.
 
-Integrated in this PR (for reference): `battery_soc_1..6` (34002/34102/34202/34302/34402/34502),
-`battery_2/3/4_cell_1..16_voltage` (34118–34133 / 34218–34233 / 34318–34333, 16 cells per pack —
-Venus D packs carry 16 cells vs. 13 on Venus A), `alarm_status` (36000), `fault_status` (36100).
+Integrated (for reference): `battery_soc_1..6` (34002/34102/34202/34302/34402/34502),
+`battery_2..6_cell_1..16_voltage` (34118–34133 / 34218–34233 / 34318–34333 / 34418–34433 / 34518–34533,
+16 cells per pack — Venus D packs carry 16 cells vs. 13 on Venus A), `alarm_status` (36000),
+`fault_status` (36100). Pack 1 cell voltages (34018–34033) were already present.
+Packs 2–4 cell voltages are FW-confirmed; packs 5–6 follow the identical +0x100 register pattern
+(pattern-derived, same treatment as Venus A `a.yaml`).
 
 ### Mirrors / inferior duplicates of already-integrated sensors
 

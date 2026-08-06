@@ -408,6 +408,15 @@
       "battery_5_cell_13_voltage": {
         "name": "Batteriepack 5 Zelle 13 Spannung"
       },
+      "battery_5_cell_14_voltage": {
+        "name": "Batteriepack 5 Zelle 14 Spannung"
+      },
+      "battery_5_cell_15_voltage": {
+        "name": "Batteriepack 5 Zelle 15 Spannung"
+      },
+      "battery_5_cell_16_voltage": {
+        "name": "Batteriepack 5 Zelle 16 Spannung"
+      },
       "battery_6_cell_1_voltage": {
         "name": "Batteriepack 6 Zelle 1 Spannung"
       },
@@ -446,6 +455,15 @@
       },
       "battery_6_cell_13_voltage": {
         "name": "Batteriepack 6 Zelle 13 Spannung"
+      },
+      "battery_6_cell_14_voltage": {
+        "name": "Batteriepack 6 Zelle 14 Spannung"
+      },
+      "battery_6_cell_15_voltage": {
+        "name": "Batteriepack 6 Zelle 15 Spannung"
+      },
+      "battery_6_cell_16_voltage": {
+        "name": "Batteriepack 6 Zelle 16 Spannung"
       },
       "inverter_state": {
         "name": "Wechselrichter-Status",

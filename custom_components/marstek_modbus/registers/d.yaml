@@ -994,6 +994,326 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 3
         scan_interval: high
+    battery_5_cell_1_voltage:
+        register: 34418
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_5_cell_2_voltage:
+        register: 34419
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_5_cell_3_voltage:
+        register: 34420
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_5_cell_4_voltage:
+        register: 34421
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_5_cell_5_voltage:
+        register: 34422
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_5_cell_6_voltage:
+        register: 34423
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_5_cell_7_voltage:
+        register: 34424
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_5_cell_8_voltage:
+        register: 34425
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_5_cell_9_voltage:
+        register: 34426
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_5_cell_10_voltage:
+        register: 34427
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_5_cell_11_voltage:
+        register: 34428
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_5_cell_12_voltage:
+        register: 34429
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_5_cell_13_voltage:
+        register: 34430
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_5_cell_14_voltage:
+        register: 34431
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_5_cell_15_voltage:
+        register: 34432
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_5_cell_16_voltage:
+        register: 34433
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_6_cell_1_voltage:
+        register: 34518
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_6_cell_2_voltage:
+        register: 34519
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_6_cell_3_voltage:
+        register: 34520
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_6_cell_4_voltage:
+        register: 34521
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_6_cell_5_voltage:
+        register: 34522
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_6_cell_6_voltage:
+        register: 34523
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_6_cell_7_voltage:
+        register: 34524
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_6_cell_8_voltage:
+        register: 34525
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_6_cell_9_voltage:
+        register: 34526
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_6_cell_10_voltage:
+        register: 34527
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_6_cell_11_voltage:
+        register: 34528
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_6_cell_12_voltage:
+        register: 34529
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_6_cell_13_voltage:
+        register: 34530
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_6_cell_14_voltage:
+        register: 34531
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_6_cell_15_voltage:
+        register: 34532
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
+    battery_6_cell_16_voltage:
+        register: 34533
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        enabled_by_default: false
+        data_type: int16
+        precision: 3
+        scan_interval: high
     alarm_status:
         register: 36000
         count: 2
