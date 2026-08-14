@@ -63,6 +63,27 @@
   },
   "entity": {
     "sensor": {
+      "bms_pack_count": {
+        "name": "BMS Pack Count"
+      },
+      "bms_online_mask": {
+        "name": "BMS Online Mask"
+      },
+      "bms_active_pack_index": {
+        "name": "BMS Active Pack Index"
+      },
+      "bms_charge_voltage_limit": {
+        "name": "BMS Charge Voltage Limit"
+      },
+      "mppt_error": {
+        "name": "MPPT Error"
+      },
+      "mppt_warning": {
+        "name": "MPPT Warning"
+      },
+      "mppt_version": {
+        "name": "MPPT Version"
+      },
       "device_name": {
         "name": "Device Name"
       },

@@ -67,6 +67,27 @@
   },
   "entity": {
     "sensor": {
+      "bms_pack_count": {
+        "name": "BMS Pack aantal"
+      },
+      "bms_online_mask": {
+        "name": "BMS Online masker"
+      },
+      "bms_active_pack_index": {
+        "name": "BMS Actieve pack-index"
+      },
+      "bms_charge_voltage_limit": {
+        "name": "BMS Laadspanningslimiet"
+      },
+      "mppt_error": {
+        "name": "MPPT-fout"
+      },
+      "mppt_warning": {
+        "name": "MPPT-waarschuwing"
+      },
+      "mppt_version": {
+        "name": "MPPT-versie"
+      },
       "device_name": {
         "name": "Apparaatnaam"
       },
