@@ -1732,10 +1732,11 @@ VERSION_SENSOR_DEFINITIONS:
         icon: "mdi:chip"
         category: diagnostic
         enabled_by_default: true
-        mode: ems_vms_bms
+        mode: ems_vms_mppt_bms
         dependency_keys:
             ems: ems_version
             vms: vms_version
+            mppt: mppt_version
             bms: bms_version
 
 EFFICIENCY_SENSOR_DEFINITIONS:

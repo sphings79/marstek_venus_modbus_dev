@@ -539,6 +539,9 @@ class MarstekVersionSensor(MarstekCalculatedSensor):
                     into a string like "V147.6.112"
                 - "ems_vms_bms": combines ems_version + vms_version + bms_version
                     into a string like "V147.6.117.112"
+                - "ems_vms_mppt_bms": combines ems_version + vms_version + mppt_version
+                    + bms_version into a string like "V149.2.115.104.118" (for models
+                    with an MPPT stage, e.g. Venus D)
     """
 
     def _calculate(self, data: dict) -> None:
@@ -559,7 +562,7 @@ class MarstekVersionSensor(MarstekCalculatedSensor):
 
     def calculate_value(self, raw_values: dict):
         mode = self.definition.get("mode")
-        if mode in ("ems_bms", "ems_vms_bms"):
+        if mode in ("ems_bms", "ems_vms_bms", "ems_vms_mppt_bms"):
             ems_raw = int(raw_values["ems"])
             bms = int(raw_values["bms"])
             vms_raw = raw_values.get("vms")
@@ -572,12 +575,21 @@ class MarstekVersionSensor(MarstekCalculatedSensor):
             if mode == "ems_bms":
                 return f"V{ems_str}.{bms}"
 
-            # ems_vms_bms expects the third version part.
+            # ems_vms_bms / ems_vms_mppt_bms expect a vms part.
             if vms_raw is None:
                 _LOGGER.warning("%s missing vms for mode '%s'", self._key, mode)
                 return None
-
             vms = int(vms_raw)
-            return f"V{ems_str}.{vms}.{bms}"
+
+            if mode == "ems_vms_bms":
+                return f"V{ems_str}.{vms}.{bms}"
+
+            # ems_vms_mppt_bms adds the MPPT firmware version (Venus D/A).
+            mppt_raw = raw_values.get("mppt")
+            if mppt_raw is None:
+                _LOGGER.warning("%s missing mppt for mode '%s'", self._key, mode)
+                return None
+            mppt = int(mppt_raw)
+            return f"V{ems_str}.{vms}.{mppt}.{bms}"
         _LOGGER.warning("%s unknown version mode '%s'", self._key, mode)
         return None
