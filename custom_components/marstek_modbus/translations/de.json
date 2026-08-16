@@ -63,6 +63,78 @@
   },
   "entity": {
     "sensor": {
+      "battery_1_env_temperature": {
+        "name": "Batteriepack 1 Umgebungstemperatur"
+      },
+      "battery_1_mos_temperature": {
+        "name": "Batteriepack 1 MOSFET-Temperatur"
+      },
+      "battery_1_protection_1": {
+        "name": "Batteriepack 1 Schutz 1"
+      },
+      "battery_1_protection_2": {
+        "name": "Batteriepack 1 Schutz 2"
+      },
+      "battery_2_env_temperature": {
+        "name": "Batteriepack 2 Umgebungstemperatur"
+      },
+      "battery_2_mos_temperature": {
+        "name": "Batteriepack 2 MOSFET-Temperatur"
+      },
+      "battery_2_protection_1": {
+        "name": "Batteriepack 2 Schutz 1"
+      },
+      "battery_2_protection_2": {
+        "name": "Batteriepack 2 Schutz 2"
+      },
+      "battery_3_env_temperature": {
+        "name": "Batteriepack 3 Umgebungstemperatur"
+      },
+      "battery_3_mos_temperature": {
+        "name": "Batteriepack 3 MOSFET-Temperatur"
+      },
+      "battery_3_protection_1": {
+        "name": "Batteriepack 3 Schutz 1"
+      },
+      "battery_3_protection_2": {
+        "name": "Batteriepack 3 Schutz 2"
+      },
+      "battery_4_env_temperature": {
+        "name": "Batteriepack 4 Umgebungstemperatur"
+      },
+      "battery_4_mos_temperature": {
+        "name": "Batteriepack 4 MOSFET-Temperatur"
+      },
+      "battery_4_protection_1": {
+        "name": "Batteriepack 4 Schutz 1"
+      },
+      "battery_4_protection_2": {
+        "name": "Batteriepack 4 Schutz 2"
+      },
+      "battery_5_env_temperature": {
+        "name": "Batteriepack 5 Umgebungstemperatur"
+      },
+      "battery_5_mos_temperature": {
+        "name": "Batteriepack 5 MOSFET-Temperatur"
+      },
+      "battery_5_protection_1": {
+        "name": "Batteriepack 5 Schutz 1"
+      },
+      "battery_5_protection_2": {
+        "name": "Batteriepack 5 Schutz 2"
+      },
+      "battery_6_env_temperature": {
+        "name": "Batteriepack 6 Umgebungstemperatur"
+      },
+      "battery_6_mos_temperature": {
+        "name": "Batteriepack 6 MOSFET-Temperatur"
+      },
+      "battery_6_protection_1": {
+        "name": "Batteriepack 6 Schutz 1"
+      },
+      "battery_6_protection_2": {
+        "name": "Batteriepack 6 Schutz 2"
+      },
       "device_name": {
         "name": "Gerätename"
       },

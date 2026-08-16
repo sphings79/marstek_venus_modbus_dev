@@ -78,11 +78,15 @@ Venus D packs carry 16 cells vs. 13 on Venus A), `alarm_status` (36000), `fault_
 | 30004 | Mirror of `ac_voltage` (32200). uint16, scale 0.1 V. |
 | 37005 | Integer SoC without scale. Inferior to `battery_soc` (32104). |
 
-### Per-pack scalars (verified, deliberately not integrated)
+### Per-pack scalars
 
 Pattern: each pack is offset by +0x100 (pack 1 = 340xx, pack 2 = 341xx, …). Values below confirmed
 across packs 1–5 (pack 6 follows the same pattern; populated only when a 6th pack is present).
 Layout updated per the 2026-08-16 firmware descriptor-table correction (BMS CAN frames 0x23 / 0x41).
+
+The per-pack temperatures (34011/34012) and protection bitmasks (34007/34008) are now integrated for
+packs 1–6 as `battery_N_env_temperature`, `battery_N_mos_temperature`, `battery_N_protection_1` and
+`battery_N_protection_2` (diagnostic, disabled by default). The remaining rows stay reference-only.
 
 | Register (pack 1 / +0x100 per pack) | Key | Notes |
 |----------|-----|-------|
@@ -92,12 +96,12 @@ Layout updated per the 2026-08-16 firmware descriptor-table correction (BMS CAN 
 | 34004 | pack MOS status | u8. BMS charge/discharge MOSFET state (Chg/Dsg MOS). |
 | 34005 | pack max cell voltage | uint16, scale 0.001 V. |
 | 34006 | pack min cell voltage | uint16, scale 0.001 V. |
-| 34007 | pack protection bitmask 1 | int16 bitmask (BMS CAN frame 0x23, protect1). |
-| 34008 | pack protection bitmask 2 | uint16 bitmask (frame 0x23, protect2). A low-SoC/undervoltage bit (0x0002) was observed here during discharge testing (triggers below ~10.7%). |
+| 34007 | pack protection bitmask 1 | int16 bitmask (BMS CAN frame 0x23, protect1). **Integrated** as `battery_N_protection_1`. |
+| 34008 | pack protection bitmask 2 | uint16 bitmask (frame 0x23, protect2). A low-SoC/undervoltage bit (0x0002) was observed here during discharge testing (triggers below ~10.7%). **Integrated** as `battery_N_protection_2`. |
 | 34009 | pack BMS reserved | uint16. BMS-struct field @+0x5a; not named in the firmware debug print. |
 | 34010 | pack BMS version | uint16. 116 → 1177 (v117.7) after BMS firmware update. |
-| 34011 | pack ENV NTC (ambient) | uint16, scale 0.1 °C (BMS frame 0x41). Was previously labelled "cell NTC 0". |
-| 34012 | pack MOS NTC (MOSFET) | uint16, scale 0.1 °C (BMS frame 0x41). Was previously labelled "cell NTC 1". |
+| 34011 | pack ENV NTC (ambient) | uint16, scale 0.1 °C (BMS frame 0x41). Was previously labelled "cell NTC 0". **Integrated** as `battery_N_env_temperature`. |
+| 34012 | pack MOS NTC (MOSFET) | uint16, scale 0.1 °C (BMS frame 0x41). Was previously labelled "cell NTC 1". **Integrated** as `battery_N_mos_temperature`. |
 | 34013–34016 | pack cell NTC block | uint16 ×4, scale 0.1 °C (pack struct +0x40). |
 | 34017 | pack NTC (unused) | uint16, scale 0.1 °C. BMS frame 0x41 bytes 6–7 are not populated. |
 

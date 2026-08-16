@@ -1206,6 +1206,211 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: false
         scan_interval: high
+    # --- Per-pack temperatures and protection bitmasks (firmware-confirmed 2026-08-16) ---
+    battery_1_env_temperature:
+        register: 34011
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_1_mos_temperature:
+        register: 34012
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_1_protection_1:
+        register: 34007
+        data_type: int16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_1_protection_2:
+        register: 34008
+        data_type: uint16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_2_env_temperature:
+        register: 34111
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_mos_temperature:
+        register: 34112
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_protection_1:
+        register: 34107
+        data_type: int16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_2_protection_2:
+        register: 34108
+        data_type: uint16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_3_env_temperature:
+        register: 34211
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_mos_temperature:
+        register: 34212
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_protection_1:
+        register: 34207
+        data_type: int16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_3_protection_2:
+        register: 34208
+        data_type: uint16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_4_env_temperature:
+        register: 34311
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_mos_temperature:
+        register: 34312
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_protection_1:
+        register: 34307
+        data_type: int16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_4_protection_2:
+        register: 34308
+        data_type: uint16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_5_env_temperature:
+        register: 34411
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_mos_temperature:
+        register: 34412
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_protection_1:
+        register: 34407
+        data_type: int16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_5_protection_2:
+        register: 34408
+        data_type: uint16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_6_env_temperature:
+        register: 34511
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_mos_temperature:
+        register: 34512
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_protection_1:
+        register: 34507
+        data_type: int16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_6_protection_2:
+        register: 34508
+        data_type: uint16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
 
 BINARY_SENSOR_DEFINITIONS:
     wifi_status:
