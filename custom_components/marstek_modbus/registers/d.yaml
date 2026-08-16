@@ -1411,6 +1411,367 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: false
         scan_interval: high
+    # --- Per-pack cell voltage extremes and cell NTC block (firmware-confirmed) ---
+    battery_1_max_cell_voltage:
+        register: 34005
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_1_min_cell_voltage:
+        register: 34006
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_1_cell_temperature_1:
+        register: 34013
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_1_cell_temperature_2:
+        register: 34014
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_1_cell_temperature_3:
+        register: 34015
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_1_cell_temperature_4:
+        register: 34016
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_max_cell_voltage:
+        register: 34105
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_min_cell_voltage:
+        register: 34106
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_cell_temperature_1:
+        register: 34113
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_cell_temperature_2:
+        register: 34114
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_cell_temperature_3:
+        register: 34115
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_cell_temperature_4:
+        register: 34116
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_max_cell_voltage:
+        register: 34205
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_min_cell_voltage:
+        register: 34206
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_cell_temperature_1:
+        register: 34213
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_cell_temperature_2:
+        register: 34214
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_cell_temperature_3:
+        register: 34215
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_cell_temperature_4:
+        register: 34216
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_max_cell_voltage:
+        register: 34305
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_min_cell_voltage:
+        register: 34306
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_cell_temperature_1:
+        register: 34313
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_cell_temperature_2:
+        register: 34314
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_cell_temperature_3:
+        register: 34315
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_cell_temperature_4:
+        register: 34316
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_max_cell_voltage:
+        register: 34405
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_min_cell_voltage:
+        register: 34406
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_cell_temperature_1:
+        register: 34413
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_cell_temperature_2:
+        register: 34414
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_cell_temperature_3:
+        register: 34415
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_cell_temperature_4:
+        register: 34416
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_max_cell_voltage:
+        register: 34505
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_min_cell_voltage:
+        register: 34506
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_cell_temperature_1:
+        register: 34513
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_cell_temperature_2:
+        register: 34514
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_cell_temperature_3:
+        register: 34515
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_cell_temperature_4:
+        register: 34516
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
 
 BINARY_SENSOR_DEFINITIONS:
     wifi_status:
