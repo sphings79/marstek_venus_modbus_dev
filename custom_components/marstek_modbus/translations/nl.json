@@ -67,6 +67,57 @@
   },
   "entity": {
     "sensor": {
+      "battery_1_mos_status": {
+        "name": "Batterij pack 1 MOSFET-status"
+      },
+      "battery_1_bms_version": {
+        "name": "Batterij pack 1 BMS-versie"
+      },
+      "battery_2_cycle_count": {
+        "name": "Batterij pack 2 Cyclusaantal"
+      },
+      "battery_2_mos_status": {
+        "name": "Batterij pack 2 MOSFET-status"
+      },
+      "battery_2_bms_version": {
+        "name": "Batterij pack 2 BMS-versie"
+      },
+      "battery_3_cycle_count": {
+        "name": "Batterij pack 3 Cyclusaantal"
+      },
+      "battery_3_mos_status": {
+        "name": "Batterij pack 3 MOSFET-status"
+      },
+      "battery_3_bms_version": {
+        "name": "Batterij pack 3 BMS-versie"
+      },
+      "battery_4_cycle_count": {
+        "name": "Batterij pack 4 Cyclusaantal"
+      },
+      "battery_4_mos_status": {
+        "name": "Batterij pack 4 MOSFET-status"
+      },
+      "battery_4_bms_version": {
+        "name": "Batterij pack 4 BMS-versie"
+      },
+      "battery_5_cycle_count": {
+        "name": "Batterij pack 5 Cyclusaantal"
+      },
+      "battery_5_mos_status": {
+        "name": "Batterij pack 5 MOSFET-status"
+      },
+      "battery_5_bms_version": {
+        "name": "Batterij pack 5 BMS-versie"
+      },
+      "battery_6_cycle_count": {
+        "name": "Batterij pack 6 Cyclusaantal"
+      },
+      "battery_6_mos_status": {
+        "name": "Batterij pack 6 MOSFET-status"
+      },
+      "battery_6_bms_version": {
+        "name": "Batterij pack 6 BMS-versie"
+      },
       "battery_1_max_cell_voltage": {
         "name": "Batterij pack 1 Max celspanning"
       },

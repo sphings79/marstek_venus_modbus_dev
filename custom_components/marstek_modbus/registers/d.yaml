@@ -1772,6 +1772,131 @@ SENSOR_DEFINITIONS:
         precision: 1
         enabled_by_default: false
         scan_interval: low
+    # --- Per-pack cycle count, MOS status and BMS version (firmware-confirmed) ---
+    battery_1_mos_status:
+        register: 34004
+        data_type: uint16
+        icon: "mdi:electric-switch"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_1_bms_version:
+        register: 34010
+        data_type: uint16
+        icon: "mdi:battery-check-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_cycle_count:
+        register: 34103
+        data_type: int16
+        state_class: measurement
+        icon: "mdi:counter"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_mos_status:
+        register: 34104
+        data_type: uint16
+        icon: "mdi:electric-switch"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_2_bms_version:
+        register: 34110
+        data_type: uint16
+        icon: "mdi:battery-check-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_cycle_count:
+        register: 34203
+        data_type: int16
+        state_class: measurement
+        icon: "mdi:counter"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_mos_status:
+        register: 34204
+        data_type: uint16
+        icon: "mdi:electric-switch"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_3_bms_version:
+        register: 34210
+        data_type: uint16
+        icon: "mdi:battery-check-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_cycle_count:
+        register: 34303
+        data_type: int16
+        state_class: measurement
+        icon: "mdi:counter"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_mos_status:
+        register: 34304
+        data_type: uint16
+        icon: "mdi:electric-switch"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_4_bms_version:
+        register: 34310
+        data_type: uint16
+        icon: "mdi:battery-check-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_cycle_count:
+        register: 34403
+        data_type: int16
+        state_class: measurement
+        icon: "mdi:counter"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_mos_status:
+        register: 34404
+        data_type: uint16
+        icon: "mdi:electric-switch"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_5_bms_version:
+        register: 34410
+        data_type: uint16
+        icon: "mdi:battery-check-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_cycle_count:
+        register: 34503
+        data_type: int16
+        state_class: measurement
+        icon: "mdi:counter"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_mos_status:
+        register: 34504
+        data_type: uint16
+        icon: "mdi:electric-switch"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_6_bms_version:
+        register: 34510
+        data_type: uint16
+        icon: "mdi:battery-check-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
 
 BINARY_SENSOR_DEFINITIONS:
     wifi_status:

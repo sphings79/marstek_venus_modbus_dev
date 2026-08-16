@@ -63,6 +63,57 @@
   },
   "entity": {
     "sensor": {
+      "battery_1_mos_status": {
+        "name": "Battery Pack 1 MOS Status"
+      },
+      "battery_1_bms_version": {
+        "name": "Battery Pack 1 BMS Version"
+      },
+      "battery_2_cycle_count": {
+        "name": "Battery Pack 2 Cycle Count"
+      },
+      "battery_2_mos_status": {
+        "name": "Battery Pack 2 MOS Status"
+      },
+      "battery_2_bms_version": {
+        "name": "Battery Pack 2 BMS Version"
+      },
+      "battery_3_cycle_count": {
+        "name": "Battery Pack 3 Cycle Count"
+      },
+      "battery_3_mos_status": {
+        "name": "Battery Pack 3 MOS Status"
+      },
+      "battery_3_bms_version": {
+        "name": "Battery Pack 3 BMS Version"
+      },
+      "battery_4_cycle_count": {
+        "name": "Battery Pack 4 Cycle Count"
+      },
+      "battery_4_mos_status": {
+        "name": "Battery Pack 4 MOS Status"
+      },
+      "battery_4_bms_version": {
+        "name": "Battery Pack 4 BMS Version"
+      },
+      "battery_5_cycle_count": {
+        "name": "Battery Pack 5 Cycle Count"
+      },
+      "battery_5_mos_status": {
+        "name": "Battery Pack 5 MOS Status"
+      },
+      "battery_5_bms_version": {
+        "name": "Battery Pack 5 BMS Version"
+      },
+      "battery_6_cycle_count": {
+        "name": "Battery Pack 6 Cycle Count"
+      },
+      "battery_6_mos_status": {
+        "name": "Battery Pack 6 MOS Status"
+      },
+      "battery_6_bms_version": {
+        "name": "Battery Pack 6 BMS Version"
+      },
       "battery_1_max_cell_voltage": {
         "name": "Battery Pack 1 Max Cell Voltage"
       },
