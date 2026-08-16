@@ -92,8 +92,8 @@ block (34013–34016 → `battery_N_cell_temperature_1..4`), the cell-voltage ex
 
 | Register (pack 1 / +0x100 per pack) | Key | Notes |
 |----------|-----|-------|
-| 34000 | pack battery voltage | uint16, scale 0.01 V. |
-| 34001 | pack battery current | int16, scale 0.1 A. Negative = discharge. Reads the active pack's current. |
+| 34000 | pack battery voltage | uint16, scale 0.01 V. Pack 1 = `battery_voltage`; packs 2–6 **integrated** as `battery_N_voltage`. |
+| 34001 | pack battery current | int16, scale 0.1 A. Negative = discharge. Pack 1 = `battery_current`; packs 2–6 **integrated** as `battery_N_current`. |
 | 34003 | pack cycle count | int16. Pack 1's value (34003) is `battery_cycle_count`; packs 2–6 **integrated** as `battery_N_cycle_count`. |
 | 34004 | pack MOS status | u8. BMS charge/discharge MOSFET state (Chg/Dsg MOS). **Integrated** as `battery_N_mos_status`. |
 | 34005 | pack max cell voltage | uint16, scale 0.001 V. **Integrated** as `battery_N_max_cell_voltage`. |
@@ -106,6 +106,21 @@ block (34013–34016 → `battery_N_cell_temperature_1..4`), the cell-voltage ex
 | 34012 | pack MOS NTC (MOSFET) | uint16, scale 0.1 °C (BMS frame 0x41). Was previously labelled "cell NTC 1". **Integrated** as `battery_N_mos_temperature`. |
 | 34013–34016 | pack cell NTC block | uint16 ×4, scale 0.1 °C (pack struct +0x40). **Integrated** as `battery_N_cell_temperature_1..4`. |
 | 34017 | pack NTC (unused) | uint16, scale 0.1 °C. BMS frame 0x41 bytes 6–7 are not populated. |
+
+### Alternative / redundant sources (firmware-confirmed, intentionally not integrated)
+
+These are valid firmware registers, but each duplicates a value already exposed through a better
+source, so they are documented rather than added as extra entities.
+
+| Register | Firmware name | Why not integrated |
+|----------|---------------|--------------------|
+| 30028 | `inv_bat_voltage` | Inverter-measured battery voltage (0.1 V). Alternative to `battery_voltage` (30100). |
+| 30029 | `inv_bat_current` | Inverter-measured battery current (0.1 A). Alternative to `battery_current` (30101). |
+| 32100 | `bms_battery_voltage` | BMS/CAN aggregate battery voltage (0.01 V). Alternative to `battery_voltage`. |
+| 32101 | `bms_battery_current` | BMS/CAN aggregate battery current (1 A). Coarser alternative to `battery_current`. |
+| 32102 | `bat_sample_power` | Battery power as float32. Alternative to `battery_power` (30001, int16 W). |
+| 37017–37020 | `mppt1..4_power` | Same source as `mppt1..4_power` (30037–30040), which are already integrated. |
+| 37002 / 37003 | `max_charge_power` / `max_discharge_power` | Read-back of the power limits already exposed as the `max_charge_power` / `max_discharge_power` number entities. |
 
 ### Backup / UPS output (verified — candidates for integration)
 

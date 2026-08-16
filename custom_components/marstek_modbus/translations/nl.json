@@ -67,6 +67,45 @@
   },
   "entity": {
     "sensor": {
+      "battery_2_voltage": {
+        "name": "Batterij pack 2 Spanning"
+      },
+      "battery_2_current": {
+        "name": "Batterij pack 2 Stroom"
+      },
+      "battery_3_voltage": {
+        "name": "Batterij pack 3 Spanning"
+      },
+      "battery_3_current": {
+        "name": "Batterij pack 3 Stroom"
+      },
+      "battery_4_voltage": {
+        "name": "Batterij pack 4 Spanning"
+      },
+      "battery_4_current": {
+        "name": "Batterij pack 4 Stroom"
+      },
+      "battery_5_voltage": {
+        "name": "Batterij pack 5 Spanning"
+      },
+      "battery_5_current": {
+        "name": "Batterij pack 5 Stroom"
+      },
+      "battery_6_voltage": {
+        "name": "Batterij pack 6 Spanning"
+      },
+      "battery_6_current": {
+        "name": "Batterij pack 6 Stroom"
+      },
+      "work_mode": {
+        "name": "Werkmodus"
+      },
+      "ems_boot_version": {
+        "name": "EMS-bootloaderversie"
+      },
+      "vns_boot_version": {
+        "name": "VNS-bootloaderversie"
+      },
       "battery_1_mos_status": {
         "name": "Batterij pack 1 MOSFET-status"
       },

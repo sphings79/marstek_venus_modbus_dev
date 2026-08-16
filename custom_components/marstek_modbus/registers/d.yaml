@@ -1897,6 +1897,129 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: false
         scan_interval: low
+    # --- Per-pack terminal voltage / current (packs 2-6; pack 1 = battery_voltage/current) ---
+    battery_2_voltage:
+        register: 34100
+        scale: 0.01
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 2
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_current:
+        register: 34101
+        scale: 0.1
+        unit: A
+        device_class: current
+        state_class: measurement
+        data_type: int16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_voltage:
+        register: 34200
+        scale: 0.01
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 2
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_current:
+        register: 34201
+        scale: 0.1
+        unit: A
+        device_class: current
+        state_class: measurement
+        data_type: int16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_voltage:
+        register: 34300
+        scale: 0.01
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 2
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_current:
+        register: 34301
+        scale: 0.1
+        unit: A
+        device_class: current
+        state_class: measurement
+        data_type: int16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_voltage:
+        register: 34400
+        scale: 0.01
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 2
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_current:
+        register: 34401
+        scale: 0.1
+        unit: A
+        device_class: current
+        state_class: measurement
+        data_type: int16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_voltage:
+        register: 34500
+        scale: 0.01
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 2
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_current:
+        register: 34501
+        scale: 0.1
+        unit: A
+        device_class: current
+        state_class: measurement
+        data_type: int16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    # --- System diagnostics (firmware-decoded) ---
+    work_mode:
+        register: 30010
+        data_type: uint16
+        icon: "mdi:cog-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    ems_boot_version:
+        register: 30201
+        data_type: uint16
+        icon: "mdi:chip"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    vns_boot_version:
+        register: 30203
+        data_type: uint16
+        icon: "mdi:chip"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
 
 BINARY_SENSOR_DEFINITIONS:
     wifi_status:

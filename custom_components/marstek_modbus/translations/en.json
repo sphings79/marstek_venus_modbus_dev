@@ -63,6 +63,45 @@
   },
   "entity": {
     "sensor": {
+      "battery_2_voltage": {
+        "name": "Battery Pack 2 Voltage"
+      },
+      "battery_2_current": {
+        "name": "Battery Pack 2 Current"
+      },
+      "battery_3_voltage": {
+        "name": "Battery Pack 3 Voltage"
+      },
+      "battery_3_current": {
+        "name": "Battery Pack 3 Current"
+      },
+      "battery_4_voltage": {
+        "name": "Battery Pack 4 Voltage"
+      },
+      "battery_4_current": {
+        "name": "Battery Pack 4 Current"
+      },
+      "battery_5_voltage": {
+        "name": "Battery Pack 5 Voltage"
+      },
+      "battery_5_current": {
+        "name": "Battery Pack 5 Current"
+      },
+      "battery_6_voltage": {
+        "name": "Battery Pack 6 Voltage"
+      },
+      "battery_6_current": {
+        "name": "Battery Pack 6 Current"
+      },
+      "work_mode": {
+        "name": "Work Mode"
+      },
+      "ems_boot_version": {
+        "name": "EMS Bootloader Version"
+      },
+      "vns_boot_version": {
+        "name": "VNS Bootloader Version"
+      },
       "battery_1_mos_status": {
         "name": "Battery Pack 1 MOS Status"
       },
