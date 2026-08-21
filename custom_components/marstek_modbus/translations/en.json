@@ -858,6 +858,18 @@
       },
       "mppt_version": {
         "name": "MPPT Version"
+      },
+      "device_ip_address": {
+        "name": "IP Address"
+      },
+      "gateway_ip_address": {
+        "name": "Gateway IP"
+      },
+      "backup_voltage": {
+        "name": "Backup Output Voltage"
+      },
+      "backup_power": {
+        "name": "Backup Output Power"
       }
     },
     "binary_sensor": {

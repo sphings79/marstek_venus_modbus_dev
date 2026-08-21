@@ -858,6 +858,18 @@
       },
       "vms_version": {
         "name": "VMS-Version"
+      },
+      "device_ip_address": {
+        "name": "IP-Adresse"
+      },
+      "gateway_ip_address": {
+        "name": "Gateway-IP"
+      },
+      "backup_voltage": {
+        "name": "Backup-Ausgangsspannung"
+      },
+      "backup_power": {
+        "name": "Backup-Ausgangsleistung"
       }
     },
     "binary_sensor": {

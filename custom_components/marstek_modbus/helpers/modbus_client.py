@@ -226,7 +226,7 @@ class MarstekModbusClient:
     @staticmethod
     def _default_count_for_data_type(data_type: str) -> int:
         """Return the default register count for a given data type."""
-        if data_type in {"int32", "uint32"}:
+        if data_type in {"int32", "uint32", "ipv4"}:
             return 2
         if data_type == "schedule":
             return 5
@@ -302,6 +302,25 @@ class MarstekModbusClient:
                 )
 
             return ":".join(f"{byte:02X}" for byte in byte_array)
+
+        if data_type == "ipv4":
+            if len(regs) < 2:
+                _LOGGER.warning(
+                    "Expected 2 registers for ipv4 at register %d (0x%04X), got %s",
+                    register,
+                    register,
+                    len(regs),
+                )
+                return None
+            # Each register carries two octets, high byte first:
+            # 30400 = 192.168 -> 0xC0A8, 30401 = 181.154 -> 0xB59A
+            octets = (
+                (regs[0] >> 8) & 0xFF,
+                regs[0] & 0xFF,
+                (regs[1] >> 8) & 0xFF,
+                regs[1] & 0xFF,
+            )
+            return ".".join(str(octet) for octet in octets)
 
         if data_type == "schedule":
             if len(regs) < 5:

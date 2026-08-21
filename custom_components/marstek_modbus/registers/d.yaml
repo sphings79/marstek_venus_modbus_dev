@@ -2340,6 +2340,47 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: false
         scan_interval: low
+    # --- Network configuration (30400-30403, decoded from the device IP block) ---
+    device_ip_address:
+        register: 30400
+        count: 2
+        data_type: ipv4
+        icon: "mdi:ip-network"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    gateway_ip_address:
+        register: 30402
+        count: 2
+        data_type: ipv4
+        icon: "mdi:router-network"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    # --- Backup / UPS output (30005/30007). NOTE: the Venus E Gen 3 notes call these
+    # --- duplicates of ac_offgrid_voltage (32300) / ac_offgrid_power (32302); the Venus D
+    # --- notes describe them as a distinct backup output. Unresolved - see registers/README.md.
+    backup_voltage:
+        register: 30005
+        scale: 0.1
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    backup_power:
+        register: 30007
+        scale: 1
+        unit: W
+        device_class: power
+        state_class: measurement
+        data_type: uint16
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
     # --- Firmware-decoded diagnostic sensors (Venus D, from descriptor-table analysis) ---
     bms_pack_count:
         register: 32109

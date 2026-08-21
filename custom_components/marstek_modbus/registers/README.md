@@ -149,15 +149,31 @@ source, so they are documented rather than added as extra entities.
 | 37017–37020 | `mppt1..4_power` | Same source as `mppt1..4_power` (30037–30040), which are already integrated. |
 | 37002 / 37003 | `max_charge_power` / `max_discharge_power` | Read-back of the power limits already exposed as the `max_charge_power` / `max_discharge_power` number entities. |
 
-### Backup / UPS output (verified — candidates for integration)
+### Backup / UPS output — integrated, but contested
 
-Distinct from the grid/inverter registers; measured on the backup (off-grid) output. Would need
-new translation keys, hence documented here rather than added blindly.
+| Register | Key | Notes |
+|----------|-----|-------|
+| 30005 | `backup_voltage` | uint16, scale 0.1 V. ~1 V when backup inactive; 236–242 V under load (242 V @100 W → 237 V @3 kW). |
+| 30007 | `backup_power` | uint16, scale 1 W. 0 when no backup load; 0–3271 W depending on load on the backup output. |
 
-| Register | Notes |
-|----------|-------|
-| 30005 | Backup/UPS output voltage. uint16, scale 0.1 V. ~1 V when backup inactive; 236–242 V under load (242 V @100 W → 237 V @3 kW). |
-| 30007 | Backup/UPS output power. uint16, scale 1 W. 0 when no backup load; 0–3271 W depending on load on the backup output. |
+**These two contradict the Venus E Gen 3 notes above**, which list 30005/30007 as plain duplicates of
+`ac_offgrid_voltage` (32300) and `ac_offgrid_power` (32302) — both of which Venus D already integrates.
+Either the Venus D backup output is genuinely a separate measurement point, or these are the same
+values at a second address and should be dropped.
+
+They are integrated as diagnostic sensors, disabled by default, precisely so the question can be
+settled on hardware: enable `backup_voltage` / `backup_power` alongside `ac_offgrid_voltage` /
+`ac_offgrid_power`, put a load on the backup output, and compare. If the pairs track each other, remove
+30005/30007 and record them as duplicates here.
+
+### Network configuration — integrated
+
+| Register | Key | Notes |
+|----------|-----|-------|
+| 30400–30401 | `device_ip_address` | Two octets per register, high byte first. 0xC0A8 / 0xB59A → 192.168.181.154. |
+| 30402–30403 | `gateway_ip_address` | Same encoding. 0xC0A8 / 0xB501 → 192.168.181.1. |
+
+Decoded by the `ipv4` data type in `helpers/modbus_client.py`. Diagnostic, disabled by default.
 
 ### Firmware descriptor-table analysis (v150)
 
