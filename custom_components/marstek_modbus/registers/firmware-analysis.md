@@ -210,17 +210,34 @@ flash image. Attempts made:
   `0x0801F1F8` and `0x0802AAE8` — the literal pools of the two FC03 handlers. No
   initialiser references the address, which argues the table is copied wholesale
   by C-runtime `.data` initialisation rather than built entry by entry.
-- **Followed the reset vector** at `0x08000004` to `0x08004A71`. The function there
-  is a retry state machine, not a reset handler. That strongly suggests the Ghidra
-  load base of `0x08000000` does not match the address the application is actually
-  mapped to — expected for an OTA application image sitting behind a bootloader.
 - `RS485_Modbus_RegisterMap_Init` (`0x0802a720`) is unrelated: it is the eight-entry
   map of the RS485 sub-protocol, not the Modbus TCP descriptor table.
+- **Followed the reset vector** at `0x08000004` to `0x08004A71`, which lands in the
+  tail of `FUN_080049f4` rather than on a function entry. None of the 42 vector
+  entries resolves to a function entry point, and no uniform offset fixes that: the
+  best candidate shift aligns only 4 of 12 distinct targets.
 
-**To finish this**, the real load address of the application image is needed. With a
-correct rebase, the reset handler becomes findable, its `.data` copy loop gives the
-flash source address `S`, and the descriptor table is then readable at `S + 0x354`
-as 246 plaintext entries — which resolves every open register in one step.
+### The load base is confirmed correct
 
-The bootloader image was not available at the time of writing, and the load address
-is unknown.
+The vector-table anomaly above initially suggested a wrong load base. It does not.
+A single strict scan of the whole image finds exactly one Cortex-M vector table, at
+file offset 0, with the reserved slots 7–10 and 13 all zero as the architecture
+requires. More decisively, absolute addresses taken from literal pools resolve to
+exactly the data the surrounding code uses:
+
+| Literal | Resolves to |
+|---------|-------------|
+| `0x08036D7C` | `"grid_volt(0.1V)=%d\r\n"` |
+| `0x080369A4` | `"PV1_Vol(0.1V)=%d\|Cur(0.1A)=%d\|Pow(0.1W)="` |
+| `0x08036A98` | `"PV_Day_Cap_10Wh=%d\r\n"` |
+| `0x08036EB0` | `"dischrg_enery(1Wh)=%d\r\n"` |
+
+Absolute pointers could not resolve like this under a wrong base. **The image is
+correctly loaded at `0x08000000`**; every address in this document is valid as
+written. The unresolved vector table is a separate oddity and not the obstacle.
+
+**What still blocks the mapping** is only that no `.data` initialiser for the
+descriptor table has been located — neither as a static flash image nor as an
+initialising routine. Anyone picking this up should look for the copy that fills
+`0x20000354`, by whatever route; the table is 246 plaintext entries once found, and
+resolves every open register in one step.
