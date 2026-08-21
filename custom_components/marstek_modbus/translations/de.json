@@ -885,6 +885,15 @@
       },
       "battery_6_cell_voltage_delta": {
         "name": "Batteriepack 6 Zellspannungs-Differenz"
+      },
+      "fault_status_low": {
+        "name": "Fehlerstatus Low-Word"
+      },
+      "fault_status_2": {
+        "name": "Fehlerstatus 2 High-Word"
+      },
+      "fault_status_2_low": {
+        "name": "Fehlerstatus 2 Low-Word"
       }
     },
     "binary_sensor": {

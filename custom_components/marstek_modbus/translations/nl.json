@@ -889,6 +889,15 @@
       },
       "battery_6_cell_voltage_delta": {
         "name": "Batterij pack 6 celspanningsverschil"
+      },
+      "fault_status_low": {
+        "name": "Foutstatus laag woord"
+      },
+      "fault_status_2": {
+        "name": "Foutstatus 2 hoog woord"
+      },
+      "fault_status_2_low": {
+        "name": "Foutstatus 2 laag woord"
       }
     },
     "binary_sensor": {

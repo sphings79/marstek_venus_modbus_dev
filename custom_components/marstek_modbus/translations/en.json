@@ -885,6 +885,15 @@
       },
       "battery_6_cell_voltage_delta": {
         "name": "Battery Pack 6 Cell Voltage Delta"
+      },
+      "fault_status_low": {
+        "name": "Fault Status Low Word"
+      },
+      "fault_status_2": {
+        "name": "Fault Status 2 High Word"
+      },
+      "fault_status_2_low": {
+        "name": "Fault Status 2 Low Word"
       }
     },
     "binary_sensor": {
