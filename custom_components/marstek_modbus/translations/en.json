@@ -681,6 +681,15 @@
       "battery_5_cell_13_voltage": {
         "name": "Battery Pack 5 Cell 13 Voltage"
       },
+      "battery_5_cell_14_voltage": {
+        "name": "Battery Pack 5 Cell 14 Voltage"
+      },
+      "battery_5_cell_15_voltage": {
+        "name": "Battery Pack 5 Cell 15 Voltage"
+      },
+      "battery_5_cell_16_voltage": {
+        "name": "Battery Pack 5 Cell 16 Voltage"
+      },
       "battery_6_cell_1_voltage": {
         "name": "Battery Pack 6 Cell 1 Voltage"
       },
@@ -719,6 +728,15 @@
       },
       "battery_6_cell_13_voltage": {
         "name": "Battery Pack 6 Cell 13 Voltage"
+      },
+      "battery_6_cell_14_voltage": {
+        "name": "Battery Pack 6 Cell 14 Voltage"
+      },
+      "battery_6_cell_15_voltage": {
+        "name": "Battery Pack 6 Cell 15 Voltage"
+      },
+      "battery_6_cell_16_voltage": {
+        "name": "Battery Pack 6 Cell 16 Voltage"
       },
       "inverter_state": {
         "name": "Inverter State",

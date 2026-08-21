@@ -685,6 +685,15 @@
       "battery_5_cell_13_voltage": {
         "name": "Batterij pack 5 Cel 13 Spanning"
       },
+      "battery_5_cell_14_voltage": {
+        "name": "Batterij pack 5 Cel 14 Spanning"
+      },
+      "battery_5_cell_15_voltage": {
+        "name": "Batterij pack 5 Cel 15 Spanning"
+      },
+      "battery_5_cell_16_voltage": {
+        "name": "Batterij pack 5 Cel 16 Spanning"
+      },
       "battery_6_cell_1_voltage": {
         "name": "Batterij pack 6 Cel 1 Spanning"
       },
@@ -723,6 +732,15 @@
       },
       "battery_6_cell_13_voltage": {
         "name": "Batterij pack 6 Cel 13 Spanning"
+      },
+      "battery_6_cell_14_voltage": {
+        "name": "Batterij pack 6 Cel 14 Spanning"
+      },
+      "battery_6_cell_15_voltage": {
+        "name": "Batterij pack 6 Cel 15 Spanning"
+      },
+      "battery_6_cell_16_voltage": {
+        "name": "Batterij pack 6 Cel 16 Spanning"
       },
       "inverter_state": {
         "name": "Omvormer Status",
