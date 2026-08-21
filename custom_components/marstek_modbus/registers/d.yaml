@@ -3102,7 +3102,6 @@ BMS_POWER_SENSOR_DEFINITIONS:
         state_class: measurement
         precision: 0
         icon: "mdi:battery-sync-outline"
-        category: diagnostic
         enabled_by_default: false
         # Reproduces the firmware's own Bluetooth value (FUN_0800b024, offset 0x8C):
         # BMS pack voltage times pack current. The device discharges one pack at a
