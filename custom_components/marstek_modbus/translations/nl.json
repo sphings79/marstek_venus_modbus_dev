@@ -913,6 +913,12 @@
       },
       "grid_power": {
         "name": "Netvermogen"
+      },
+      "bms_battery_voltage": {
+        "name": "BMS-batterijspanning"
+      },
+      "battery_power_bms": {
+        "name": "Batterijvermogen (BMS)"
       }
     },
     "binary_sensor": {

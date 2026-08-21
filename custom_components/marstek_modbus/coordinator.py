@@ -79,6 +79,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self.CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS = []
         self.BITFIELD_TEXT_SENSOR_DEFINITIONS = []
         self.GRID_POWER_SENSOR_DEFINITIONS = []
+        self.BMS_POWER_SENSOR_DEFINITIONS = []
 
         # Combine all sensor definitions for polling
         self._all_definitions = []
@@ -471,6 +472,9 @@ class MarstekCoordinator(DataUpdateCoordinator):
             self.GRID_POWER_SENSOR_DEFINITIONS = data.get(
                 "GRID_POWER_SENSOR_DEFINITIONS", []
             )
+            self.BMS_POWER_SENSOR_DEFINITIONS = data.get(
+                "BMS_POWER_SENSOR_DEFINITIONS", []
+            )
 
             # Combine into a single list for polling
             self._all_definitions = (
@@ -846,6 +850,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
             + self.CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS
             + self.BITFIELD_TEXT_SENSOR_DEFINITIONS
             + self.GRID_POWER_SENSOR_DEFINITIONS
+            + self.BMS_POWER_SENSOR_DEFINITIONS
         )
         dependency_keys_set = {
             dep_key
@@ -1206,6 +1211,7 @@ def get_registers(version: str):
     - CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS
     - BITFIELD_TEXT_SENSOR_DEFINITIONS
     - GRID_POWER_SENSOR_DEFINITIONS
+    - BMS_POWER_SENSOR_DEFINITIONS
 
     If an unknown version is requested, the function falls back to the v1/v2
     register set (because v1 and v2 share the same registers in this integration).
@@ -1303,6 +1309,9 @@ def get_registers(version: str):
                     ),
                     "GRID_POWER_SENSOR_DEFINITIONS": _normalize_section(
                         data.get("GRID_POWER_SENSOR_DEFINITIONS")
+                    ),
+                    "BMS_POWER_SENSOR_DEFINITIONS": _normalize_section(
+                        data.get("BMS_POWER_SENSOR_DEFINITIONS")
                     ),
                 }
             except Exception as e:

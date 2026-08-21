@@ -2321,6 +2321,18 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: false
         scan_interval: low
+    # --- BMS CAN aggregate (32100). Feeds the calculated battery_power_bms. ---
+    bms_battery_voltage:
+        register: 32100
+        scale: 0.01
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 2
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
     # --- Network configuration (30400-30403, decoded from the device IP block) ---
     device_ip_address:
         register: 30400
@@ -3081,3 +3093,25 @@ GRID_POWER_SENSOR_DEFINITIONS:
             grid: ac_power
             offgrid: ac_offgrid_power
             state: inverter_state
+
+BMS_POWER_SENSOR_DEFINITIONS:
+    battery_power_bms:
+        key: battery_power_bms
+        unit: W
+        device_class: power
+        state_class: measurement
+        precision: 0
+        icon: "mdi:battery-sync-outline"
+        category: diagnostic
+        enabled_by_default: false
+        # Reproduces the firmware's own Bluetooth value (FUN_0800b024, offset 0x8C):
+        # BMS pack voltage times pack current. The device discharges one pack at a
+        # time, so the inactive packs contribute zero to the sum.
+        dependency_keys:
+            voltage: bms_battery_voltage
+            p1: battery_current
+            p2: battery_2_current
+            p3: battery_3_current
+            p4: battery_4_current
+            p5: battery_5_current
+            p6: battery_6_current

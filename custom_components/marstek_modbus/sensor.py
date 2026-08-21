@@ -40,6 +40,7 @@ async def async_setup_entry(
         (MarstekCellVoltageDeltaSensor, coordinator.CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS),
         (MarstekBitfieldTextSensor, coordinator.BITFIELD_TEXT_SENSOR_DEFINITIONS),
         (MarstekGridPowerSensor, coordinator.GRID_POWER_SENSOR_DEFINITIONS),
+        (MarstekBmsBatteryPowerSensor, coordinator.BMS_POWER_SENSOR_DEFINITIONS),
     )
     for entity_cls, definitions in sensor_groups:
         entities.extend(entity_cls(coordinator, definition) for definition in definitions)
@@ -604,6 +605,50 @@ class MarstekGridPowerSensor(MarstekCalculatedSensor):
         value = base - offgrid
         self._attr_native_value = value
         return value
+
+
+class MarstekBmsBatteryPowerSensor(MarstekCalculatedSensor):
+    """
+    Battery power as the BMS sees it: pack voltage times pack current.
+
+    This is the second value the firmware computes for its Bluetooth payload
+    (FUN_0800b024, offset 0x8C) without exposing a register for it. VenusControl
+    shows it as "Battery Power".
+
+    It is deliberately not the same as `battery_power` (30001), which is the
+    inverter's own measurement. Under load the two agree closely; at idle they
+    differ by the device's own consumption, which only one side sees. Having both
+    makes that difference visible.
+
+    The device discharges one pack at a time, so the current is the sum over all
+    packs — the inactive ones contribute zero. Summing rather than following
+    `bms_active_pack_index` also stays correct if a firmware ever drives several
+    packs at once.
+
+    The firmware reads the current from the BMS aggregate at `0x20014F90`, which
+    Modbus exposes as 32101. That register is not usable: `Read_Serializer`
+    sign-extends the i16 into an unsigned word before applying its divide-by-ten
+    scale, so negative currents come back corrupted (-122 arrives as 39309). The
+    per-pack current registers carry no scale code and are unaffected.
+    """
+
+    def calculate_value(self, dep_values: dict):
+        voltage = dep_values.get("voltage")
+        if voltage is None:
+            return None
+
+        current = 0.0
+        for alias in self.get_dependency_keys():
+            if alias == "voltage":
+                continue
+            value = dep_values.get(alias)
+            if value is None:
+                return None
+            current += float(value)
+
+        power = round(float(voltage) * current)
+        self._attr_native_value = power
+        return power
 
 
 class MarstekStoredEnergySensor(MarstekCalculatedSensor):

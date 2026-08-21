@@ -909,6 +909,12 @@
       },
       "grid_power": {
         "name": "Grid Power"
+      },
+      "bms_battery_voltage": {
+        "name": "BMS Battery Voltage"
+      },
+      "battery_power_bms": {
+        "name": "Battery Power (BMS)"
       }
     },
     "binary_sensor": {

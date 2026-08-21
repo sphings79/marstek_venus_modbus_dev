@@ -909,6 +909,12 @@
       },
       "grid_power": {
         "name": "Netzleistung"
+      },
+      "bms_battery_voltage": {
+        "name": "BMS-Batteriespannung"
+      },
+      "battery_power_bms": {
+        "name": "Batterieleistung (BMS)"
       }
     },
     "binary_sensor": {
