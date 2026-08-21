@@ -2340,6 +2340,60 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: false
         scan_interval: low
+    # --- Firmware-decoded diagnostic sensors (Venus D, from descriptor-table analysis) ---
+    bms_pack_count:
+        register: 32109
+        data_type: uint16
+        icon: "mdi:counter"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    bms_online_mask:
+        register: 32110
+        data_type: uint16
+        icon: "mdi:format-list-checks"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    bms_active_pack_index:
+        register: 32111
+        data_type: uint16
+        icon: "mdi:battery-sync"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    bms_charge_voltage_limit:
+        register: 35110
+        scale: 0.1
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    mppt_error:
+        register: 37023
+        data_type: uint16
+        icon: "mdi:alert"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    mppt_warning:
+        register: 37024
+        data_type: uint16
+        icon: "mdi:alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    mppt_version:
+        register: 30205
+        data_type: uint16
+        icon: "mdi:ticket-confirmation-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
 
 BINARY_SENSOR_DEFINITIONS:
     wifi_status:
@@ -2812,10 +2866,11 @@ VERSION_SENSOR_DEFINITIONS:
         icon: "mdi:chip"
         category: diagnostic
         enabled_by_default: true
-        mode: ems_vms_bms
+        mode: ems_vms_mppt_bms
         dependency_keys:
             ems: ems_version
             vms: vms_version
+            mppt: mppt_version
             bms: bms_version
 
 EFFICIENCY_SENSOR_DEFINITIONS:

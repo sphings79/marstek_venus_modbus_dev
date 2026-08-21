@@ -135,8 +135,39 @@ new translation keys, hence documented here rather than added blindly.
 | 30005 | Backup/UPS output voltage. uint16, scale 0.1 V. ~1 V when backup inactive; 236–242 V under load (242 V @100 W → 237 V @3 kW). |
 | 30007 | Backup/UPS output power. uint16, scale 1 W. 0 when no backup load; 0–3271 W depending on load on the backup output. |
 
-### Version / misc
+### Firmware descriptor-table analysis (v150)
 
-| Register | Notes |
-|----------|-------|
-| 30205 | MPPT firmware version. uint16 (observed 104). |
+A later pass decoded the device's on-firmware descriptor tables (FC03 read descriptors, plus the
+FC06/FC10 write-handler table with their SRAM targets). This is authoritative for register names,
+types and layout. Findings folded into the integration and this document:
+
+**Newly integrated diagnostic sensors** (all `category: diagnostic`, disabled by default):
+
+| Register | Sensor | Notes |
+|----------|--------|-------|
+| 30205 | `mppt_version` | MPPT firmware version (u16, observed 104). |
+| 32109 | `bms_pack_count` | Number of packs the BMS reports present (CAN `bat_total_nb`). |
+| 32110 | `bms_online_mask` | u16 bitmask: which packs are online (`bat_online_mask`). |
+| 32111 | `bms_active_pack_index` | Index of the currently active pack (`work_bat_idx`). |
+| 35110 | `bms_charge_voltage_limit` | BMS charge voltage limit, 0.1 V (CAN `chrg_volt`, observed 57.6 V). |
+| 37023 | `mppt_error` | MPPT error word (Inverter struct +0x02). |
+| 37024 | `mppt_warning` | MPPT warning word (Inverter struct +0x06). |
+
+**Write/control registers — confirmed already integrated.** The firmware write-handler table matches
+the existing `number`/`select`/`switch`/`button` definitions (e.g. 42020/42021 charge/discharge power,
+44002/44003 max power, 42011 target SoC, 42010 force mode, 43000 work mode, 41200 backup, schedules).
+No change needed — the decode simply validates them.
+
+**Write registers intentionally NOT integrated** (decoded from firmware but never write-tested;
+some are hazardous to expose as live entities):
+
+| Register | Firmware name | Why excluded |
+|----------|---------------|--------------|
+| 40000 | `rs485_unlock` | Enables RS485 control; unclear side effects, no display scale. |
+| 41100 | `modbus_slave_address` | Changing it silently breaks Modbus communication. |
+| 41500–41631 | `schedule_time_XX` / `schedule_power_XX` | Raw schedule arrays; integration already models schedules via 43100+. |
+
+**Note on the earlier `MISSING:` config registers.** The Venus-E-derived addresses (`software_version`
+31100, `sn_code` 31200, cutoff 44000/44001, `grid_standard` 44100, `discharge_limit_mode` 41010) do
+**not** appear in the Venus D firmware descriptor tables — they likely do not exist on Venus D, or live
+at different addresses. They should not be copied over from other models without hardware confirmation.

@@ -828,7 +828,6 @@
       "mppt4_power": {
         "name": "MPPT4 Power"
       },
-
       "bluetooth_status": {
         "name": "Bluetooth Status",
         "state": {
@@ -838,6 +837,27 @@
           "3": "Active",
           "4": "Locked"
         }
+      },
+      "bms_pack_count": {
+        "name": "BMS Pack Count"
+      },
+      "bms_online_mask": {
+        "name": "BMS Online Mask"
+      },
+      "bms_active_pack_index": {
+        "name": "BMS Active Pack Index"
+      },
+      "bms_charge_voltage_limit": {
+        "name": "BMS Charge Voltage Limit"
+      },
+      "mppt_error": {
+        "name": "MPPT Error"
+      },
+      "mppt_warning": {
+        "name": "MPPT Warning"
+      },
+      "mppt_version": {
+        "name": "MPPT Version"
       }
     },
     "binary_sensor": {
@@ -845,16 +865,15 @@
         "name": "Modbus Connection"
       },
       "wifi_status": {
-        "name": "WiFi Status" 
+        "name": "WiFi Status"
       },
       "cloud_status": {
-        "name": "Cloud Status" 
+        "name": "Cloud Status"
       },
       "discharge_limit_mode": {
-        "name": "Discharge Limit" 
+        "name": "Discharge Limit"
       }
     },
-
     "select": {
       "user_work_mode": {
         "name": "User Work Mode",
@@ -961,7 +980,6 @@
         }
       }
     },
-
     "switch": {
       "backup_function": {
         "name": "Backup Function"
@@ -1028,7 +1046,6 @@
       "schedule_6_start": {
         "name": "Schedule 6 Start"
       },
-
       "schedule_1_end": {
         "name": "Schedule 1 End"
       },
