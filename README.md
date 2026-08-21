@@ -135,8 +135,8 @@ Below is a per-key table showing descriptive fields and the register defined in 
 | internal_mos1_temperature         | MOS1 internal temperature                  | int16   | 2    | 0.1    | °C   | 35001 | 35001 | 35001 | 35001 |
 | internal_mos2_temperature         | MOS2 internal temperature                  | int16   | 2    | 0.1    | °C   | 35002 | 35002 | 35002 | 35002 |
 | max_cell_temperature              | Max cell temperature                       | int16   | 2    | 0.1/1  | °C   | 35010 | 35010 | 35010 | 35010 |
-| max_cell_voltage                  | Max cell voltage                           | uint16  | 2    | 0.001  | V    | 37007 | 37007 | 37007 | 37007 |
-| min_cell_voltage                  | Min cell voltage                           | uint16  | 2    | 0.001  | V    | 37008 | 37008 | 37008 | 37008 |
+| max_cell_voltage                  | Max cell voltage                           | uint16  | 2    | 0.001  | V    | 37007 | —     | 37007 | 37007 |
+| min_cell_voltage                  | Min cell voltage                           | uint16  | 2    | 0.001  | V    | 37008 | —     | 37008 | 37008 |
 | battery_1_cell_1_voltage            | Battery pack 1 cell 1 voltage               | int16   | 2    | 0.001  | V    | 34018 | 34018 |       | 34018 |
 | battery_1_cell_2_voltage            | Battery pack 1 cell 2 voltage               | int16   | 2    | 0.001  | V    | 34019 | 34019 |       | 34019 |
 | battery_1_cell_3_voltage            | Battery pack 1 cell 3 voltage               | int16   | 2    | 0.001  | V    | 34020 | 34020 |       | 34020 |
@@ -287,6 +287,7 @@ Below is a per-key table showing descriptive fields and the register defined in 
 | battery_cycle_count_calc          | Cycle count calculated from total discharge and capacity | calculated | - | - | - |  |  |  |  |
 
 _Notes:_
+- `max_cell_voltage` / `min_cell_voltage` are **not** device-wide on Venus D: 37007/37008 read the same firmware source as `battery_1_max_cell_voltage` / `battery_1_min_cell_voltage` (34005/34006), i.e. pack 1 only. They were removed from `d.yaml`; use the per-pack sensors instead.
 - Columns `a`, `d`, `e_v12` and `e_v3` correspond to the YAML files under `custom_components/marstek_modbus/registers/`.
 - `Bytes` shows the typical byte size for the key (each Modbus register = 2 bytes).
 - Blank cells mean that YAML does not define that key (or the value is calculated and has no direct Modbus register).

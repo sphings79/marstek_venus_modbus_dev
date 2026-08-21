@@ -132,6 +132,25 @@ source, so they are documented rather than added as extra entities.
 | 37017–37020 | `mppt1..4_power` | Same source as `mppt1..4_power` (30037–30040), which are already integrated. |
 | 37002 / 37003 | `max_charge_power` / `max_discharge_power` | Read-back of the power limits already exposed as the `max_charge_power` / `max_discharge_power` number entities. |
 
+### Device-wide cell extremes are pack 1's (37007 / 37008) — removed for Venus D
+
+The firmware's descriptor table resolves 37007 and 37008 to the same SRAM source as the
+per-pack registers 34005 and 34006:
+
+| Register | Source pointer | Firmware field |
+|----------|----------------|----------------|
+| 37007 · 34005 | `0x20014FC4` | pack 1 max cell voltage |
+| 37008 · 34006 | `0x20014FC6` | pack 1 min cell voltage |
+
+There is no device-wide maximum or minimum. `max_cell_voltage` / `min_cell_voltage`
+promised an aggregate across all packs and delivered pack 1 only, which is misleading on
+a six-pack Venus D. Both were removed from `d.yaml`; use `battery_1_max_cell_voltage` /
+`battery_1_min_cell_voltage`, which say what they are. The other register files keep them
+because the finding is Venus D v150 and those models were not verified.
+
+`bms_version` (30204) shares its source with `battery_1_bms_version` (34010) in the same
+way, but it stays: `firmware_version` uses it as a dependency key.
+
 ### Backup / UPS output (30005 / 30007) — duplicates, deliberately not integrated
 
 Both resolve to the same firmware source as `ac_offgrid_voltage` (32300) and

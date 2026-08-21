@@ -314,26 +314,6 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 1
         scan_interval: high
-    max_cell_voltage:
-        register: 37007
-        scale: 0.001
-        unit: V
-        device_class: voltage
-        state_class: measurement
-        enabled_by_default: false
-        data_type: int16
-        precision: 3
-        scan_interval: high
-    min_cell_voltage:
-        register: 37008
-        scale: 0.001
-        unit: V
-        device_class: voltage
-        state_class: measurement
-        enabled_by_default: false
-        data_type: int16
-        precision: 3
-        scan_interval: high
     battery_1_cell_1_voltage:
         register: 34018
         scale: 0.001
