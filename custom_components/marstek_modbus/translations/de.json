@@ -855,6 +855,9 @@
       },
       "mppt_version": {
         "name": "MPPT-Version"
+      },
+      "vms_version": {
+        "name": "VMS-Version"
       }
     },
     "binary_sensor": {
