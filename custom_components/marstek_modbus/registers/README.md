@@ -57,6 +57,13 @@ Hardware tested: Marstek Venus E v3, firmware V148.
 
 ---
 
+## Firmware families — do not mix
+
+Venus **A**, **D** and **E v3** share one firmware base. Venus **E v1/v2** is built on a
+different one. Register meanings, bit tables and scale factors established on A/D/E3 must
+not be copied into `e_v12.yaml`, and vice versa: identical register numbers across the two
+families mean nothing until verified against that family's own firmware.
+
 ## Venus D (d.yaml)
 
 Hardware tested: Marstek Venus D, multi-pack setup (verified with up to 6 packs installed;

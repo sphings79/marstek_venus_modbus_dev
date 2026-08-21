@@ -8,8 +8,16 @@ branches into `main`. Those branches were submitted upstream separately and are 
 repeated here. Everything below landed afterwards.
 
 Each entry states whether it is **general** (applies to every model and belongs upstream
-as-is) or **Venus D only** (evidence comes from Venus D v150 firmware; other models were
-not verified, so their register files were deliberately left untouched).
+as-is) or **Venus D only** (evidence comes from Venus D v150 firmware).
+
+> **Model scope — read before porting any register finding.**
+> Venus **A**, **D** and **E v3** share one firmware base. A finding verified on one of
+> them is plausible on the other two and needs only confirmation, not fresh research.
+>
+> Venus **E v1/v2** is built on a **completely different firmware base**. Nothing derived
+> from A/D/E3 firmware may be carried into `e_v12.yaml` — not register meanings, not bit
+> tables, not scale factors. Matching register numbers there are coincidence until proven
+> otherwise on E v1/v2 firmware itself.
 
 Register research itself lives in the companion firmware-debug project, not in this
 repository. The pointers quoted here are just enough to justify each change.
