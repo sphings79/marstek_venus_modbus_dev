@@ -867,6 +867,24 @@
       },
       "pv_year_capacity": {
         "name": "PV-Jahresertrag"
+      },
+      "battery_1_cell_voltage_delta": {
+        "name": "Batteriepack 1 Zellspannungs-Differenz"
+      },
+      "battery_2_cell_voltage_delta": {
+        "name": "Batteriepack 2 Zellspannungs-Differenz"
+      },
+      "battery_3_cell_voltage_delta": {
+        "name": "Batteriepack 3 Zellspannungs-Differenz"
+      },
+      "battery_4_cell_voltage_delta": {
+        "name": "Batteriepack 4 Zellspannungs-Differenz"
+      },
+      "battery_5_cell_voltage_delta": {
+        "name": "Batteriepack 5 Zellspannungs-Differenz"
+      },
+      "battery_6_cell_voltage_delta": {
+        "name": "Batteriepack 6 Zellspannungs-Differenz"
       }
     },
     "binary_sensor": {

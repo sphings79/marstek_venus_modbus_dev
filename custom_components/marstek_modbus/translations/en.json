@@ -867,6 +867,24 @@
       },
       "pv_year_capacity": {
         "name": "PV Yearly Yield"
+      },
+      "battery_1_cell_voltage_delta": {
+        "name": "Battery Pack 1 Cell Voltage Delta"
+      },
+      "battery_2_cell_voltage_delta": {
+        "name": "Battery Pack 2 Cell Voltage Delta"
+      },
+      "battery_3_cell_voltage_delta": {
+        "name": "Battery Pack 3 Cell Voltage Delta"
+      },
+      "battery_4_cell_voltage_delta": {
+        "name": "Battery Pack 4 Cell Voltage Delta"
+      },
+      "battery_5_cell_voltage_delta": {
+        "name": "Battery Pack 5 Cell Voltage Delta"
+      },
+      "battery_6_cell_voltage_delta": {
+        "name": "Battery Pack 6 Cell Voltage Delta"
       }
     },
     "binary_sensor": {

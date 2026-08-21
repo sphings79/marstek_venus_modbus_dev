@@ -871,6 +871,24 @@
       },
       "pv_year_capacity": {
         "name": "PV-jaaropbrengst"
+      },
+      "battery_1_cell_voltage_delta": {
+        "name": "Batterij pack 1 celspanningsverschil"
+      },
+      "battery_2_cell_voltage_delta": {
+        "name": "Batterij pack 2 celspanningsverschil"
+      },
+      "battery_3_cell_voltage_delta": {
+        "name": "Batterij pack 3 celspanningsverschil"
+      },
+      "battery_4_cell_voltage_delta": {
+        "name": "Batterij pack 4 celspanningsverschil"
+      },
+      "battery_5_cell_voltage_delta": {
+        "name": "Batterij pack 5 celspanningsverschil"
+      },
+      "battery_6_cell_voltage_delta": {
+        "name": "Batterij pack 6 celspanningsverschil"
       }
     },
     "binary_sensor": {

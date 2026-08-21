@@ -37,6 +37,7 @@ async def async_setup_entry(
         (MarstekVersionSensor, coordinator.VERSION_SENSOR_DEFINITIONS),
         (MarstekStoredEnergySensor, coordinator.STORED_ENERGY_SENSOR_DEFINITIONS),
         (MarstekBatteryCycleSensor, coordinator.CYCLE_SENSOR_DEFINITIONS),
+        (MarstekCellVoltageDeltaSensor, coordinator.CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS),
     )
     for entity_cls, definitions in sensor_groups:
         entities.extend(entity_cls(coordinator, definition) for definition in definitions)
@@ -460,6 +461,37 @@ class MarstekSolarPowerSensor(MarstekCalculatedSensor):
         total = round(sum(float(value) for value in values), 2)
         self._attr_native_value = total
         return total
+
+
+class MarstekCellVoltageDeltaSensor(MarstekCalculatedSensor):
+    """
+    Spread between the highest and lowest cell voltage of one battery pack.
+
+    Both dependencies come from the pack's own registers (34005/34006 plus
+    0x100 per pack), so the value is per pack and never mixes packs. A rising
+    delta is the usual early sign of a weakening cell.
+    """
+
+    def calculate_value(self, dep_values: dict):
+        """Return max - min in volts, or None if either side is missing."""
+        max_voltage = dep_values.get("max")
+        min_voltage = dep_values.get("min")
+        if max_voltage is None or min_voltage is None:
+            return None
+
+        delta = round(float(max_voltage) - float(min_voltage), 3)
+        if delta < 0:
+            # The two registers are read in separate transactions, so a sample
+            # taken across a BMS update can invert them. Report nothing rather
+            # than a negative spread.
+            _LOGGER.debug(
+                "Negative cell voltage delta for %s (max=%s, min=%s), skipping",
+                self._key, max_voltage, min_voltage,
+            )
+            return None
+
+        self._attr_native_value = delta
+        return delta
 
 
 class MarstekStoredEnergySensor(MarstekCalculatedSensor):

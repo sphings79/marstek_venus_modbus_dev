@@ -76,6 +76,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self.VERSION_SENSOR_DEFINITIONS = []
         self.STORED_ENERGY_SENSOR_DEFINITIONS = []
         self.CYCLE_SENSOR_DEFINITIONS = []
+        self.CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS = []
 
         # Combine all sensor definitions for polling
         self._all_definitions = []
@@ -459,6 +460,9 @@ class MarstekCoordinator(DataUpdateCoordinator):
             self.VERSION_SENSOR_DEFINITIONS = data.get("VERSION_SENSOR_DEFINITIONS", [])
             self.STORED_ENERGY_SENSOR_DEFINITIONS = data.get("STORED_ENERGY_SENSOR_DEFINITIONS", [])
             self.CYCLE_SENSOR_DEFINITIONS = data.get("CYCLE_SENSOR_DEFINITIONS", [])
+            self.CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS = data.get(
+                "CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS", []
+            )
 
             # Combine into a single list for polling
             self._all_definitions = (
@@ -827,6 +831,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
             + self.VERSION_SENSOR_DEFINITIONS
             + self.STORED_ENERGY_SENSOR_DEFINITIONS
             + self.CYCLE_SENSOR_DEFINITIONS
+            + self.CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS
         )
         dependency_keys_set = {
             dep_key
@@ -1184,6 +1189,7 @@ def get_registers(version: str):
       - SOLAR_POWER_SENSOR_DEFINITIONS
       - STORED_ENERGY_SENSOR_DEFINITIONS
     - CYCLE_SENSOR_DEFINITIONS
+    - CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS
 
     If an unknown version is requested, the function falls back to the v1/v2
     register set (because v1 and v2 share the same registers in this integration).
@@ -1272,6 +1278,9 @@ def get_registers(version: str):
                     ),
                     "CYCLE_SENSOR_DEFINITIONS": _normalize_section(
                         data.get("CYCLE_SENSOR_DEFINITIONS")
+                    ),
+                    "CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS": _normalize_section(
+                        data.get("CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS")
                     ),
                 }
             except Exception as e:

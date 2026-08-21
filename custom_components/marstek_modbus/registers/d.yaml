@@ -2912,3 +2912,77 @@ SOLAR_POWER_SENSOR_DEFINITIONS:
             mppt2: mppt2_power
             mppt3: mppt3_power
             mppt4: mppt4_power
+
+CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS:
+    battery_1_cell_voltage_delta:
+        key: battery_1_cell_voltage_delta
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        precision: 3
+        icon: "mdi:delta"
+        category: diagnostic
+        enabled_by_default: false
+        dependency_keys:
+            max: battery_1_max_cell_voltage
+            min: battery_1_min_cell_voltage
+    battery_2_cell_voltage_delta:
+        key: battery_2_cell_voltage_delta
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        precision: 3
+        icon: "mdi:delta"
+        category: diagnostic
+        enabled_by_default: false
+        dependency_keys:
+            max: battery_2_max_cell_voltage
+            min: battery_2_min_cell_voltage
+    battery_3_cell_voltage_delta:
+        key: battery_3_cell_voltage_delta
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        precision: 3
+        icon: "mdi:delta"
+        category: diagnostic
+        enabled_by_default: false
+        dependency_keys:
+            max: battery_3_max_cell_voltage
+            min: battery_3_min_cell_voltage
+    battery_4_cell_voltage_delta:
+        key: battery_4_cell_voltage_delta
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        precision: 3
+        icon: "mdi:delta"
+        category: diagnostic
+        enabled_by_default: false
+        dependency_keys:
+            max: battery_4_max_cell_voltage
+            min: battery_4_min_cell_voltage
+    battery_5_cell_voltage_delta:
+        key: battery_5_cell_voltage_delta
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        precision: 3
+        icon: "mdi:delta"
+        category: diagnostic
+        enabled_by_default: false
+        dependency_keys:
+            max: battery_5_max_cell_voltage
+            min: battery_5_min_cell_voltage
+    battery_6_cell_voltage_delta:
+        key: battery_6_cell_voltage_delta
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        precision: 3
+        icon: "mdi:delta"
+        category: diagnostic
+        enabled_by_default: false
+        dependency_keys:
+            max: battery_6_max_cell_voltage
+            min: battery_6_min_cell_voltage
