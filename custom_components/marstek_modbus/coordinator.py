@@ -825,12 +825,16 @@ class MarstekCoordinator(DataUpdateCoordinator):
         # Get the entity registry to check for disabled entities
         entity_registry = er.async_get(self.hass)
 
-        # Collect all dependency keys from all definitions
+        # Collect all dependency keys from all definitions.
+        # Every section whose definitions can carry `dependency_keys` must be
+        # listed here, otherwise a calculated sensor silently loses its inputs
+        # as soon as the source entities are disabled.
         all_definitions_for_deps = (
             self.EFFICIENCY_SENSOR_DEFINITIONS
             + self.VERSION_SENSOR_DEFINITIONS
             + self.STORED_ENERGY_SENSOR_DEFINITIONS
             + self.CYCLE_SENSOR_DEFINITIONS
+            + self.SOLAR_POWER_SENSOR_DEFINITIONS
             + self.CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS
         )
         dependency_keys_set = {
