@@ -77,6 +77,16 @@ class MarstekSensor(CoordinatorEntity, SensorEntity):
         if definition.get("enabled_by_default") is False:
             self._attr_entity_registry_enabled_default = False
 
+        # Optional bitfield decoding: {bit index -> text}. When present the sensor
+        # reports decoded text instead of a bare number, so it carries neither a
+        # device class nor a state class — both describe numeric measurements.
+        raw_bits = definition.get("bit_descriptions") or {}
+        self._bit_descriptions = {int(bit): str(text) for bit, text in raw_bits.items()}
+        if self._bit_descriptions:
+            self._attr_device_class = None
+            self._attr_state_class = None
+            self._attr_native_unit_of_measurement = None
+
         # Optional states mapping for int → label conversion
         self.states = definition.get("states")
 
@@ -173,10 +183,40 @@ class MarstekSensor(CoordinatorEntity, SensorEntity):
                 if isinstance(value, float) and value.is_integer():
                     value = int(value)
 
+        if self._bit_descriptions:
+            return self._format_bitfield(value)
+
         if self.states and value in self.states:
             return self.states[value]
 
         return value
+
+    def _active_bits(self, value) -> list[int]:
+        """Return the indices of the bits set in value, lowest first."""
+        try:
+            raw = int(value)
+        except (TypeError, ValueError):
+            return []
+        if raw <= 0:
+            return []
+        return [bit for bit in range(raw.bit_length()) if raw >> bit & 1]
+
+    def _format_bitfield(self, value):
+        """Render a bitfield as "<raw> - <text>, <text>" using bit_descriptions."""
+        try:
+            raw = int(value)
+        except (TypeError, ValueError):
+            return value
+
+        bits = self._active_bits(raw)
+        if not bits:
+            return f"{raw} - OK"
+
+        labels = [
+            self._bit_descriptions.get(bit, f"unknown bit {bit}")
+            for bit in bits
+        ]
+        return f"{raw} - " + ", ".join(labels)
 
     @property
     def suggested_display_precision(self) -> int | None:
@@ -207,6 +247,22 @@ class MarstekSensor(CoordinatorEntity, SensorEntity):
         """Return attributes for packed schedule sensors from coordinator data."""
         data = self.coordinator.data or {}
         attrs = data.get(f"{self._key}_attrs") or {}
+
+        # Bitfield sensors expose the raw word and the decoded bits, so automations
+        # can test a single bit instead of parsing the rendered string.
+        if self._bit_descriptions:
+            raw = data.get(self._key)
+            bits = self._active_bits(raw)
+            return {
+                "raw_value": raw,
+                "active_bits": bits,
+                "active_faults": [
+                    self._bit_descriptions.get(bit, f"unknown bit {bit}") for bit in bits
+                ],
+                "undecoded_bits": [
+                    bit for bit in bits if bit not in self._bit_descriptions
+                ],
+            }
         # For schedule types, enrich attributes with human-readable fields.
         # If `_attrs` is not present but the coordinator stored the raw
         # 5-register list in `data[key]`, decode that here so we don't

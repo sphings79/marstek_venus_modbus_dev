@@ -1293,9 +1293,13 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: true
         scan_interval: high
-        # Venus D: 36100-36103 (uint64). Only bit 4 verified (battery-disconnect test); other bits not decoded on Venus D.
+        # Venus D: this register is the HIGH word of the 32-bit error_code1
+        # (error_code1 = 36100 << 16 | 36101), so bit N here is overall bit 16+N.
+        # Bit 4 = overall bit 20, bit 5 = overall bit 21. The low word at 36101,
+        # which carries the backup/off-grid fault, is not exposed.
         bit_descriptions:
             4: BMS offline / Battery disconnected
+            5: BMS reports a fault (check pack firmware versions)
     inverter_state:
         register: 35100
         scale: 1
