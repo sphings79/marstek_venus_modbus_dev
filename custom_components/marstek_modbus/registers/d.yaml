@@ -1380,6 +1380,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         precision: 0
         scan_interval: high
+        state_class: measurement
     mppt1_voltage:
         register: 30020
         scale: 0.1
@@ -2091,7 +2092,7 @@ SENSOR_DEFINITIONS:
     battery_2_cycle_count:
         register: 34103
         data_type: int16
-        state_class: measurement
+        state_class: total_increasing
         icon: "mdi:counter"
         category: diagnostic
         enabled_by_default: false
@@ -2113,7 +2114,7 @@ SENSOR_DEFINITIONS:
     battery_3_cycle_count:
         register: 34203
         data_type: int16
-        state_class: measurement
+        state_class: total_increasing
         icon: "mdi:counter"
         category: diagnostic
         enabled_by_default: false
@@ -2135,7 +2136,7 @@ SENSOR_DEFINITIONS:
     battery_4_cycle_count:
         register: 34303
         data_type: int16
-        state_class: measurement
+        state_class: total_increasing
         icon: "mdi:counter"
         category: diagnostic
         enabled_by_default: false
@@ -2157,7 +2158,7 @@ SENSOR_DEFINITIONS:
     battery_5_cycle_count:
         register: 34403
         data_type: int16
-        state_class: measurement
+        state_class: total_increasing
         icon: "mdi:counter"
         category: diagnostic
         enabled_by_default: false
@@ -2179,7 +2180,7 @@ SENSOR_DEFINITIONS:
     battery_6_cycle_count:
         register: 34503
         data_type: int16
-        state_class: measurement
+        state_class: total_increasing
         icon: "mdi:counter"
         category: diagnostic
         enabled_by_default: false
@@ -2330,7 +2331,6 @@ SENSOR_DEFINITIONS:
         state_class: measurement
         data_type: uint16
         precision: 2
-        category: diagnostic
         enabled_by_default: false
         scan_interval: high
     # --- Network configuration (30400-30403, decoded from the device IP block) ---
@@ -2359,7 +2359,6 @@ SENSOR_DEFINITIONS:
         state_class: total_increasing
         data_type: uint32
         precision: 2
-        category: diagnostic
         enabled_by_default: false
         scan_interval: low
     # --- Firmware-decoded diagnostic sensors (Venus D, from descriptor-table analysis) ---
@@ -2964,7 +2963,6 @@ CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS:
         state_class: measurement
         precision: 3
         icon: "mdi:delta"
-        category: diagnostic
         enabled_by_default: false
         dependency_keys:
             max: battery_1_max_cell_voltage
@@ -2976,7 +2974,6 @@ CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS:
         state_class: measurement
         precision: 3
         icon: "mdi:delta"
-        category: diagnostic
         enabled_by_default: false
         dependency_keys:
             max: battery_2_max_cell_voltage
@@ -2988,7 +2985,6 @@ CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS:
         state_class: measurement
         precision: 3
         icon: "mdi:delta"
-        category: diagnostic
         enabled_by_default: false
         dependency_keys:
             max: battery_3_max_cell_voltage
@@ -3000,7 +2996,6 @@ CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS:
         state_class: measurement
         precision: 3
         icon: "mdi:delta"
-        category: diagnostic
         enabled_by_default: false
         dependency_keys:
             max: battery_4_max_cell_voltage
@@ -3012,7 +3007,6 @@ CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS:
         state_class: measurement
         precision: 3
         icon: "mdi:delta"
-        category: diagnostic
         enabled_by_default: false
         dependency_keys:
             max: battery_5_max_cell_voltage
@@ -3024,7 +3018,6 @@ CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS:
         state_class: measurement
         precision: 3
         icon: "mdi:delta"
-        category: diagnostic
         enabled_by_default: false
         dependency_keys:
             max: battery_6_max_cell_voltage
