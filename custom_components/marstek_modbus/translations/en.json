@@ -894,6 +894,18 @@
       },
       "fault_status_2_low": {
         "name": "Fault Status 2 Low Word"
+      },
+      "fault_status_description": {
+        "name": "Fault Status Description"
+      },
+      "fault_status_low_description": {
+        "name": "Fault Status Low Word Description"
+      },
+      "fault_status_2_description": {
+        "name": "Fault Status 2 High Word Description"
+      },
+      "fault_status_2_low_description": {
+        "name": "Fault Status 2 Low Word Description"
       }
     },
     "binary_sensor": {

@@ -898,6 +898,18 @@
       },
       "fault_status_2_low": {
         "name": "Foutstatus 2 laag woord"
+      },
+      "fault_status_description": {
+        "name": "Foutstatus beschrijving"
+      },
+      "fault_status_low_description": {
+        "name": "Foutstatus laag woord beschrijving"
+      },
+      "fault_status_2_description": {
+        "name": "Foutstatus 2 hoog woord beschrijving"
+      },
+      "fault_status_2_low_description": {
+        "name": "Foutstatus 2 laag woord beschrijving"
       }
     },
     "binary_sensor": {

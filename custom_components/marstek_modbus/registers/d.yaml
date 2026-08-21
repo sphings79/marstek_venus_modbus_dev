@@ -1295,9 +1295,6 @@ SENSOR_DEFINITIONS:
         # first: error_code1 = 36100 << 16 | 36101, error_code2 = 36102 << 16 | 36103.
         # Bit N in this register is therefore overall bit 16+N.
         # Bit 4 (= overall 20) and bit 5 (= overall 21) are confirmed on hardware.
-        bit_descriptions:
-            4: BMS offline / Battery disconnected
-            5: BMS reports a fault (check pack firmware versions)
     fault_status_low:
         register: 36101
         data_type: uint16
@@ -1308,10 +1305,6 @@ SENSOR_DEFINITIONS:
         # Low word of error_code1, so bit N here is overall bit N.
         # Bit 7 is confirmed across several hardware logs. Bits 6 and 9 were only
         # ever seen together during DC discharge and are not established.
-        bit_descriptions:
-            6: Seen during DC discharge (unconfirmed)
-            7: Backup / off-grid branch cannot operate (overload, too little energy, no battery)
-            9: Seen during DC discharge (unconfirmed)
     fault_status_2:
         register: 36102
         data_type: uint16
@@ -1321,8 +1314,6 @@ SENSOR_DEFINITIONS:
         scan_interval: high
         # High word of error_code2, so bit N here is overall bit 16+N.
         # Derived from firmware only - error_code2 stayed zero in every log so far.
-        bit_descriptions:
-            0: Self-test failed
     fault_status_2_low:
         register: 36103
         data_type: uint16
@@ -1334,14 +1325,6 @@ SENSOR_DEFINITIONS:
         # Derived from firmware only - error_code2 stayed zero in every log so far.
         # Bits 0, 1 and 3 latch individual hardware protections that the firmware
         # never names; bit 4 is set alongside any of them.
-        bit_descriptions:
-            0: Hardware protection latch B
-            1: Hardware protection latch A
-            3: Hardware protection latch C
-            4: Hardware protection triggered
-            7: Shut down by supervisor, retry after 60 s
-            9: Supervisor fault (low confidence)
-            11: Limit exceeded for more than 3000 cycles
     inverter_state:
         register: 35100
         scale: 1
@@ -3032,3 +3015,50 @@ CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS:
         dependency_keys:
             max: battery_6_max_cell_voltage
             min: battery_6_min_cell_voltage
+
+BITFIELD_TEXT_SENSOR_DEFINITIONS:
+    fault_status_description:
+        key: fault_status_description
+        icon: "mdi:alert-circle-outline"
+        category: diagnostic
+        enabled_by_default: true
+        dependency_keys:
+            source: fault_status
+        bit_descriptions:
+            4: BMS offline / Battery disconnected
+            5: BMS reports a fault (check pack firmware versions)
+    fault_status_low_description:
+        key: fault_status_low_description
+        icon: "mdi:alert-circle-outline"
+        category: diagnostic
+        enabled_by_default: true
+        dependency_keys:
+            source: fault_status_low
+        bit_descriptions:
+            6: Seen during DC discharge (unconfirmed)
+            7: Backup / off-grid branch cannot operate (overload, too little energy, no battery)
+            9: Seen during DC discharge (unconfirmed)
+    fault_status_2_description:
+        key: fault_status_2_description
+        icon: "mdi:alert-circle-outline"
+        category: diagnostic
+        enabled_by_default: false
+        dependency_keys:
+            source: fault_status_2
+        bit_descriptions:
+            0: Self-test failed
+    fault_status_2_low_description:
+        key: fault_status_2_low_description
+        icon: "mdi:alert-circle-outline"
+        category: diagnostic
+        enabled_by_default: false
+        dependency_keys:
+            source: fault_status_2_low
+        bit_descriptions:
+            0: Hardware protection latch B
+            1: Hardware protection latch A
+            3: Hardware protection latch C
+            4: Hardware protection triggered
+            7: Shut down by supervisor, retry after 60 s
+            9: Supervisor fault (low confidence)
+            11: Limit exceeded for more than 3000 cycles

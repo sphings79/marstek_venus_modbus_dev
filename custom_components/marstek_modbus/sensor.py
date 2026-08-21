@@ -38,6 +38,7 @@ async def async_setup_entry(
         (MarstekStoredEnergySensor, coordinator.STORED_ENERGY_SENSOR_DEFINITIONS),
         (MarstekBatteryCycleSensor, coordinator.CYCLE_SENSOR_DEFINITIONS),
         (MarstekCellVoltageDeltaSensor, coordinator.CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS),
+        (MarstekBitfieldTextSensor, coordinator.BITFIELD_TEXT_SENSOR_DEFINITIONS),
     )
     for entity_cls, definitions in sensor_groups:
         entities.extend(entity_cls(coordinator, definition) for definition in definitions)
@@ -76,16 +77,6 @@ class MarstekSensor(CoordinatorEntity, SensorEntity):
             self._attr_icon = definition["icon"]
         if definition.get("enabled_by_default") is False:
             self._attr_entity_registry_enabled_default = False
-
-        # Optional bitfield decoding: {bit index -> text}. When present the sensor
-        # reports decoded text instead of a bare number, so it carries neither a
-        # device class nor a state class — both describe numeric measurements.
-        raw_bits = definition.get("bit_descriptions") or {}
-        self._bit_descriptions = {int(bit): str(text) for bit, text in raw_bits.items()}
-        if self._bit_descriptions:
-            self._attr_device_class = None
-            self._attr_state_class = None
-            self._attr_native_unit_of_measurement = None
 
         # Optional states mapping for int → label conversion
         self.states = definition.get("states")
@@ -183,40 +174,11 @@ class MarstekSensor(CoordinatorEntity, SensorEntity):
                 if isinstance(value, float) and value.is_integer():
                     value = int(value)
 
-        if self._bit_descriptions:
-            return self._format_bitfield(value)
-
         if self.states and value in self.states:
             return self.states[value]
 
         return value
 
-    def _active_bits(self, value) -> list[int]:
-        """Return the indices of the bits set in value, lowest first."""
-        try:
-            raw = int(value)
-        except (TypeError, ValueError):
-            return []
-        if raw <= 0:
-            return []
-        return [bit for bit in range(raw.bit_length()) if raw >> bit & 1]
-
-    def _format_bitfield(self, value):
-        """Render a bitfield as "<raw> - <text>, <text>" using bit_descriptions."""
-        try:
-            raw = int(value)
-        except (TypeError, ValueError):
-            return value
-
-        bits = self._active_bits(raw)
-        if not bits:
-            return f"{raw} - OK"
-
-        labels = [
-            self._bit_descriptions.get(bit, f"unknown bit {bit}")
-            for bit in bits
-        ]
-        return f"{raw} - " + ", ".join(labels)
 
     @property
     def suggested_display_precision(self) -> int | None:
@@ -248,21 +210,6 @@ class MarstekSensor(CoordinatorEntity, SensorEntity):
         data = self.coordinator.data or {}
         attrs = data.get(f"{self._key}_attrs") or {}
 
-        # Bitfield sensors expose the raw word and the decoded bits, so automations
-        # can test a single bit instead of parsing the rendered string.
-        if self._bit_descriptions:
-            raw = data.get(self._key)
-            bits = self._active_bits(raw)
-            return {
-                "raw_value": raw,
-                "active_bits": bits,
-                "active_faults": [
-                    self._bit_descriptions.get(bit, f"unknown bit {bit}") for bit in bits
-                ],
-                "undecoded_bits": [
-                    bit for bit in bits if bit not in self._bit_descriptions
-                ],
-            }
         # For schedule types, enrich attributes with human-readable fields.
         # If `_attrs` is not present but the coordinator stored the raw
         # 5-register list in `data[key]`, decode that here so we don't
@@ -548,6 +495,69 @@ class MarstekCellVoltageDeltaSensor(MarstekCalculatedSensor):
 
         self._attr_native_value = delta
         return delta
+
+
+class MarstekBitfieldTextSensor(MarstekCalculatedSensor):
+    """
+    Plain-text companion to a numeric bitfield sensor.
+
+    Reads the same word through a dependency key and renders the bits that are
+    set, so the numeric sensor keeps reporting a number and automations that
+    compare against it are unaffected.
+    """
+
+    def __init__(self, coordinator, definition):
+        super().__init__(coordinator, definition)
+        raw_bits = definition.get("bit_descriptions") or {}
+        self._bit_descriptions = {int(bit): str(text) for bit, text in raw_bits.items()}
+
+    @staticmethod
+    def _active_bits(value) -> list[int]:
+        """Return the indices of the bits set in value, lowest first."""
+        try:
+            raw = int(value)
+        except (TypeError, ValueError):
+            return []
+        if raw <= 0:
+            return []
+        return [bit for bit in range(raw.bit_length()) if raw >> bit & 1]
+
+    def calculate_value(self, dep_values: dict):
+        """Render the source word as "<raw> - <text>, <text>"."""
+        source = dep_values.get("source")
+        if source is None:
+            return None
+        try:
+            raw = int(source)
+        except (TypeError, ValueError):
+            return None
+
+        bits = self._active_bits(raw)
+        if not bits:
+            value = f"{raw} - OK"
+        else:
+            value = f"{raw} - " + ", ".join(
+                self._bit_descriptions.get(bit, f"unknown bit {bit}") for bit in bits
+            )
+
+        self._attr_native_value = value
+        return value
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Expose the raw word and the decoded bits for automations."""
+        data = self.coordinator.data or {}
+        source_key = self.get_dependency_keys().get("source")
+        raw = data.get(source_key)
+        bits = self._active_bits(raw)
+        return {
+            "raw_value": raw,
+            "active_bits": bits,
+            "active_faults": [
+                self._bit_descriptions.get(bit, f"unknown bit {bit}") for bit in bits
+            ],
+            "undecoded_bits": [bit for bit in bits if bit not in self._bit_descriptions],
+        }
 
 
 class MarstekStoredEnergySensor(MarstekCalculatedSensor):
