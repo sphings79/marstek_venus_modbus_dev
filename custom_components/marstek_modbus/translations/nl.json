@@ -910,6 +910,9 @@
       },
       "fault_status_2_low_description": {
         "name": "Foutstatus 2 laag woord beschrijving"
+      },
+      "grid_power": {
+        "name": "Netvermogen"
       }
     },
     "binary_sensor": {

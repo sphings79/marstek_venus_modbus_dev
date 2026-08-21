@@ -906,6 +906,9 @@
       },
       "fault_status_2_low_description": {
         "name": "Fehlerstatus 2 Low-Word Beschreibung"
+      },
+      "grid_power": {
+        "name": "Netzleistung"
       }
     },
     "binary_sensor": {

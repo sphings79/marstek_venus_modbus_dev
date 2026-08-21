@@ -39,6 +39,7 @@ async def async_setup_entry(
         (MarstekBatteryCycleSensor, coordinator.CYCLE_SENSOR_DEFINITIONS),
         (MarstekCellVoltageDeltaSensor, coordinator.CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS),
         (MarstekBitfieldTextSensor, coordinator.BITFIELD_TEXT_SENSOR_DEFINITIONS),
+        (MarstekGridPowerSensor, coordinator.GRID_POWER_SENSOR_DEFINITIONS),
     )
     for entity_cls, definitions in sensor_groups:
         entities.extend(entity_cls(coordinator, definition) for definition in definitions)
@@ -558,6 +559,51 @@ class MarstekBitfieldTextSensor(MarstekCalculatedSensor):
             ],
             "undecoded_bits": [bit for bit in bits if bit not in self._bit_descriptions],
         }
+
+
+class MarstekGridPowerSensor(MarstekCalculatedSensor):
+    """
+    Power at the grid connection point, reproducing what the device itself computes.
+
+    The firmware builds this value for its Bluetooth payload but exposes no register
+    for it, so it is rebuilt here from the registers the formula reads. Positive means
+    export to the grid, negative means import.
+
+    Decompiled from the BLE payload builder (FUN_0800b024, offset 0x90):
+
+        if grid_sample_power == 0:
+            base = off_grid_power if inverter_state == 4 else 0
+        else:
+            base = grid_sample_power
+        grid_power = base - off_grid_power
+
+    The distinction matters in bypass, where the backup output is fed straight from the
+    grid: the inverter's own grid sample reads zero there, so the backup load is what
+    the grid is actually carrying.
+    """
+
+    #: Inverter state 4 = Backup Mode, the only state where a zero grid sample still
+    #: means the grid is carrying the backup load.
+    _BACKUP_MODE = 4
+
+    def calculate_value(self, dep_values: dict):
+        grid = dep_values.get("grid")
+        offgrid = dep_values.get("offgrid")
+        state = dep_values.get("state")
+        if grid is None or offgrid is None or state is None:
+            return None
+
+        grid = int(grid)
+        offgrid = int(offgrid)
+
+        if grid == 0:
+            base = offgrid if int(state) == self._BACKUP_MODE else 0
+        else:
+            base = grid
+
+        value = base - offgrid
+        self._attr_native_value = value
+        return value
 
 
 class MarstekStoredEnergySensor(MarstekCalculatedSensor):

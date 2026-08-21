@@ -906,6 +906,9 @@
       },
       "fault_status_2_low_description": {
         "name": "Fault Status 2 Low Word Description"
+      },
+      "grid_power": {
+        "name": "Grid Power"
       }
     },
     "binary_sensor": {

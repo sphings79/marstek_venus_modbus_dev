@@ -3064,3 +3064,20 @@ BITFIELD_TEXT_SENSOR_DEFINITIONS:
             7: Shut down by supervisor, retry after 60 s
             9: Supervisor fault (low confidence)
             11: Limit exceeded for more than 3000 cycles
+
+GRID_POWER_SENSOR_DEFINITIONS:
+    grid_power:
+        key: grid_power
+        unit: W
+        device_class: power
+        state_class: measurement
+        precision: 0
+        icon: "mdi:transmission-tower"
+        enabled_by_default: false
+        # Rebuilt from the formula the firmware uses for its Bluetooth payload
+        # (FUN_0800b024, offset 0x90). No register carries this value.
+        # Positive = export to grid, negative = import.
+        dependency_keys:
+            grid: ac_power
+            offgrid: ac_offgrid_power
+            state: inverter_state
