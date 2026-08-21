@@ -93,21 +93,45 @@ block (34013–34016 → `battery_N_cell_temperature_1..4`), the cell-voltage ex
 `battery_N_max_cell_voltage` / `battery_N_min_cell_voltage`), and the protection bitmasks (34007/34008 →
 `battery_N_protection_1` / `battery_N_protection_2`). The remaining rows stay reference-only.
 
+#### What the device does *not* tell you about individual cells
+
+Two limits are worth recording, because both look like missing sensors but are missing data:
+
+**No cell index for the voltage extremes.** `max_cell_voltage` / `min_cell_voltage` (37007/37008) and
+their per-pack counterparts `battery_N_max_cell_voltage` / `battery_N_min_cell_voltage` (34005/34006)
+publish the *value* only. No register anywhere in 30000–39999 carries the cell number that value came
+from. The neighbouring candidates rule themselves out: 34009 is an unnamed reserved field in the BMS
+struct (@+0x5a, absent from the firmware debug print) and 34017 is an NTC slot whose bytes the firmware
+never populates. The only index registers in the whole set are `bms_pack_count` (32109) and
+`bms_active_pack_index` (32111), and both operate at pack level.
+
+The index can be *derived* — take the minimum over the 16 per-cell registers (34018–34033, +0x100 per
+pack) and return its position. That means polling the per-cell block, which is the same block
+implicated in the Modbus stalls, so any such sensor belongs at `scan_interval: low` and only once the
+transport is reliable.
+
+**The cell NTCs map to no particular cell.** 34013–34016 are four thermistors covering sixteen cells.
+The number is the sensor's slot in BMS frame 0x41, not a cell number, and where each thermistor
+physically sits inside the pack is not exposed by the firmware. The entities are therefore named
+"Cell NTC 1..4" rather than "Cell Temperature 1..4", which would imply a cell mapping that does not
+exist. `max_cell_temperature` / `min_cell_temperature` (35010/35011) are aggregates over these four
+readings and likewise carry no index.
+
 | Register (pack 1 / +0x100 per pack) | Key | Notes |
 |----------|-----|-------|
 | 34000 | pack battery voltage | uint16, scale 0.01 V. Pack 1 = `battery_voltage`; packs 2–6 **integrated** as `battery_N_voltage`. |
 | 34001 | pack battery current | int16, scale 0.1 A. Negative = discharge. Pack 1 = `battery_current`; packs 2–6 **integrated** as `battery_N_current`. |
 | 34003 | pack cycle count | int16. Pack 1's value (34003) is `battery_cycle_count`; packs 2–6 **integrated** as `battery_N_cycle_count`. |
 | 34004 | pack MOS status | u8. BMS charge/discharge MOSFET state (Chg/Dsg MOS). **Integrated** as `battery_N_mos_status`. |
-| 34005 | pack max cell voltage | uint16, scale 0.001 V. **Integrated** as `battery_N_max_cell_voltage`. |
-| 34006 | pack min cell voltage | uint16, scale 0.001 V. **Integrated** as `battery_N_min_cell_voltage`. |
+| 34005 | pack max cell voltage | uint16, scale 0.001 V. **Integrated** as `battery_N_max_cell_voltage`. Value only — no cell index. |
+| 34006 | pack min cell voltage | uint16, scale 0.001 V. **Integrated** as `battery_N_min_cell_voltage`. Value only — no cell index. |
 | 34007 | pack protection bitmask 1 | int16 bitmask (BMS CAN frame 0x23, protect1). **Integrated** as `battery_N_protection_1`. |
 | 34008 | pack protection bitmask 2 | uint16 bitmask (frame 0x23, protect2). A low-SoC/undervoltage bit (0x0002) was observed here during discharge testing (triggers below ~10.7%). **Integrated** as `battery_N_protection_2`. |
 | 34009 | pack BMS reserved | uint16. BMS-struct field @+0x5a; not named in the firmware debug print. |
 | 34010 | pack BMS version | uint16. 116 → 1177 (v117.7) after BMS firmware update. **Integrated** as `battery_N_bms_version`. |
 | 34011 | pack ENV NTC (ambient) | uint16, scale 0.1 °C (BMS frame 0x41). Was previously labelled "cell NTC 0". **Integrated** as `battery_N_env_temperature`. |
 | 34012 | pack MOS NTC (MOSFET) | uint16, scale 0.1 °C (BMS frame 0x41). Was previously labelled "cell NTC 1". **Integrated** as `battery_N_mos_temperature`. |
-| 34013–34016 | pack cell NTC block | uint16 ×4, scale 0.1 °C (pack struct +0x40). **Integrated** as `battery_N_cell_temperature_1..4`. |
+| 34013–34016 | pack cell NTC block | uint16 ×4, scale 0.1 °C (pack struct +0x40). **Integrated** as `battery_N_cell_temperature_1..4`, displayed as "Cell NTC 1..4" — four thermistors for sixteen cells, no cell mapping. |
 | 34017 | pack NTC (unused) | uint16, scale 0.1 °C. BMS frame 0x41 bytes 6–7 are not populated. |
 
 ### Alternative / redundant sources (firmware-confirmed, intentionally not integrated)

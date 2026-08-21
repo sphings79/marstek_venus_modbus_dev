@@ -160,16 +160,16 @@
         "name": "Battery Pack 1 Min Cell Voltage"
       },
       "battery_1_cell_temperature_1": {
-        "name": "Battery Pack 1 Cell Temperature 1"
+        "name": "Battery Pack 1 Cell NTC 1"
       },
       "battery_1_cell_temperature_2": {
-        "name": "Battery Pack 1 Cell Temperature 2"
+        "name": "Battery Pack 1 Cell NTC 2"
       },
       "battery_1_cell_temperature_3": {
-        "name": "Battery Pack 1 Cell Temperature 3"
+        "name": "Battery Pack 1 Cell NTC 3"
       },
       "battery_1_cell_temperature_4": {
-        "name": "Battery Pack 1 Cell Temperature 4"
+        "name": "Battery Pack 1 Cell NTC 4"
       },
       "battery_2_max_cell_voltage": {
         "name": "Battery Pack 2 Max Cell Voltage"
@@ -178,16 +178,16 @@
         "name": "Battery Pack 2 Min Cell Voltage"
       },
       "battery_2_cell_temperature_1": {
-        "name": "Battery Pack 2 Cell Temperature 1"
+        "name": "Battery Pack 2 Cell NTC 1"
       },
       "battery_2_cell_temperature_2": {
-        "name": "Battery Pack 2 Cell Temperature 2"
+        "name": "Battery Pack 2 Cell NTC 2"
       },
       "battery_2_cell_temperature_3": {
-        "name": "Battery Pack 2 Cell Temperature 3"
+        "name": "Battery Pack 2 Cell NTC 3"
       },
       "battery_2_cell_temperature_4": {
-        "name": "Battery Pack 2 Cell Temperature 4"
+        "name": "Battery Pack 2 Cell NTC 4"
       },
       "battery_3_max_cell_voltage": {
         "name": "Battery Pack 3 Max Cell Voltage"
@@ -196,16 +196,16 @@
         "name": "Battery Pack 3 Min Cell Voltage"
       },
       "battery_3_cell_temperature_1": {
-        "name": "Battery Pack 3 Cell Temperature 1"
+        "name": "Battery Pack 3 Cell NTC 1"
       },
       "battery_3_cell_temperature_2": {
-        "name": "Battery Pack 3 Cell Temperature 2"
+        "name": "Battery Pack 3 Cell NTC 2"
       },
       "battery_3_cell_temperature_3": {
-        "name": "Battery Pack 3 Cell Temperature 3"
+        "name": "Battery Pack 3 Cell NTC 3"
       },
       "battery_3_cell_temperature_4": {
-        "name": "Battery Pack 3 Cell Temperature 4"
+        "name": "Battery Pack 3 Cell NTC 4"
       },
       "battery_4_max_cell_voltage": {
         "name": "Battery Pack 4 Max Cell Voltage"
@@ -214,16 +214,16 @@
         "name": "Battery Pack 4 Min Cell Voltage"
       },
       "battery_4_cell_temperature_1": {
-        "name": "Battery Pack 4 Cell Temperature 1"
+        "name": "Battery Pack 4 Cell NTC 1"
       },
       "battery_4_cell_temperature_2": {
-        "name": "Battery Pack 4 Cell Temperature 2"
+        "name": "Battery Pack 4 Cell NTC 2"
       },
       "battery_4_cell_temperature_3": {
-        "name": "Battery Pack 4 Cell Temperature 3"
+        "name": "Battery Pack 4 Cell NTC 3"
       },
       "battery_4_cell_temperature_4": {
-        "name": "Battery Pack 4 Cell Temperature 4"
+        "name": "Battery Pack 4 Cell NTC 4"
       },
       "battery_5_max_cell_voltage": {
         "name": "Battery Pack 5 Max Cell Voltage"
@@ -232,16 +232,16 @@
         "name": "Battery Pack 5 Min Cell Voltage"
       },
       "battery_5_cell_temperature_1": {
-        "name": "Battery Pack 5 Cell Temperature 1"
+        "name": "Battery Pack 5 Cell NTC 1"
       },
       "battery_5_cell_temperature_2": {
-        "name": "Battery Pack 5 Cell Temperature 2"
+        "name": "Battery Pack 5 Cell NTC 2"
       },
       "battery_5_cell_temperature_3": {
-        "name": "Battery Pack 5 Cell Temperature 3"
+        "name": "Battery Pack 5 Cell NTC 3"
       },
       "battery_5_cell_temperature_4": {
-        "name": "Battery Pack 5 Cell Temperature 4"
+        "name": "Battery Pack 5 Cell NTC 4"
       },
       "battery_6_max_cell_voltage": {
         "name": "Battery Pack 6 Max Cell Voltage"
@@ -250,16 +250,16 @@
         "name": "Battery Pack 6 Min Cell Voltage"
       },
       "battery_6_cell_temperature_1": {
-        "name": "Battery Pack 6 Cell Temperature 1"
+        "name": "Battery Pack 6 Cell NTC 1"
       },
       "battery_6_cell_temperature_2": {
-        "name": "Battery Pack 6 Cell Temperature 2"
+        "name": "Battery Pack 6 Cell NTC 2"
       },
       "battery_6_cell_temperature_3": {
-        "name": "Battery Pack 6 Cell Temperature 3"
+        "name": "Battery Pack 6 Cell NTC 3"
       },
       "battery_6_cell_temperature_4": {
-        "name": "Battery Pack 6 Cell Temperature 4"
+        "name": "Battery Pack 6 Cell NTC 4"
       },
       "battery_1_env_temperature": {
         "name": "Battery Pack 1 Ambient Temperature"
