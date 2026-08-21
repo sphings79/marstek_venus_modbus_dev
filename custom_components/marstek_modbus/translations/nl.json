@@ -868,12 +868,6 @@
       },
       "gateway_ip_address": {
         "name": "Gateway-IP"
-      },
-      "backup_voltage": {
-        "name": "Backup-uitgangsspanning"
-      },
-      "backup_power": {
-        "name": "Backup-uitgangsvermogen"
       }
     },
     "binary_sensor": {

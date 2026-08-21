@@ -198,32 +198,34 @@ actually confirmed. A field list is not a mapping.
 
 ---
 
-## 5. What blocks the mapping
+## 5. Resolved — the descriptor table is decodable
 
-The descriptor table lives at SRAM `0x20000354` and is therefore not present in the
-flash image. Attempts made:
+The blocker described in earlier revisions of this document is gone. The table is a
+plain `.data` global; the `.data` image is **LZ77-compressed at the end of flash** and
+unpacked by the C runtime at boot. That single fact explains every negative finding
+listed below, and the table has since been decoded in full — 246 of 246 entries for
+both v149.2 and v150 — by the companion firmware-debug project.
 
-- **Scanned the full 389120-byte image** for the 12-byte stride pattern with an
-  SRAM pointer at +4, at every 4-byte position. No run of eight or more entries
-  exists anywhere in the image. The three near-misses are pointer arrays.
+Dead ends recorded so they are not repeated:
+
+- **Scanned the full 389120-byte image** for the 12-byte stride pattern with an SRAM
+  pointer at +4, at every 4-byte position. Nothing — because the table is compressed.
 - **Searched for literals** pointing at `0x20000354`. Exactly two exist, at
-  `0x0801F1F8` and `0x0802AAE8` — the literal pools of the two FC03 handlers. No
-  initialiser references the address, which argues the table is copied wholesale
-  by C-runtime `.data` initialisation rather than built entry by entry.
-- `RS485_Modbus_RegisterMap_Init` (`0x0802a720`) is unrelated: it is the eight-entry
-  map of the RS485 sub-protocol, not the Modbus TCP descriptor table.
-- **Followed the reset vector** at `0x08000004` to `0x08004A71`, which lands in the
-  tail of `FUN_080049f4` rather than on a function entry. None of the 42 vector
-  entries resolves to a function entry point, and no uniform offset fixes that: the
-  best candidate shift aligns only 4 of 12 distinct targets.
+  `0x0801F1F8` and `0x0802AAE8`, the literal pools of the two FC03 handlers. Correct,
+  and not a gap: there is no builder routine, only readers.
+- `RS485_Modbus_RegisterMap_Init` (`0x0802a720`) is unrelated — the eight-entry map of
+  the RS485 sub-protocol.
+- **Followed the reset vector** at `0x08000004` to `0x08004A71`, which lands in the tail
+  of `FUN_080049f4` rather than on a function entry. None of the 42 vector entries
+  resolves to a function entry, and no uniform shift fixes it. This is real and expected:
+  in this OTA image the vector table does not reach the C startup path at all.
 
 ### The load base is confirmed correct
 
-The vector-table anomaly above initially suggested a wrong load base. It does not.
-A single strict scan of the whole image finds exactly one Cortex-M vector table, at
-file offset 0, with the reserved slots 7–10 and 13 all zero as the architecture
-requires. More decisively, absolute addresses taken from literal pools resolve to
-exactly the data the surrounding code uses:
+The vector-table anomaly does not indicate a wrong load base. A strict scan of the whole
+image finds exactly one Cortex-M vector table, at file offset 0, with reserved slots
+7–10 and 13 zero as the architecture requires. More decisively, absolute addresses from
+literal pools resolve to exactly the data the surrounding code uses:
 
 | Literal | Resolves to |
 |---------|-------------|
@@ -232,12 +234,36 @@ exactly the data the surrounding code uses:
 | `0x08036A98` | `"PV_Day_Cap_10Wh=%d\r\n"` |
 | `0x08036EB0` | `"dischrg_enery(1Wh)=%d\r\n"` |
 
-Absolute pointers could not resolve like this under a wrong base. **The image is
-correctly loaded at `0x08000000`**; every address in this document is valid as
-written. The unresolved vector table is a separate oddity and not the obstacle.
+Absolute pointers could not resolve like this under a wrong base. The image is correctly
+loaded at `0x08000000` and every address in this document is valid as written.
 
-**What still blocks the mapping** is only that no `.data` initialiser for the
-descriptor table has been located — neither as a static flash image nor as an
-initialising routine. Anyone picking this up should look for the copy that fills
-`0x20000354`, by whatever route; the table is 246 plaintext entries once found, and
-resolves every open register in one step.
+## 6. Cross-check against the decoded table
+
+The struct layouts in sections 2 and 3 were derived from the debug printers alone, with
+no access to the descriptor table. Checking them afterwards against the decoded table:
+**all 48 descriptor pointers that fall inside either struct land on a named field.** Both
+base addresses are confirmed — inverter telemetry at `0x20014E9C`, MPPT array at
+`0x20014F4C`, the latter derived from `PV1_Power` at `0x20014F58` minus its `+0x0C`
+offset.
+
+Two corrections to section 4 follow from the decoded table:
+
+- `PV_Year_Cap` **is** reachable, at register **37021** (u32, 10 Wh). `PV_Day_Cap` and
+  `PV_Mon_Cap` have no descriptor entry and are therefore *not* readable over Modbus.
+  Only the yearly counter can become a kWh sensor.
+- `base_vol` is register **30036**, one of the previously open addresses.
+
+### Registers that share one firmware source
+
+Several pairs in the register YAML resolve to the same SRAM pointer, i.e. they are the
+same measurement under two names. Confirmed from the descriptor table:
+
+| Source | Registers | Firmware field |
+|--------|-----------|----------------|
+| `0x20014EB0` | 30005 · 32300 · 32301 | `off_grid_volt` — 32301 is **not** an off-grid current |
+| `0x20014EB4` | 30006 · 32202 · 37004 | `grid_sample_power` — 37004 is **not** an AC current |
+| `0x20014EB6` | 30007 · 32302 | `off_grid_power` |
+| `0x20014EBE` | 35001 · 35002 | `radiator_temp` — MOS1 and MOS2 are one sensor |
+| `0x20014FC4` | 34005 · 37007 | pack 1 max cell voltage — the "device-wide" max is pack 1's |
+| `0x20014FC6` | 34006 · 37008 | pack 1 min cell voltage |
+| `0x20014FD2` | 30204 · 34010 | pack 1 BMS version |

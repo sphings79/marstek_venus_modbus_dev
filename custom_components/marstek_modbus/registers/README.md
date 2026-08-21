@@ -149,22 +149,19 @@ source, so they are documented rather than added as extra entities.
 | 37017–37020 | `mppt1..4_power` | Same source as `mppt1..4_power` (30037–30040), which are already integrated. |
 | 37002 / 37003 | `max_charge_power` / `max_discharge_power` | Read-back of the power limits already exposed as the `max_charge_power` / `max_discharge_power` number entities. |
 
-### Backup / UPS output — integrated, but contested
+### Backup / UPS output (30005 / 30007) — resolved: duplicates, not integrated
 
-| Register | Key | Notes |
-|----------|-----|-------|
-| 30005 | `backup_voltage` | uint16, scale 0.1 V. ~1 V when backup inactive; 236–242 V under load (242 V @100 W → 237 V @3 kW). |
-| 30007 | `backup_power` | uint16, scale 1 W. 0 when no backup load; 0–3271 W depending on load on the backup output. |
+The question is settled, and not in favour of the Venus D notes. The firmware's Modbus
+descriptor table resolves both registers to the same SRAM source as the sensors Venus D
+already has:
 
-**These two contradict the Venus E Gen 3 notes above**, which list 30005/30007 as plain duplicates of
-`ac_offgrid_voltage` (32300) and `ac_offgrid_power` (32302) — both of which Venus D already integrates.
-Either the Venus D backup output is genuinely a separate measurement point, or these are the same
-values at a second address and should be dropped.
+| Register | Source pointer | Field | Same source as |
+|----------|----------------|-------|----------------|
+| 30005 | `0x20014EB0` | `off_grid_volt` (inverter telemetry +0x14) | `ac_offgrid_voltage` (32300) |
+| 30007 | `0x20014EB6` | `off_grid_power` (inverter telemetry +0x1A) | `ac_offgrid_power` (32302) |
 
-They are integrated as diagnostic sensors, disabled by default, precisely so the question can be
-settled on hardware: enable `backup_voltage` / `backup_power` alongside `ac_offgrid_voltage` /
-`ac_offgrid_power`, put a load on the backup output, and compare. If the pairs track each other, remove
-30005/30007 and record them as duplicates here.
+They are alternative addresses onto one measurement, exactly as the Venus E Gen 3 notes
+said. Sensors for them were briefly added and have been removed again; do not re-add them.
 
 ### Network configuration — integrated
 

@@ -864,12 +864,6 @@
       },
       "gateway_ip_address": {
         "name": "Gateway-IP"
-      },
-      "backup_voltage": {
-        "name": "Backup-Ausgangsspannung"
-      },
-      "backup_power": {
-        "name": "Backup-Ausgangsleistung"
       }
     },
     "binary_sensor": {
