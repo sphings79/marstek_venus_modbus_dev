@@ -864,6 +864,9 @@
       },
       "gateway_ip_address": {
         "name": "Gateway IP"
+      },
+      "pv_year_capacity": {
+        "name": "PV Yearly Yield"
       }
     },
     "binary_sensor": {

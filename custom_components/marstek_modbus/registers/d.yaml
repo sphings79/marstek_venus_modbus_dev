@@ -187,16 +187,6 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 2
         scan_interval: high
-    internal_mos2_temperature:
-        register: 35002
-        scale: 0.1
-        unit: °C
-        device_class: temperature
-        state_class: measurement
-        enabled_by_default: false
-        data_type: int16
-        precision: 2
-        scan_interval: high
     ac_voltage:
         register: 32200
         scale: 0.1
@@ -205,16 +195,6 @@ SENSOR_DEFINITIONS:
         state_class: measurement
         enabled_by_default: true
         data_type: uint16
-        precision: 1
-        scan_interval: high
-    ac_current:
-        register: 37004
-        scale: 0.004
-        unit: A
-        device_class: current
-        state_class: measurement
-        enabled_by_default: true
-        data_type: int16
         precision: 1
         scan_interval: high
     ac_power:
@@ -1367,16 +1347,6 @@ SENSOR_DEFINITIONS:
         data_type: uint16
         precision: 1
         scan_interval: high
-    ac_offgrid_current:
-        register: 32301
-        scale: 0.01
-        unit: A
-        device_class: current
-        state_class: measurement
-        enabled_by_default: false
-        data_type: uint16
-        precision: 1
-        scan_interval: high
     ac_offgrid_power:
         register: 32302
         count: 2
@@ -2354,6 +2324,18 @@ SENSOR_DEFINITIONS:
         count: 2
         data_type: ipv4
         icon: "mdi:router-network"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    # --- PV yield counter (37021, inverter MPPT struct +0x2C, unit 10 Wh) ---
+    pv_year_capacity:
+        register: 37021
+        scale: 0.01
+        unit: kWh
+        device_class: energy
+        state_class: total_increasing
+        data_type: uint32
+        precision: 2
         category: diagnostic
         enabled_by_default: false
         scan_interval: low

@@ -93,29 +93,12 @@ block (34013–34016 → `battery_N_cell_temperature_1..4`), the cell-voltage ex
 `battery_N_max_cell_voltage` / `battery_N_min_cell_voltage`), and the protection bitmasks (34007/34008 →
 `battery_N_protection_1` / `battery_N_protection_2`). The remaining rows stay reference-only.
 
-#### What the device does *not* tell you about individual cells
+#### Individual cells: what the device does not report
 
-Two limits are worth recording, because both look like missing sensors but are missing data:
-
-**No cell index for the voltage extremes.** `max_cell_voltage` / `min_cell_voltage` (37007/37008) and
-their per-pack counterparts `battery_N_max_cell_voltage` / `battery_N_min_cell_voltage` (34005/34006)
-publish the *value* only. No register anywhere in 30000–39999 carries the cell number that value came
-from. The neighbouring candidates rule themselves out: 34009 is an unnamed reserved field in the BMS
-struct (@+0x5a, absent from the firmware debug print) and 34017 is an NTC slot whose bytes the firmware
-never populates. The only index registers in the whole set are `bms_pack_count` (32109) and
-`bms_active_pack_index` (32111), and both operate at pack level.
-
-The index can be *derived* — take the minimum over the 16 per-cell registers (34018–34033, +0x100 per
-pack) and return its position. That means polling the per-cell block, which is the same block
-implicated in the Modbus stalls, so any such sensor belongs at `scan_interval: low` and only once the
-transport is reliable.
-
-**The cell NTCs map to no particular cell.** 34013–34016 are four thermistors covering sixteen cells.
-The number is the sensor's slot in BMS frame 0x41, not a cell number, and where each thermistor
-physically sits inside the pack is not exposed by the firmware. The entities are therefore named
-"Cell NTC 1..4" rather than "Cell Temperature 1..4", which would imply a cell mapping that does not
-exist. `max_cell_temperature` / `min_cell_temperature` (35010/35011) are aggregates over these four
-readings and likewise carry no index.
+`max_cell_voltage` / `min_cell_voltage` (37007/37008) and the per-pack 34005/34006 carry
+the value only — no register anywhere gives the cell index it came from. The four cell
+NTCs (34013–34016) cover sixteen cells with no documented mapping, which is why the
+entities are named "Cell NTC 1..4" rather than "Cell Temperature 1..4".
 
 | Register (pack 1 / +0x100 per pack) | Key | Notes |
 |----------|-----|-------|
@@ -149,19 +132,10 @@ source, so they are documented rather than added as extra entities.
 | 37017–37020 | `mppt1..4_power` | Same source as `mppt1..4_power` (30037–30040), which are already integrated. |
 | 37002 / 37003 | `max_charge_power` / `max_discharge_power` | Read-back of the power limits already exposed as the `max_charge_power` / `max_discharge_power` number entities. |
 
-### Backup / UPS output (30005 / 30007) — resolved: duplicates, not integrated
+### Backup / UPS output (30005 / 30007) — duplicates, deliberately not integrated
 
-The question is settled, and not in favour of the Venus D notes. The firmware's Modbus
-descriptor table resolves both registers to the same SRAM source as the sensors Venus D
-already has:
-
-| Register | Source pointer | Field | Same source as |
-|----------|----------------|-------|----------------|
-| 30005 | `0x20014EB0` | `off_grid_volt` (inverter telemetry +0x14) | `ac_offgrid_voltage` (32300) |
-| 30007 | `0x20014EB6` | `off_grid_power` (inverter telemetry +0x1A) | `ac_offgrid_power` (32302) |
-
-They are alternative addresses onto one measurement, exactly as the Venus E Gen 3 notes
-said. Sensors for them were briefly added and have been removed again; do not re-add them.
+Both resolve to the same firmware source as `ac_offgrid_voltage` (32300) and
+`ac_offgrid_power` (32302). Do not add sensors for them.
 
 ### Network configuration — integrated
 
@@ -173,11 +147,6 @@ said. Sensors for them were briefly added and have been removed again; do not re
 Decoded by the `ipv4` data type in `helpers/modbus_client.py`. Diagnostic, disabled by default.
 
 ### Firmware descriptor-table analysis (v150)
-
-Deeper findings from this pass — the FC03 read path, the descriptor format, and the
-inverter/MPPT telemetry struct layouts with plaintext field names — are recorded in
-[firmware-analysis.md](firmware-analysis.md), together with the candidate list for the
-registers that remain unmapped.
 
 A later pass decoded the device's on-firmware descriptor tables (FC03 read descriptors, plus the
 FC06/FC10 write-handler table with their SRAM targets). This is authoritative for register names,
