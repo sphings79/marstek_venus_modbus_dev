@@ -42,6 +42,25 @@ The added comment states the invariant that was silently violated: every section
 definitions can carry `dependency_keys` must be listed there. All six such sections are
 now covered.
 
+## 1b. Bug fix — reading a register the device does not have
+
+`e0c265c` · Venus A and D · `registers/a.yaml`, `registers/d.yaml`
+
+`ac_offgrid_power` declared register 32302 as `int32` with `count: 2`, so every poll asked
+for 32302 **and 32303**. The Venus D firmware's descriptor table exposes 32302 as a single
+`i16` register and has no entry for 32303 — the read ran past the end of that descriptor
+region and stalled the device's Modbus stack.
+
+Confirmed as the trigger behind observed stalls: two independent failure logs name 32302 as
+the first failure, and it was the only read sensor whose declared span exceeded its
+descriptor entry. The sensor is disabled by default, which is why the fault only surfaces
+once someone enables the off-grid sensors.
+
+`e_v3.yaml` already declared it correctly. `e_v12.yaml` still declares `int32` but belongs
+to the other firmware family and was left alone.
+
+**Strong upstream candidate** — it is a live defect, not a Venus D nicety.
+
 ## 2. Feature — `ipv4` data type
 
 `1529b55` · general · `helpers/modbus_client.py`

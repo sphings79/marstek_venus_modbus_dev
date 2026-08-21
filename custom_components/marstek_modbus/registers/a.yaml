@@ -1179,15 +1179,17 @@ SENSOR_DEFINITIONS:
         scan_interval: high
     ac_offgrid_power:
         register: 32302
-        count: 2
         scale: 1
         unit: W
         device_class: power
         state_class: measurement
         enabled_by_default: false
-        data_type: int32
+        data_type: int16
         precision: 0
         scan_interval: high
+        # Venus D firmware exposes 32302 as a single i16 register with no 32303.
+        # Venus A shares that firmware base; reading it as int32 requests a register
+        # the descriptor table does not cover and stalls the Modbus stack.
     wifi_signal_strength:
         register: 30303
         scale: -1
