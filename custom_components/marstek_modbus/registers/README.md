@@ -177,6 +177,11 @@ Decoded by the `ipv4` data type in `helpers/modbus_client.py`. Diagnostic, disab
 
 ### Firmware descriptor-table analysis (v150)
 
+Deeper findings from this pass — the FC03 read path, the descriptor format, and the
+inverter/MPPT telemetry struct layouts with plaintext field names — are recorded in
+[firmware-analysis.md](firmware-analysis.md), together with the candidate list for the
+registers that remain unmapped.
+
 A later pass decoded the device's on-firmware descriptor tables (FC03 read descriptors, plus the
 FC06/FC10 write-handler table with their SRAM targets). This is authoritative for register names,
 types and layout. Findings folded into the integration and this document:
