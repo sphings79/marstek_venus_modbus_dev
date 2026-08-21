@@ -67,6 +67,276 @@
   },
   "entity": {
     "sensor": {
+      "battery_2_voltage": {
+        "name": "Batterij pack 2 Spanning"
+      },
+      "battery_2_current": {
+        "name": "Batterij pack 2 Stroom"
+      },
+      "battery_3_voltage": {
+        "name": "Batterij pack 3 Spanning"
+      },
+      "battery_3_current": {
+        "name": "Batterij pack 3 Stroom"
+      },
+      "battery_4_voltage": {
+        "name": "Batterij pack 4 Spanning"
+      },
+      "battery_4_current": {
+        "name": "Batterij pack 4 Stroom"
+      },
+      "battery_5_voltage": {
+        "name": "Batterij pack 5 Spanning"
+      },
+      "battery_5_current": {
+        "name": "Batterij pack 5 Stroom"
+      },
+      "battery_6_voltage": {
+        "name": "Batterij pack 6 Spanning"
+      },
+      "battery_6_current": {
+        "name": "Batterij pack 6 Stroom"
+      },
+      "work_mode": {
+        "name": "Werkmodus"
+      },
+      "ems_boot_version": {
+        "name": "EMS-bootloaderversie"
+      },
+      "vns_boot_version": {
+        "name": "VNS-bootloaderversie"
+      },
+      "battery_1_mos_status": {
+        "name": "Batterij pack 1 MOSFET-status"
+      },
+      "battery_1_bms_version": {
+        "name": "Batterij pack 1 BMS-versie"
+      },
+      "battery_2_cycle_count": {
+        "name": "Batterij pack 2 Cyclusaantal"
+      },
+      "battery_2_mos_status": {
+        "name": "Batterij pack 2 MOSFET-status"
+      },
+      "battery_2_bms_version": {
+        "name": "Batterij pack 2 BMS-versie"
+      },
+      "battery_3_cycle_count": {
+        "name": "Batterij pack 3 Cyclusaantal"
+      },
+      "battery_3_mos_status": {
+        "name": "Batterij pack 3 MOSFET-status"
+      },
+      "battery_3_bms_version": {
+        "name": "Batterij pack 3 BMS-versie"
+      },
+      "battery_4_cycle_count": {
+        "name": "Batterij pack 4 Cyclusaantal"
+      },
+      "battery_4_mos_status": {
+        "name": "Batterij pack 4 MOSFET-status"
+      },
+      "battery_4_bms_version": {
+        "name": "Batterij pack 4 BMS-versie"
+      },
+      "battery_5_cycle_count": {
+        "name": "Batterij pack 5 Cyclusaantal"
+      },
+      "battery_5_mos_status": {
+        "name": "Batterij pack 5 MOSFET-status"
+      },
+      "battery_5_bms_version": {
+        "name": "Batterij pack 5 BMS-versie"
+      },
+      "battery_6_cycle_count": {
+        "name": "Batterij pack 6 Cyclusaantal"
+      },
+      "battery_6_mos_status": {
+        "name": "Batterij pack 6 MOSFET-status"
+      },
+      "battery_6_bms_version": {
+        "name": "Batterij pack 6 BMS-versie"
+      },
+      "battery_1_max_cell_voltage": {
+        "name": "Batterij pack 1 Max celspanning"
+      },
+      "battery_1_min_cell_voltage": {
+        "name": "Batterij pack 1 Min celspanning"
+      },
+      "battery_1_cell_temperature_1": {
+        "name": "Batterij pack 1 Celtemperatuur 1"
+      },
+      "battery_1_cell_temperature_2": {
+        "name": "Batterij pack 1 Celtemperatuur 2"
+      },
+      "battery_1_cell_temperature_3": {
+        "name": "Batterij pack 1 Celtemperatuur 3"
+      },
+      "battery_1_cell_temperature_4": {
+        "name": "Batterij pack 1 Celtemperatuur 4"
+      },
+      "battery_2_max_cell_voltage": {
+        "name": "Batterij pack 2 Max celspanning"
+      },
+      "battery_2_min_cell_voltage": {
+        "name": "Batterij pack 2 Min celspanning"
+      },
+      "battery_2_cell_temperature_1": {
+        "name": "Batterij pack 2 Celtemperatuur 1"
+      },
+      "battery_2_cell_temperature_2": {
+        "name": "Batterij pack 2 Celtemperatuur 2"
+      },
+      "battery_2_cell_temperature_3": {
+        "name": "Batterij pack 2 Celtemperatuur 3"
+      },
+      "battery_2_cell_temperature_4": {
+        "name": "Batterij pack 2 Celtemperatuur 4"
+      },
+      "battery_3_max_cell_voltage": {
+        "name": "Batterij pack 3 Max celspanning"
+      },
+      "battery_3_min_cell_voltage": {
+        "name": "Batterij pack 3 Min celspanning"
+      },
+      "battery_3_cell_temperature_1": {
+        "name": "Batterij pack 3 Celtemperatuur 1"
+      },
+      "battery_3_cell_temperature_2": {
+        "name": "Batterij pack 3 Celtemperatuur 2"
+      },
+      "battery_3_cell_temperature_3": {
+        "name": "Batterij pack 3 Celtemperatuur 3"
+      },
+      "battery_3_cell_temperature_4": {
+        "name": "Batterij pack 3 Celtemperatuur 4"
+      },
+      "battery_4_max_cell_voltage": {
+        "name": "Batterij pack 4 Max celspanning"
+      },
+      "battery_4_min_cell_voltage": {
+        "name": "Batterij pack 4 Min celspanning"
+      },
+      "battery_4_cell_temperature_1": {
+        "name": "Batterij pack 4 Celtemperatuur 1"
+      },
+      "battery_4_cell_temperature_2": {
+        "name": "Batterij pack 4 Celtemperatuur 2"
+      },
+      "battery_4_cell_temperature_3": {
+        "name": "Batterij pack 4 Celtemperatuur 3"
+      },
+      "battery_4_cell_temperature_4": {
+        "name": "Batterij pack 4 Celtemperatuur 4"
+      },
+      "battery_5_max_cell_voltage": {
+        "name": "Batterij pack 5 Max celspanning"
+      },
+      "battery_5_min_cell_voltage": {
+        "name": "Batterij pack 5 Min celspanning"
+      },
+      "battery_5_cell_temperature_1": {
+        "name": "Batterij pack 5 Celtemperatuur 1"
+      },
+      "battery_5_cell_temperature_2": {
+        "name": "Batterij pack 5 Celtemperatuur 2"
+      },
+      "battery_5_cell_temperature_3": {
+        "name": "Batterij pack 5 Celtemperatuur 3"
+      },
+      "battery_5_cell_temperature_4": {
+        "name": "Batterij pack 5 Celtemperatuur 4"
+      },
+      "battery_6_max_cell_voltage": {
+        "name": "Batterij pack 6 Max celspanning"
+      },
+      "battery_6_min_cell_voltage": {
+        "name": "Batterij pack 6 Min celspanning"
+      },
+      "battery_6_cell_temperature_1": {
+        "name": "Batterij pack 6 Celtemperatuur 1"
+      },
+      "battery_6_cell_temperature_2": {
+        "name": "Batterij pack 6 Celtemperatuur 2"
+      },
+      "battery_6_cell_temperature_3": {
+        "name": "Batterij pack 6 Celtemperatuur 3"
+      },
+      "battery_6_cell_temperature_4": {
+        "name": "Batterij pack 6 Celtemperatuur 4"
+      },
+      "battery_1_env_temperature": {
+        "name": "Batterij pack 1 Omgevingstemperatuur"
+      },
+      "battery_1_mos_temperature": {
+        "name": "Batterij pack 1 MOSFET-temperatuur"
+      },
+      "battery_1_protection_1": {
+        "name": "Batterij pack 1 Bescherming 1"
+      },
+      "battery_1_protection_2": {
+        "name": "Batterij pack 1 Bescherming 2"
+      },
+      "battery_2_env_temperature": {
+        "name": "Batterij pack 2 Omgevingstemperatuur"
+      },
+      "battery_2_mos_temperature": {
+        "name": "Batterij pack 2 MOSFET-temperatuur"
+      },
+      "battery_2_protection_1": {
+        "name": "Batterij pack 2 Bescherming 1"
+      },
+      "battery_2_protection_2": {
+        "name": "Batterij pack 2 Bescherming 2"
+      },
+      "battery_3_env_temperature": {
+        "name": "Batterij pack 3 Omgevingstemperatuur"
+      },
+      "battery_3_mos_temperature": {
+        "name": "Batterij pack 3 MOSFET-temperatuur"
+      },
+      "battery_3_protection_1": {
+        "name": "Batterij pack 3 Bescherming 1"
+      },
+      "battery_3_protection_2": {
+        "name": "Batterij pack 3 Bescherming 2"
+      },
+      "battery_4_env_temperature": {
+        "name": "Batterij pack 4 Omgevingstemperatuur"
+      },
+      "battery_4_mos_temperature": {
+        "name": "Batterij pack 4 MOSFET-temperatuur"
+      },
+      "battery_4_protection_1": {
+        "name": "Batterij pack 4 Bescherming 1"
+      },
+      "battery_4_protection_2": {
+        "name": "Batterij pack 4 Bescherming 2"
+      },
+      "battery_5_env_temperature": {
+        "name": "Batterij pack 5 Omgevingstemperatuur"
+      },
+      "battery_5_mos_temperature": {
+        "name": "Batterij pack 5 MOSFET-temperatuur"
+      },
+      "battery_5_protection_1": {
+        "name": "Batterij pack 5 Bescherming 1"
+      },
+      "battery_5_protection_2": {
+        "name": "Batterij pack 5 Bescherming 2"
+      },
+      "battery_6_env_temperature": {
+        "name": "Batterij pack 6 Omgevingstemperatuur"
+      },
+      "battery_6_mos_temperature": {
+        "name": "Batterij pack 6 MOSFET-temperatuur"
+      },
+      "battery_6_protection_1": {
+        "name": "Batterij pack 6 Bescherming 1"
+      },
+      "battery_6_protection_2": {
+        "name": "Batterij pack 6 Bescherming 2"
+      },
       "device_name": {
         "name": "Apparaatnaam"
       },
@@ -271,6 +541,15 @@
       "battery_2_cell_13_voltage": {
         "name": "Batterij pack 2 Cel 13 Spanning"
       },
+      "battery_2_cell_14_voltage": {
+        "name": "Batterij pack 2 Cel 14 Spanning"
+      },
+      "battery_2_cell_15_voltage": {
+        "name": "Batterij pack 2 Cel 15 Spanning"
+      },
+      "battery_2_cell_16_voltage": {
+        "name": "Batterij pack 2 Cel 16 Spanning"
+      },
       "battery_3_cell_1_voltage": {
         "name": "Batterij pack 3 Cel 1 Spanning"
       },
@@ -310,6 +589,15 @@
       "battery_3_cell_13_voltage": {
         "name": "Batterij pack 3 Cel 13 Spanning"
       },
+      "battery_3_cell_14_voltage": {
+        "name": "Batterij pack 3 Cel 14 Spanning"
+      },
+      "battery_3_cell_15_voltage": {
+        "name": "Batterij pack 3 Cel 15 Spanning"
+      },
+      "battery_3_cell_16_voltage": {
+        "name": "Batterij pack 3 Cel 16 Spanning"
+      },
       "battery_4_cell_1_voltage": {
         "name": "Batterij pack 4 Cel 1 Spanning"
       },
@@ -348,6 +636,15 @@
       },
       "battery_4_cell_13_voltage": {
         "name": "Batterij pack 4 Cel 13 Spanning"
+      },
+      "battery_4_cell_14_voltage": {
+        "name": "Batterij pack 4 Cel 14 Spanning"
+      },
+      "battery_4_cell_15_voltage": {
+        "name": "Batterij pack 4 Cel 15 Spanning"
+      },
+      "battery_4_cell_16_voltage": {
+        "name": "Batterij pack 4 Cel 16 Spanning"
       },
       "battery_5_cell_1_voltage": {
         "name": "Batterij pack 5 Cel 1 Spanning"
@@ -477,6 +774,9 @@
       },
       "stored_energy": {
         "name": "Opgeslagen Energie"
+      },
+      "solar_power_total": {
+        "name": "Totale zonne-energie"
       },
       "mppt1_voltage": {
         "name": "MPPT1 Spanning"

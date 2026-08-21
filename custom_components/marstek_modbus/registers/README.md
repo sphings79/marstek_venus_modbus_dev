@@ -54,3 +54,86 @@ Hardware tested: Marstek Venus E v3, firmware V148.
 | 45604 | Unknown. Value 20599 (0x5077). Adjacent to 45603/45605. Possibly WiFi channel, frequency, or AP info. Not confirmed. |
 | 45605 | Unknown. Constant value 74 in V148 scan. Adjacent to 45603/45604. |
 | 47400 | Unknown. Value 43707 (0xAABB) in V148 scan. Alternating-nibble sentinel — same class as 0x9999, likely "not configured" / undefined. |
+
+---
+
+## Venus D (d.yaml)
+
+Hardware tested: Marstek Venus D, multi-pack setup (verified with up to 6 packs installed;
+address pattern extends to a 7th pack). BMS firmware observed going 116 → 1177 (v117.7) after a BMS update.
+All registers below were read back and cross-checked on real hardware, but are **not** added to the
+integration — following the same policy applied to Venus A/E, which integrates only per-pack SoC and
+per-pack cell voltages, not the remaining per-pack scalars.
+
+Integrated in this PR (for reference): `battery_soc_1..6` (34002/34102/34202/34302/34402/34502),
+`battery_2/3/4_cell_1..16_voltage` (34118–34133 / 34218–34233 / 34318–34333, 16 cells per pack —
+Venus D packs carry 16 cells vs. 13 on Venus A), `alarm_status` (36000), `fault_status` (36100).
+
+### Mirrors / inferior duplicates of already-integrated sensors
+
+| Register | Notes |
+|----------|-------|
+| 30002 | Mirror of `internal_temperature` (35000). int16, scale 0.1 °C. |
+| 30003 | Mirror of `internal_mos1_temperature` (35001). int16, scale 0.1 °C. |
+| 30004 | Mirror of `ac_voltage` (32200). uint16, scale 0.1 V. |
+| 37005 | Integer SoC without scale. Inferior to `battery_soc` (32104). |
+
+### Per-pack scalars
+
+Pattern: each pack is offset by +0x100 (pack 1 = 340xx, pack 2 = 341xx, …). Values below confirmed
+across packs 1–5 (pack 6 follows the same pattern; populated only when a 6th pack is present).
+Layout updated per the 2026-08-16 firmware descriptor-table correction (BMS CAN frames 0x23 / 0x41).
+
+The per-pack health registers are now integrated for packs 1–6 (all disabled by default):
+temperatures (34011/34012 → `battery_N_env_temperature` / `battery_N_mos_temperature`), the cell-NTC
+block (34013–34016 → `battery_N_cell_temperature_1..4`), the cell-voltage extremes (34005/34006 →
+`battery_N_max_cell_voltage` / `battery_N_min_cell_voltage`), and the protection bitmasks (34007/34008 →
+`battery_N_protection_1` / `battery_N_protection_2`). The remaining rows stay reference-only.
+
+| Register (pack 1 / +0x100 per pack) | Key | Notes |
+|----------|-----|-------|
+| 34000 | pack battery voltage | uint16, scale 0.01 V. Pack 1 = `battery_voltage`; packs 2–6 **integrated** as `battery_N_voltage`. |
+| 34001 | pack battery current | int16, scale 0.1 A. Negative = discharge. Pack 1 = `battery_current`; packs 2–6 **integrated** as `battery_N_current`. |
+| 34003 | pack cycle count | int16. Pack 1's value (34003) is `battery_cycle_count`; packs 2–6 **integrated** as `battery_N_cycle_count`. |
+| 34004 | pack MOS status | u8. BMS charge/discharge MOSFET state (Chg/Dsg MOS). **Integrated** as `battery_N_mos_status`. |
+| 34005 | pack max cell voltage | uint16, scale 0.001 V. **Integrated** as `battery_N_max_cell_voltage`. |
+| 34006 | pack min cell voltage | uint16, scale 0.001 V. **Integrated** as `battery_N_min_cell_voltage`. |
+| 34007 | pack protection bitmask 1 | int16 bitmask (BMS CAN frame 0x23, protect1). **Integrated** as `battery_N_protection_1`. |
+| 34008 | pack protection bitmask 2 | uint16 bitmask (frame 0x23, protect2). A low-SoC/undervoltage bit (0x0002) was observed here during discharge testing (triggers below ~10.7%). **Integrated** as `battery_N_protection_2`. |
+| 34009 | pack BMS reserved | uint16. BMS-struct field @+0x5a; not named in the firmware debug print. |
+| 34010 | pack BMS version | uint16. 116 → 1177 (v117.7) after BMS firmware update. **Integrated** as `battery_N_bms_version`. |
+| 34011 | pack ENV NTC (ambient) | uint16, scale 0.1 °C (BMS frame 0x41). Was previously labelled "cell NTC 0". **Integrated** as `battery_N_env_temperature`. |
+| 34012 | pack MOS NTC (MOSFET) | uint16, scale 0.1 °C (BMS frame 0x41). Was previously labelled "cell NTC 1". **Integrated** as `battery_N_mos_temperature`. |
+| 34013–34016 | pack cell NTC block | uint16 ×4, scale 0.1 °C (pack struct +0x40). **Integrated** as `battery_N_cell_temperature_1..4`. |
+| 34017 | pack NTC (unused) | uint16, scale 0.1 °C. BMS frame 0x41 bytes 6–7 are not populated. |
+
+### Alternative / redundant sources (firmware-confirmed, intentionally not integrated)
+
+These are valid firmware registers, but each duplicates a value already exposed through a better
+source, so they are documented rather than added as extra entities.
+
+| Register | Firmware name | Why not integrated |
+|----------|---------------|--------------------|
+| 30028 | `inv_bat_voltage` | Inverter-measured battery voltage (0.1 V). Alternative to `battery_voltage` (30100). |
+| 30029 | `inv_bat_current` | Inverter-measured battery current (0.1 A). Alternative to `battery_current` (30101). |
+| 32100 | `bms_battery_voltage` | BMS/CAN aggregate battery voltage (0.01 V). Alternative to `battery_voltage`. |
+| 32101 | `bms_battery_current` | BMS/CAN aggregate battery current (1 A). Coarser alternative to `battery_current`. |
+| 32102 | `bat_sample_power` | Battery power as float32. Alternative to `battery_power` (30001, int16 W). |
+| 37017–37020 | `mppt1..4_power` | Same source as `mppt1..4_power` (30037–30040), which are already integrated. |
+| 37002 / 37003 | `max_charge_power` / `max_discharge_power` | Read-back of the power limits already exposed as the `max_charge_power` / `max_discharge_power` number entities. |
+
+### Backup / UPS output (verified — candidates for integration)
+
+Distinct from the grid/inverter registers; measured on the backup (off-grid) output. Would need
+new translation keys, hence documented here rather than added blindly.
+
+| Register | Notes |
+|----------|-------|
+| 30005 | Backup/UPS output voltage. uint16, scale 0.1 V. ~1 V when backup inactive; 236–242 V under load (242 V @100 W → 237 V @3 kW). |
+| 30007 | Backup/UPS output power. uint16, scale 1 W. 0 when no backup load; 0–3271 W depending on load on the backup output. |
+
+### Version / misc
+
+| Register | Notes |
+|----------|-------|
+| 30205 | MPPT firmware version. uint16 (observed 104). |

@@ -636,6 +636,9 @@ NUMBER_DEFINITIONS:
         unit: W
         data_type: uint16
         scan_interval: high
+        affects:
+            - ac_power
+            - battery_power
     set_discharge_power:
         register: 42021
         enabled_by_default: false
@@ -646,6 +649,9 @@ NUMBER_DEFINITIONS:
         unit: W
         data_type: uint16
         scan_interval: high
+        affects:
+            - ac_power
+            - battery_power
     max_charge_power:
         register: 44002
         enabled_by_default: false
@@ -656,6 +662,9 @@ NUMBER_DEFINITIONS:
         unit: W
         data_type: uint16
         scan_interval: high
+        affects:
+            - ac_power
+            - battery_power
     max_discharge_power:
         register: 44003
         enabled_by_default: false
@@ -666,6 +675,9 @@ NUMBER_DEFINITIONS:
         unit: W
         data_type: uint16
         scan_interval: high
+        affects:
+            - ac_power
+            - battery_power
     charging_cutoff_capacity:
         register: 44000
         enabled_by_default: false

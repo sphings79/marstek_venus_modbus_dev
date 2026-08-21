@@ -1522,6 +1522,9 @@ NUMBER_DEFINITIONS:
         unit: W
         data_type: uint16
         scan_interval: high
+        affects:
+            - ac_power
+            - battery_power
     set_discharge_power:
         register: 42021
         enabled_by_default: false
@@ -1532,6 +1535,9 @@ NUMBER_DEFINITIONS:
         unit: W
         data_type: uint16
         scan_interval: high
+        affects:
+            - ac_power
+            - battery_power
     max_charge_power:
         register: 44002
         enabled_by_default: false
@@ -1542,6 +1548,9 @@ NUMBER_DEFINITIONS:
         unit: W
         data_type: uint16
         scan_interval: high
+        affects:
+            - ac_power
+            - battery_power
     max_discharge_power:
         register: 44003
         enabled_by_default: false
@@ -1552,6 +1561,9 @@ NUMBER_DEFINITIONS:
         unit: W
         data_type: uint16
         scan_interval: high
+        affects:
+            - ac_power
+            - battery_power
     charge_to_soc:
         register: 42011
         enabled_by_default: false
@@ -1841,3 +1853,16 @@ CYCLE_SENSOR_DEFINITIONS:
         dependency_keys:
             discharge: total_discharging_energy
             capacity: battery_total_energy
+
+SOLAR_POWER_SENSOR_DEFINITIONS:
+    solar_power_total:
+        key: solar_power_total
+        unit: W
+        icon: "mdi:solar-power"
+        device_class: power
+        state_class: measurement
+        dependency_keys:
+            mppt1: mppt1_power
+            mppt2: mppt2_power
+            mppt3: mppt3_power
+            mppt4: mppt4_power

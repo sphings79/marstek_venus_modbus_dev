@@ -33,6 +33,7 @@ async def async_setup_entry(
     sensor_groups = (
         (MarstekSensor, coordinator.SENSOR_DEFINITIONS),
         (MarstekEfficiencySensor, coordinator.EFFICIENCY_SENSOR_DEFINITIONS),
+        (MarstekSolarPowerSensor, coordinator.SOLAR_POWER_SENSOR_DEFINITIONS),
         (MarstekVersionSensor, coordinator.VERSION_SENSOR_DEFINITIONS),
         (MarstekStoredEnergySensor, coordinator.STORED_ENERGY_SENSOR_DEFINITIONS),
         (MarstekBatteryCycleSensor, coordinator.CYCLE_SENSOR_DEFINITIONS),
@@ -445,6 +446,20 @@ class MarstekCalculatedSensor(CoordinatorEntity, SensorEntity):
         Must be implemented by subclasses.
         """
         raise NotImplementedError
+
+
+class MarstekSolarPowerSensor(MarstekCalculatedSensor):
+    """Calculate total solar generation by summing all configured dependency values."""
+
+    def calculate_value(self, dep_values: dict):
+        aliases = list(self.get_dependency_keys().keys())
+        values = [dep_values.get(alias) for alias in aliases]
+        if any(value is None for value in values):
+            return None
+
+        total = round(sum(float(value) for value in values), 2)
+        self._attr_native_value = total
+        return total
 
 
 class MarstekStoredEnergySensor(MarstekCalculatedSensor):

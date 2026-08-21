@@ -63,6 +63,276 @@
   },
   "entity": {
     "sensor": {
+      "battery_2_voltage": {
+        "name": "Batteriepack 2 Spannung"
+      },
+      "battery_2_current": {
+        "name": "Batteriepack 2 Strom"
+      },
+      "battery_3_voltage": {
+        "name": "Batteriepack 3 Spannung"
+      },
+      "battery_3_current": {
+        "name": "Batteriepack 3 Strom"
+      },
+      "battery_4_voltage": {
+        "name": "Batteriepack 4 Spannung"
+      },
+      "battery_4_current": {
+        "name": "Batteriepack 4 Strom"
+      },
+      "battery_5_voltage": {
+        "name": "Batteriepack 5 Spannung"
+      },
+      "battery_5_current": {
+        "name": "Batteriepack 5 Strom"
+      },
+      "battery_6_voltage": {
+        "name": "Batteriepack 6 Spannung"
+      },
+      "battery_6_current": {
+        "name": "Batteriepack 6 Strom"
+      },
+      "work_mode": {
+        "name": "Betriebsmodus"
+      },
+      "ems_boot_version": {
+        "name": "EMS-Bootloader-Version"
+      },
+      "vns_boot_version": {
+        "name": "VNS-Bootloader-Version"
+      },
+      "battery_1_mos_status": {
+        "name": "Batteriepack 1 MOSFET-Status"
+      },
+      "battery_1_bms_version": {
+        "name": "Batteriepack 1 BMS-Version"
+      },
+      "battery_2_cycle_count": {
+        "name": "Batteriepack 2 Zyklenzahl"
+      },
+      "battery_2_mos_status": {
+        "name": "Batteriepack 2 MOSFET-Status"
+      },
+      "battery_2_bms_version": {
+        "name": "Batteriepack 2 BMS-Version"
+      },
+      "battery_3_cycle_count": {
+        "name": "Batteriepack 3 Zyklenzahl"
+      },
+      "battery_3_mos_status": {
+        "name": "Batteriepack 3 MOSFET-Status"
+      },
+      "battery_3_bms_version": {
+        "name": "Batteriepack 3 BMS-Version"
+      },
+      "battery_4_cycle_count": {
+        "name": "Batteriepack 4 Zyklenzahl"
+      },
+      "battery_4_mos_status": {
+        "name": "Batteriepack 4 MOSFET-Status"
+      },
+      "battery_4_bms_version": {
+        "name": "Batteriepack 4 BMS-Version"
+      },
+      "battery_5_cycle_count": {
+        "name": "Batteriepack 5 Zyklenzahl"
+      },
+      "battery_5_mos_status": {
+        "name": "Batteriepack 5 MOSFET-Status"
+      },
+      "battery_5_bms_version": {
+        "name": "Batteriepack 5 BMS-Version"
+      },
+      "battery_6_cycle_count": {
+        "name": "Batteriepack 6 Zyklenzahl"
+      },
+      "battery_6_mos_status": {
+        "name": "Batteriepack 6 MOSFET-Status"
+      },
+      "battery_6_bms_version": {
+        "name": "Batteriepack 6 BMS-Version"
+      },
+      "battery_1_max_cell_voltage": {
+        "name": "Batteriepack 1 max. Zellspannung"
+      },
+      "battery_1_min_cell_voltage": {
+        "name": "Batteriepack 1 min. Zellspannung"
+      },
+      "battery_1_cell_temperature_1": {
+        "name": "Batteriepack 1 Zelltemperatur 1"
+      },
+      "battery_1_cell_temperature_2": {
+        "name": "Batteriepack 1 Zelltemperatur 2"
+      },
+      "battery_1_cell_temperature_3": {
+        "name": "Batteriepack 1 Zelltemperatur 3"
+      },
+      "battery_1_cell_temperature_4": {
+        "name": "Batteriepack 1 Zelltemperatur 4"
+      },
+      "battery_2_max_cell_voltage": {
+        "name": "Batteriepack 2 max. Zellspannung"
+      },
+      "battery_2_min_cell_voltage": {
+        "name": "Batteriepack 2 min. Zellspannung"
+      },
+      "battery_2_cell_temperature_1": {
+        "name": "Batteriepack 2 Zelltemperatur 1"
+      },
+      "battery_2_cell_temperature_2": {
+        "name": "Batteriepack 2 Zelltemperatur 2"
+      },
+      "battery_2_cell_temperature_3": {
+        "name": "Batteriepack 2 Zelltemperatur 3"
+      },
+      "battery_2_cell_temperature_4": {
+        "name": "Batteriepack 2 Zelltemperatur 4"
+      },
+      "battery_3_max_cell_voltage": {
+        "name": "Batteriepack 3 max. Zellspannung"
+      },
+      "battery_3_min_cell_voltage": {
+        "name": "Batteriepack 3 min. Zellspannung"
+      },
+      "battery_3_cell_temperature_1": {
+        "name": "Batteriepack 3 Zelltemperatur 1"
+      },
+      "battery_3_cell_temperature_2": {
+        "name": "Batteriepack 3 Zelltemperatur 2"
+      },
+      "battery_3_cell_temperature_3": {
+        "name": "Batteriepack 3 Zelltemperatur 3"
+      },
+      "battery_3_cell_temperature_4": {
+        "name": "Batteriepack 3 Zelltemperatur 4"
+      },
+      "battery_4_max_cell_voltage": {
+        "name": "Batteriepack 4 max. Zellspannung"
+      },
+      "battery_4_min_cell_voltage": {
+        "name": "Batteriepack 4 min. Zellspannung"
+      },
+      "battery_4_cell_temperature_1": {
+        "name": "Batteriepack 4 Zelltemperatur 1"
+      },
+      "battery_4_cell_temperature_2": {
+        "name": "Batteriepack 4 Zelltemperatur 2"
+      },
+      "battery_4_cell_temperature_3": {
+        "name": "Batteriepack 4 Zelltemperatur 3"
+      },
+      "battery_4_cell_temperature_4": {
+        "name": "Batteriepack 4 Zelltemperatur 4"
+      },
+      "battery_5_max_cell_voltage": {
+        "name": "Batteriepack 5 max. Zellspannung"
+      },
+      "battery_5_min_cell_voltage": {
+        "name": "Batteriepack 5 min. Zellspannung"
+      },
+      "battery_5_cell_temperature_1": {
+        "name": "Batteriepack 5 Zelltemperatur 1"
+      },
+      "battery_5_cell_temperature_2": {
+        "name": "Batteriepack 5 Zelltemperatur 2"
+      },
+      "battery_5_cell_temperature_3": {
+        "name": "Batteriepack 5 Zelltemperatur 3"
+      },
+      "battery_5_cell_temperature_4": {
+        "name": "Batteriepack 5 Zelltemperatur 4"
+      },
+      "battery_6_max_cell_voltage": {
+        "name": "Batteriepack 6 max. Zellspannung"
+      },
+      "battery_6_min_cell_voltage": {
+        "name": "Batteriepack 6 min. Zellspannung"
+      },
+      "battery_6_cell_temperature_1": {
+        "name": "Batteriepack 6 Zelltemperatur 1"
+      },
+      "battery_6_cell_temperature_2": {
+        "name": "Batteriepack 6 Zelltemperatur 2"
+      },
+      "battery_6_cell_temperature_3": {
+        "name": "Batteriepack 6 Zelltemperatur 3"
+      },
+      "battery_6_cell_temperature_4": {
+        "name": "Batteriepack 6 Zelltemperatur 4"
+      },
+      "battery_1_env_temperature": {
+        "name": "Batteriepack 1 Umgebungstemperatur"
+      },
+      "battery_1_mos_temperature": {
+        "name": "Batteriepack 1 MOSFET-Temperatur"
+      },
+      "battery_1_protection_1": {
+        "name": "Batteriepack 1 Schutz 1"
+      },
+      "battery_1_protection_2": {
+        "name": "Batteriepack 1 Schutz 2"
+      },
+      "battery_2_env_temperature": {
+        "name": "Batteriepack 2 Umgebungstemperatur"
+      },
+      "battery_2_mos_temperature": {
+        "name": "Batteriepack 2 MOSFET-Temperatur"
+      },
+      "battery_2_protection_1": {
+        "name": "Batteriepack 2 Schutz 1"
+      },
+      "battery_2_protection_2": {
+        "name": "Batteriepack 2 Schutz 2"
+      },
+      "battery_3_env_temperature": {
+        "name": "Batteriepack 3 Umgebungstemperatur"
+      },
+      "battery_3_mos_temperature": {
+        "name": "Batteriepack 3 MOSFET-Temperatur"
+      },
+      "battery_3_protection_1": {
+        "name": "Batteriepack 3 Schutz 1"
+      },
+      "battery_3_protection_2": {
+        "name": "Batteriepack 3 Schutz 2"
+      },
+      "battery_4_env_temperature": {
+        "name": "Batteriepack 4 Umgebungstemperatur"
+      },
+      "battery_4_mos_temperature": {
+        "name": "Batteriepack 4 MOSFET-Temperatur"
+      },
+      "battery_4_protection_1": {
+        "name": "Batteriepack 4 Schutz 1"
+      },
+      "battery_4_protection_2": {
+        "name": "Batteriepack 4 Schutz 2"
+      },
+      "battery_5_env_temperature": {
+        "name": "Batteriepack 5 Umgebungstemperatur"
+      },
+      "battery_5_mos_temperature": {
+        "name": "Batteriepack 5 MOSFET-Temperatur"
+      },
+      "battery_5_protection_1": {
+        "name": "Batteriepack 5 Schutz 1"
+      },
+      "battery_5_protection_2": {
+        "name": "Batteriepack 5 Schutz 2"
+      },
+      "battery_6_env_temperature": {
+        "name": "Batteriepack 6 Umgebungstemperatur"
+      },
+      "battery_6_mos_temperature": {
+        "name": "Batteriepack 6 MOSFET-Temperatur"
+      },
+      "battery_6_protection_1": {
+        "name": "Batteriepack 6 Schutz 1"
+      },
+      "battery_6_protection_2": {
+        "name": "Batteriepack 6 Schutz 2"
+      },
       "device_name": {
         "name": "Gerätename"
       },
@@ -264,6 +534,15 @@
       "battery_2_cell_13_voltage": {
         "name": "Batteriepack 2 Zelle 13 Spannung"
       },
+      "battery_2_cell_14_voltage": {
+        "name": "Batteriepack 2 Zelle 14 Spannung"
+      },
+      "battery_2_cell_15_voltage": {
+        "name": "Batteriepack 2 Zelle 15 Spannung"
+      },
+      "battery_2_cell_16_voltage": {
+        "name": "Batteriepack 2 Zelle 16 Spannung"
+      },
       "battery_3_cell_1_voltage": {
         "name": "Batteriepack 3 Zelle 1 Spannung"
       },
@@ -303,6 +582,15 @@
       "battery_3_cell_13_voltage": {
         "name": "Batteriepack 3 Zelle 13 Spannung"
       },
+      "battery_3_cell_14_voltage": {
+        "name": "Batteriepack 3 Zelle 14 Spannung"
+      },
+      "battery_3_cell_15_voltage": {
+        "name": "Batteriepack 3 Zelle 15 Spannung"
+      },
+      "battery_3_cell_16_voltage": {
+        "name": "Batteriepack 3 Zelle 16 Spannung"
+      },
       "battery_4_cell_1_voltage": {
         "name": "Batteriepack 4 Zelle 1 Spannung"
       },
@@ -341,6 +629,15 @@
       },
       "battery_4_cell_13_voltage": {
         "name": "Batteriepack 4 Zelle 13 Spannung"
+      },
+      "battery_4_cell_14_voltage": {
+        "name": "Batteriepack 4 Zelle 14 Spannung"
+      },
+      "battery_4_cell_15_voltage": {
+        "name": "Batteriepack 4 Zelle 15 Spannung"
+      },
+      "battery_4_cell_16_voltage": {
+        "name": "Batteriepack 4 Zelle 16 Spannung"
       },
       "battery_5_cell_1_voltage": {
         "name": "Batteriepack 5 Zelle 1 Spannung"
@@ -470,6 +767,9 @@
       },
       "stored_energy": {
         "name": "Gespeicherte Energie"
+      },
+      "solar_power_total": {
+        "name": "Gesamt-Solarleistung"
       },
       "mppt1_voltage": {
         "name": "MPPT1 Spannung"

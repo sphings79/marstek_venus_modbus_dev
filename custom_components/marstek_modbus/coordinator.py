@@ -72,6 +72,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self.NUMBER_DEFINITIONS = []
         self.BUTTON_DEFINITIONS = []
         self.EFFICIENCY_SENSOR_DEFINITIONS = []
+        self.SOLAR_POWER_SENSOR_DEFINITIONS = []
         self.VERSION_SENSOR_DEFINITIONS = []
         self.STORED_ENERGY_SENSOR_DEFINITIONS = []
         self.CYCLE_SENSOR_DEFINITIONS = []
@@ -95,6 +96,8 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self._last_write_times: dict = {}
         # Timestamps when a read was last started per key (for stale-read detection)
         self._read_start_times: dict = {}
+        # Pending post-write refresh task to avoid overlapping refresh loops
+        self._post_write_refresh_task = None
         
         # Connection throttling to prevent endless retry attempts after repeated failures
         self._consecutive_failures = 0
@@ -243,6 +246,83 @@ class MarstekCoordinator(DataUpdateCoordinator):
         """Return definitions indexed by key."""
         return {definition["key"]: definition for definition in definitions}
 
+    def _get_definition_for_key(self, key: str) -> dict | None:
+        """Return the first matching definition for a key across writable entity sections."""
+        for definitions in (
+            self.NUMBER_DEFINITIONS,
+            self.SELECT_DEFINITIONS,
+            self.SWITCH_DEFINITIONS,
+        ):
+            for definition in definitions:
+                if definition.get("key") == key:
+                    return definition
+        return None
+
+    def _get_post_write_refresh_targets(self, key: str) -> list[str]:
+        """Return sensor keys that should be refreshed shortly after a successful write."""
+        if not key:
+            return []
+
+        definition = self._get_definition_for_key(key)
+        if not definition:
+            return []
+
+        affects = definition.get("affects", [])
+        if isinstance(affects, str):
+            return [affects] if affects else []
+        if isinstance(affects, (list, tuple, set)):
+            return [str(item) for item in affects if str(item).strip()]
+        return []
+
+    def _cancel_pending_post_write_refresh(self) -> None:
+        """Cancel any pending post-write refresh loop so a new write can restart it."""
+        task = getattr(self, "_post_write_refresh_task", None)
+        if task is not None and not task.done():
+            task.cancel()
+        self._post_write_refresh_task = None
+
+    def _schedule_post_write_refresh(self, key: str) -> None:
+        """Schedule a short delayed re-read loop for keys affected by a successful write."""
+        targets = self._get_post_write_refresh_targets(key)
+        if not targets:
+            return
+
+        self._cancel_pending_post_write_refresh()
+        self._post_write_refresh_task = self.hass.async_create_task(
+            self._async_refresh_affected_keys_after_write(key, targets)
+        )
+
+    async def _async_refresh_affected_keys_after_write(self, key: str, targets: list[str]) -> None:
+        """Re-read affected keys shortly after a write, retrying until values settle."""
+        if not targets:
+            return
+
+        for attempt in range(5):
+            if attempt == 0:
+                await asyncio.sleep(3.5)
+            else:
+                await asyncio.sleep(0.5)
+
+            for target in targets:
+                definition = self._get_definition_for_key(target)
+                if not definition:
+                    continue
+
+                value = await self.async_read_value(definition, target, track_failure=False)
+                if value is not None:
+                    if not isinstance(self.data, dict):
+                        self.data = {}
+                    previous_value = self.data.get(target)
+                    self.data[target] = value
+                    self.async_set_updated_data(self.data)
+                    if previous_value != value:
+                        _LOGGER.debug(
+                            "Post-write refresh updated '%s' after write to '%s' to %s",
+                            target,
+                            key,
+                            value,
+                        )
+                        return
 
     def register_entity_type(self, key: str, entity_type: str):
         """Register the entity type for a given sensor key.
@@ -375,6 +455,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
             self.NUMBER_DEFINITIONS = data.get("NUMBER_DEFINITIONS", [])
             self.BUTTON_DEFINITIONS = data.get("BUTTON_DEFINITIONS", [])
             self.EFFICIENCY_SENSOR_DEFINITIONS = data.get("EFFICIENCY_SENSOR_DEFINITIONS", [])
+            self.SOLAR_POWER_SENSOR_DEFINITIONS = data.get("SOLAR_POWER_SENSOR_DEFINITIONS", [])
             self.VERSION_SENSOR_DEFINITIONS = data.get("VERSION_SENSOR_DEFINITIONS", [])
             self.STORED_ENERGY_SENSOR_DEFINITIONS = data.get("STORED_ENERGY_SENSOR_DEFINITIONS", [])
             self.CYCLE_SENSOR_DEFINITIONS = data.get("CYCLE_SENSOR_DEFINITIONS", [])
@@ -672,6 +753,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
                 )
                 from homeassistant.util.dt import utcnow as _utcnow
                 self._last_write_times[key] = _utcnow()
+                self._schedule_post_write_refresh(key)
                 return True
             else:
                 _LOGGER.warning(
@@ -1099,6 +1181,7 @@ def get_registers(version: str):
       - NUMBER_DEFINITIONS
       - BUTTON_DEFINITIONS
       - EFFICIENCY_SENSOR_DEFINITIONS
+      - SOLAR_POWER_SENSOR_DEFINITIONS
       - STORED_ENERGY_SENSOR_DEFINITIONS
     - CYCLE_SENSOR_DEFINITIONS
 
@@ -1177,6 +1260,9 @@ def get_registers(version: str):
                     "BUTTON_DEFINITIONS": _normalize_section(data.get("BUTTON_DEFINITIONS")),
                     "EFFICIENCY_SENSOR_DEFINITIONS": _normalize_section(
                         data.get("EFFICIENCY_SENSOR_DEFINITIONS")
+                    ),
+                    "SOLAR_POWER_SENSOR_DEFINITIONS": _normalize_section(
+                        data.get("SOLAR_POWER_SENSOR_DEFINITIONS")
                     ),
                     "VERSION_SENSOR_DEFINITIONS": _normalize_section(
                         data.get("VERSION_SENSOR_DEFINITIONS")
