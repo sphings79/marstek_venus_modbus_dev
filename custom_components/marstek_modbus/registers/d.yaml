@@ -3109,28 +3109,26 @@ BMS_POWER_SENSOR_DEFINITIONS:
             p6: battery_6_current
 
 # ---------------------------------------------------------------------------
-# DEV_SENSOR_DEFINITIONS — nur aktiv, wenn in den Integrations-Optionen
-# "DEV-Register anzeigen" eingeschaltet ist.
+# DEV_UNKNOWN_SENSOR_DEFINITIONS — Option 'DEV-Register: unbekannt'
 #
-# Zwei Quellen:
-#   1. Register, deren Bedeutung im FW-Debug-Projekt als 'niedrig' oder 'mittel'
-#      eingestuft ist und die noch in keiner regulaeren Sektion stehen.
-#   2. Register >= 40000, die im Live-Scan vom 2026-08-22 nachweislich auf einen
-#      FC03-Read geantwortet haben.
+# Register, deren Bedeutung nicht geklaert ist. Zwei Quellen:
+#   1. Konfidenz 'niedrig' oder 'mittel' im FW-Debug-Projekt, in keiner
+#      regulaeren Sektion vorhanden.
+#   2. Register >= 40000, die im Live-Scan vom 2026-08-22 nachweislich auf
+#      einen FC03-Read geantwortet haben.
+#
+# Namensschema: 'DEV <register> (<verdacht>?)'. Das Fragezeichen macht deutlich,
+# dass der Name eine Vermutung ist. Alle DEV-Entitaeten beginnen mit 'DEV' und
+# stehen dadurch in der Oberflaeche beieinander.
 #
 # Bewusst NICHT enthalten:
 #   - 41500-41515: WLAN-Zugangsdaten-Puffer. Der Wert wuerde sonst in Datenbank,
 #     Backups und moeglicherweise Logs landen. Siehe FW-Debug-Projekt,
 #     security/WLAN_Credentials_ueber_Modbus_41500.md
 #   - alle Register, die im Scan die Verbindung haben abreissen lassen
-#     (40000, 41000, 45000-45031, 46000) — genau diese haben die Haenger
-#     der Integration verursacht.
-#
-# Namensschema: 'DEV <register> (<verdacht>?)'. Das Fragezeichen macht deutlich,
-# dass der Name eine Vermutung ist. Alle DEV-Entitaeten beginnen mit 'DEV' und
-# stehen dadurch in der Oberflaeche beieinander.
+#     (40000, 41000, 45000-45031, 46000).
 # ---------------------------------------------------------------------------
-DEV_SENSOR_DEFINITIONS:
+DEV_UNKNOWN_SENSOR_DEFINITIONS:
   dev_30030:
     register: 30030
     name: "DEV 30030 (config_word_2000018A?)"
@@ -3180,62 +3178,6 @@ DEV_SENSOR_DEFINITIONS:
     category: diagnostic
     scan_interval: low
     icon: mdi:flask-outline
-  dev_30102:
-    register: 30102
-    name: "DEV 30102 (pack1_max_cell_voltage_mirror?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_30103:
-    register: 30103
-    name: "DEV 30103 (pack1_min_cell_voltage_mirror?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_30104:
-    register: 30104
-    name: "DEV 30104 (pack1_max_cell_temp?)"
-    data_type: int16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_30105:
-    register: 30105
-    name: "DEV 30105 (pack1_min_cell_temp?)"
-    data_type: int16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_30106:
-    register: 30106
-    name: "DEV 30106 (pack1_temp_3_mirror?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_30109:
-    register: 30109
-    name: "DEV 30109 (bms_factory_test?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_30110:
-    register: 30110
-    name: "DEV 30110 (config_setpoint_mirror?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_30210:
-    register: 30210
-    name: "DEV 30210 (pack1_mos_status_mirror?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
   dev_30211:
     register: 30211
     name: "DEV 30211 (config_byte_can54?)"
@@ -3267,20 +3209,6 @@ DEV_SENSOR_DEFINITIONS:
   dev_32112:
     register: 32112
     name: "DEV 32112 (bms_lock_flag?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_32113:
-    register: 32113
-    name: "DEV 32113 (bms_factory_test?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_32114:
-    register: 32114
-    name: "DEV 32114 (config_setpoint_20014FAF?)"
     data_type: uint16
     category: diagnostic
     scan_interval: low
@@ -3352,34 +3280,6 @@ DEV_SENSOR_DEFINITIONS:
     register: 37001
     name: "DEV 37001 (status_block_offset8?)"
     data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_37006:
-    register: 37006
-    name: "DEV 37006 (pack1_max_cell_temp_mirror?)"
-    data_type: int16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_37009:
-    register: 37009
-    name: "DEV 37009 (block_34007_34008?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_37010:
-    register: 37010
-    name: "DEV 37010 (block_34007_34008[2]?)"
-    data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:flask-outline
-  dev_37022:
-    register: 37022
-    name: "DEV 37022 (pv_year_capacity_w2?)"
-    data_type: uint32
     category: diagnostic
     scan_interval: low
     icon: mdi:flask-outline
@@ -4048,3 +3948,122 @@ DEV_SENSOR_DEFINITIONS:
     category: diagnostic
     scan_interval: low
     icon: mdi:flask-outline
+
+# ---------------------------------------------------------------------------
+# DEV_DUPLICATE_SENSOR_DEFINITIONS — Option 'DEV-Register: Doppelungen'
+#
+# Register, die denselben Wert liefern wie ein bereits integrierter Sensor:
+# Aliase auf dieselbe SRAM-Quelle, Spiegelregister und Folgeregister eines
+# mehrteiligen Blocks. Sie bringen keinen neuen Messwert, sind aber nuetzlich,
+# um zu pruefen, ob zwei Register wirklich synchron laufen.
+#
+# Namensschema: 'DEV <register> (<verdacht>?)'. Das Fragezeichen macht deutlich,
+# dass der Name eine Vermutung ist. Alle DEV-Entitaeten beginnen mit 'DEV' und
+# stehen dadurch in der Oberflaeche beieinander.
+#
+# Bewusst NICHT enthalten:
+#   - 41500-41515: WLAN-Zugangsdaten-Puffer. Der Wert wuerde sonst in Datenbank,
+#     Backups und moeglicherweise Logs landen. Siehe FW-Debug-Projekt,
+#     security/WLAN_Credentials_ueber_Modbus_41500.md
+#   - alle Register, die im Scan die Verbindung haben abreissen lassen
+#     (40000, 41000, 45000-45031, 46000).
+# ---------------------------------------------------------------------------
+DEV_DUPLICATE_SENSOR_DEFINITIONS:
+  dev_30102:
+    register: 30102
+    name: "DEV 30102 (pack1_max_cell_voltage_mirror?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_30103:
+    register: 30103
+    name: "DEV 30103 (pack1_min_cell_voltage_mirror?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_30104:
+    register: 30104
+    name: "DEV 30104 (pack1_max_cell_temp?)"
+    data_type: int16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_30105:
+    register: 30105
+    name: "DEV 30105 (pack1_min_cell_temp?)"
+    data_type: int16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_30106:
+    register: 30106
+    name: "DEV 30106 (pack1_temp_3_mirror?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_30109:
+    register: 30109
+    name: "DEV 30109 (bms_factory_test?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_30110:
+    register: 30110
+    name: "DEV 30110 (config_setpoint_mirror?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_30210:
+    register: 30210
+    name: "DEV 30210 (pack1_mos_status_mirror?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_32113:
+    register: 32113
+    name: "DEV 32113 (bms_factory_test?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_32114:
+    register: 32114
+    name: "DEV 32114 (config_setpoint_20014FAF?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_37006:
+    register: 37006
+    name: "DEV 37006 (pack1_max_cell_temp_mirror?)"
+    data_type: int16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_37009:
+    register: 37009
+    name: "DEV 37009 (block_34007_34008?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_37010:
+    register: 37010
+    name: "DEV 37010 (block_34007_34008[2]?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate
+  dev_37022:
+    register: 37022
+    name: "DEV 37022 (pv_year_capacity_w2?)"
+    data_type: uint32
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:content-duplicate

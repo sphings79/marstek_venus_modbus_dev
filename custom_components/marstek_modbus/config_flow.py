@@ -9,7 +9,9 @@ from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.helpers.translation import async_get_translations
 
 from .const import (
-    CONF_DEV_REGISTERS,
+    CONF_DEV_REGISTERS_DUPLICATE,
+    CONF_DEV_REGISTERS_LEGACY,
+    CONF_DEV_REGISTERS_UNKNOWN,
     DEFAULT_DEV_REGISTERS,
     DEFAULT_PORT,
     DEFAULT_SCAN_INTERVALS,
@@ -276,41 +278,65 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
     async def async_step_dev(self, user_input=None):
         """DEV-Register ein- oder ausschalten.
 
-        Schaltet eine zusaetzliche Gruppe von Diagnose-Sensoren frei: Register,
-        deren Bedeutung noch nicht geklaert ist, sowie Register aus dem
-        40000er-Bereich, die nachweislich auf einen Lesezugriff antworten.
-        Alle heissen "DEV <register> (<verdacht>?)" und liegen in der Kategorie
-        Diagnose.
+        Zwei getrennte Gruppen zusaetzlicher Diagnose-Sensoren:
 
-        Nach dem Umschalten wird der Config-Entry neu geladen, weil die
+        unbekannt   Register, deren Bedeutung nicht geklaert ist - teils mit
+                    Konfidenz niedrig/mittel aus der Firmware-Analyse, teils
+                    Register aus dem 40000er-Bereich, die nachweislich auf
+                    einen Lesezugriff antworten.
+        Doppelungen Register, die denselben Wert liefern wie ein bereits
+                    integrierter Sensor: Aliase auf dieselbe SRAM-Quelle,
+                    Spiegelregister, Folgeregister eines mehrteiligen Blocks.
+
+        Beide heissen "DEV <register> (<verdacht>?)" und liegen in der Kategorie
+        Diagnose. Nach dem Umschalten wird der Config-Entry neu geladen, weil die
         Registerdefinitionen beim Start eingelesen werden.
         """
         config = self._config_entry
+        options = config.options or {}
+        # Migration: der alte Sammelschalter schaltet beide Gruppen, solange die
+        # neuen Schluessel fehlen.
+        legacy = bool(options.get(CONF_DEV_REGISTERS_LEGACY, DEFAULT_DEV_REGISTERS))
+        current = {
+            CONF_DEV_REGISTERS_UNKNOWN: bool(
+                options.get(CONF_DEV_REGISTERS_UNKNOWN, legacy)
+            ),
+            CONF_DEV_REGISTERS_DUPLICATE: bool(
+                options.get(CONF_DEV_REGISTERS_DUPLICATE, legacy)
+            ),
+        }
 
         if user_input is not None:
-            enabled = bool(user_input.get(CONF_DEV_REGISTERS, DEFAULT_DEV_REGISTERS))
-            previous = bool(
-                (config.options or {}).get(CONF_DEV_REGISTERS, DEFAULT_DEV_REGISTERS)
-            )
-            self.hass.config_entries.async_update_entry(
-                config,
-                options={**(config.options or {}), CONF_DEV_REGISTERS: enabled},
-            )
-            if enabled != previous:
+            new = {
+                key: bool(user_input.get(key, DEFAULT_DEV_REGISTERS))
+                for key in current
+            }
+            merged = {
+                key: value
+                for key, value in options.items()
+                if key != CONF_DEV_REGISTERS_LEGACY
+            }
+            merged.update(new)
+            self.hass.config_entries.async_update_entry(config, options=merged)
+            if new != current:
                 # Definitionen werden nur beim Setup geladen -> Reload noetig.
                 self.hass.async_create_task(
                     self.hass.config_entries.async_reload(config.entry_id)
                 )
             return await self.async_step_menu()
 
-        current = bool(
-            (config.options or {}).get(CONF_DEV_REGISTERS, DEFAULT_DEV_REGISTERS)
-        )
         return self.async_show_form(
             step_id="dev",
             data_schema=vol.Schema(
                 {
-                    vol.Optional(CONF_DEV_REGISTERS, default=current): bool,
+                    vol.Optional(
+                        CONF_DEV_REGISTERS_UNKNOWN,
+                        default=current[CONF_DEV_REGISTERS_UNKNOWN],
+                    ): bool,
+                    vol.Optional(
+                        CONF_DEV_REGISTERS_DUPLICATE,
+                        default=current[CONF_DEV_REGISTERS_DUPLICATE],
+                    ): bool,
                 }
             ),
             last_step=True,

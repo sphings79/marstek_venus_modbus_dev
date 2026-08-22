@@ -62,9 +62,10 @@
       },
       "dev": {
         "title": "DEV registers",
-        "description": "Adds 131 extra diagnostic sensors: registers whose meaning is not yet established, plus registers in the 40000 range that are proven to answer a read request.\n\nAll are named \"DEV <register> (<guess>?)\" so they group together. The question mark means the name is a guess, not a finding.\n\nFor analysis only. Some values stay 0 permanently or have no known unit. The integration reloads after toggling.",
+        "description": "Two independently switchable groups of extra diagnostic sensors. Both are named \"DEV <register> (<guess>?)\" so they group together; the question mark marks the name as a guess.\n\n**Unknown (117)** – registers whose meaning is not established. Partly low or medium confidence from the firmware analysis, partly registers in the 40000 range that are proven to answer a read request. Many stay at 0 permanently.\n\n**Duplicates (14)** – registers returning the same value as a sensor that already exists: aliases onto the same memory location, mirror registers, follow-on registers of a multi-part block. Useful for checking whether two registers really track each other.\n\nFor analysis only. The integration reloads after toggling.",
         "data": {
-          "dev_registers": "Show DEV registers"
+          "dev_registers_unknown": "Show unknown registers (117)",
+          "dev_registers_duplicate": "Show duplicates (14)"
         }
       }
     }

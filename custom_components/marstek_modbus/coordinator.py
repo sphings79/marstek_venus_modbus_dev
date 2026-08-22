@@ -13,7 +13,9 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
-from .const import DEFAULT_SCAN_INTERVALS, SUPPORTED_VERSIONS, DEFAULT_UNIT_ID, CONF_DEV_REGISTERS, DEFAULT_DEV_REGISTERS
+from .const import (DEFAULT_SCAN_INTERVALS, SUPPORTED_VERSIONS, DEFAULT_UNIT_ID,
+                    CONF_DEV_REGISTERS_UNKNOWN, CONF_DEV_REGISTERS_DUPLICATE,
+                    CONF_DEV_REGISTERS_LEGACY, DEFAULT_DEV_REGISTERS)
 
 from .helpers.modbus_client import MarstekModbusClient
 from pathlib import Path
@@ -49,12 +51,15 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self.timeout = entry_data.get("timeout")
         self.unit_id = entry_data.get("unit_id", DEFAULT_UNIT_ID)
 
-        # DEV-Register: experimentelle Diagnose-Sensoren, standardmaessig aus.
-        # Steht in den Optionen (nicht in data), damit ein Umschalten kein
-        # Reconfigure der Verbindung erfordert.
-        self.dev_registers_enabled = bool(
-            (entry.options or {}).get(CONF_DEV_REGISTERS, DEFAULT_DEV_REGISTERS)
-        )
+        # DEV-Register: zwei getrennt schaltbare Gruppen, beide standardmaessig
+        # aus. Sie stehen in den Optionen (nicht in data), damit ein Umschalten
+        # kein Reconfigure der Verbindung erfordert.
+        _opts = entry.options or {}
+        # Migration: der alte Sammelschalter aus 1.1.5-beta.1 schaltet beide
+        # Gruppen, solange die neuen Schluessel noch nicht gesetzt sind.
+        _legacy = bool(_opts.get(CONF_DEV_REGISTERS_LEGACY, DEFAULT_DEV_REGISTERS))
+        self.dev_unknown_enabled = bool(_opts.get(CONF_DEV_REGISTERS_UNKNOWN, _legacy))
+        self.dev_duplicate_enabled = bool(_opts.get(CONF_DEV_REGISTERS_DUPLICATE, _legacy))
 
         # Mapping from sensor key to entity type for logging and processing
         self._entity_types: dict[str, str] = {}
@@ -87,7 +92,8 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self.BITFIELD_TEXT_SENSOR_DEFINITIONS = []
         self.GRID_POWER_SENSOR_DEFINITIONS = []
         self.BMS_POWER_SENSOR_DEFINITIONS = []
-        self.DEV_SENSOR_DEFINITIONS = []
+        self.DEV_UNKNOWN_SENSOR_DEFINITIONS = []
+        self.DEV_DUPLICATE_SENSOR_DEFINITIONS = []
 
         # Combine all sensor definitions for polling
         self._all_definitions = []
@@ -501,18 +507,26 @@ class MarstekCoordinator(DataUpdateCoordinator):
             self.BMS_POWER_SENSOR_DEFINITIONS = data.get(
                 "BMS_POWER_SENSOR_DEFINITIONS", []
             )
-            # DEV-Register nur laden, wenn die Option gesetzt ist. Sie sind
-            # experimentell: teils unklare Bedeutung, teils Register aus dem
-            # 40000er-Bereich, die zwar nachweislich lesbar sind, aber nichts,
-            # was ein normaler Nutzer sehen will.
-            if self.dev_registers_enabled:
-                self.DEV_SENSOR_DEFINITIONS = data.get("DEV_SENSOR_DEFINITIONS", [])
-                _LOGGER.info(
-                    "DEV-Register aktiv: %d zusaetzliche Diagnose-Sensoren",
-                    len(self.DEV_SENSOR_DEFINITIONS),
+            # DEV-Register: je Gruppe nur laden, wenn die zugehoerige Option
+            # gesetzt ist. Beide sind experimentell und standardmaessig aus.
+            if self.dev_unknown_enabled:
+                self.DEV_UNKNOWN_SENSOR_DEFINITIONS = data.get(
+                    "DEV_UNKNOWN_SENSOR_DEFINITIONS", []
                 )
             else:
-                self.DEV_SENSOR_DEFINITIONS = []
+                self.DEV_UNKNOWN_SENSOR_DEFINITIONS = []
+            if self.dev_duplicate_enabled:
+                self.DEV_DUPLICATE_SENSOR_DEFINITIONS = data.get(
+                    "DEV_DUPLICATE_SENSOR_DEFINITIONS", []
+                )
+            else:
+                self.DEV_DUPLICATE_SENSOR_DEFINITIONS = []
+            if self.dev_unknown_enabled or self.dev_duplicate_enabled:
+                _LOGGER.info(
+                    "DEV-Register aktiv: %d unbekannt, %d Doppelungen",
+                    len(self.DEV_UNKNOWN_SENSOR_DEFINITIONS),
+                    len(self.DEV_DUPLICATE_SENSOR_DEFINITIONS),
+                )
 
             # Combine into a single list for polling
             self._all_definitions = (
@@ -521,7 +535,8 @@ class MarstekCoordinator(DataUpdateCoordinator):
                 + self.SELECT_DEFINITIONS
                 + self.NUMBER_DEFINITIONS
                 + self.SWITCH_DEFINITIONS
-                + self.DEV_SENSOR_DEFINITIONS
+                + self.DEV_UNKNOWN_SENSOR_DEFINITIONS
+                + self.DEV_DUPLICATE_SENSOR_DEFINITIONS
             )
             _LOGGER.debug("Loaded register definitions for version '%s' (%d entries)", used_version, len(self._all_definitions))
         except Exception as e:
@@ -1258,7 +1273,8 @@ def get_registers(version: str):
     - BITFIELD_TEXT_SENSOR_DEFINITIONS
     - GRID_POWER_SENSOR_DEFINITIONS
     - BMS_POWER_SENSOR_DEFINITIONS
-    - DEV_SENSOR_DEFINITIONS
+    - DEV_UNKNOWN_SENSOR_DEFINITIONS
+    - DEV_DUPLICATE_SENSOR_DEFINITIONS
 
     If an unknown version is requested, the function falls back to the v1/v2
     register set (because v1 and v2 share the same registers in this integration).
@@ -1360,8 +1376,11 @@ def get_registers(version: str):
                     "BMS_POWER_SENSOR_DEFINITIONS": _normalize_section(
                         data.get("BMS_POWER_SENSOR_DEFINITIONS")
                     ),
-                    "DEV_SENSOR_DEFINITIONS": _normalize_section(
-                        data.get("DEV_SENSOR_DEFINITIONS")
+                    "DEV_UNKNOWN_SENSOR_DEFINITIONS": _normalize_section(
+                        data.get("DEV_UNKNOWN_SENSOR_DEFINITIONS")
+                    ),
+                    "DEV_DUPLICATE_SENSOR_DEFINITIONS": _normalize_section(
+                        data.get("DEV_DUPLICATE_SENSOR_DEFINITIONS")
                     ),
                 }
             except Exception as e:

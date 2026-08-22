@@ -41,10 +41,11 @@ async def async_setup_entry(
         (MarstekBitfieldTextSensor, coordinator.BITFIELD_TEXT_SENSOR_DEFINITIONS),
         (MarstekGridPowerSensor, coordinator.GRID_POWER_SENSOR_DEFINITIONS),
         (MarstekBmsBatteryPowerSensor, coordinator.BMS_POWER_SENSOR_DEFINITIONS),
-        # getattr: Die DEV-Sektion ist optional. Fehlt das Attribut (z. B. weil eine
-        # aeltere Coordinator-Version geladen ist), soll das nicht die gesamte
+        # getattr: Die DEV-Sektionen sind optional. Fehlt ein Attribut (z. B. weil
+        # eine aeltere Coordinator-Version geladen ist), soll das nicht die gesamte
         # Sensor-Plattform scheitern lassen.
-        (MarstekDevSensor, getattr(coordinator, "DEV_SENSOR_DEFINITIONS", []) or []),
+        (MarstekDevSensor, getattr(coordinator, "DEV_UNKNOWN_SENSOR_DEFINITIONS", []) or []),
+        (MarstekDevSensor, getattr(coordinator, "DEV_DUPLICATE_SENSOR_DEFINITIONS", []) or []),
     )
     for entity_cls, definitions in sensor_groups:
         entities.extend(entity_cls(coordinator, definition) for definition in definitions)

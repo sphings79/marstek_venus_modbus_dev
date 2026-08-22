@@ -333,13 +333,21 @@ release carrying them needs that in its release notes.
 Ein Schalter in den Integrations-Optionen (`Optionen → DEV-Register`) blendet
 131 zusaetzliche Diagnose-Sensoren ein. Standardmaessig aus.
 
-**Zwei Quellen:**
+**Zwei getrennt schaltbare Gruppen** (`DEV_UNKNOWN_SENSOR_DEFINITIONS` und
+`DEV_DUPLICATE_SENSOR_DEFINITIONS`):
 
-1. **51 Register mit ungeklaerter Bedeutung** — im FW-Debug-Projekt als
-   Konfidenz `niedrig` oder `mittel` eingestuft und in keiner regulaeren
-   Sektion vorhanden.
-2. **80 Register aus dem 40000er-Bereich**, die im Live-Scan vom 2026-08-22
-   nachweislich auf einen FC03-Read geantwortet haben.
+| Option | Anzahl | Inhalt |
+|---|---|---|
+| `dev_registers_unknown` | 117 | Register ohne geklaerte Bedeutung: Konfidenz `niedrig`/`mittel` aus der Firmware-Analyse, plus Register >= 40000, die im Live-Scan vom 2026-08-22 nachweislich auf einen FC03-Read geantwortet haben |
+| `dev_registers_duplicate` | 14 | Register mit demselben Wert wie ein bereits integrierter Sensor: Aliase auf dieselbe SRAM-Quelle, Spiegelregister, Folgeregister eines mehrteiligen Blocks |
+
+Die Trennung erlaubt es, die Doppelungen einzeln einzuschalten — etwa um zu
+pruefen, ob zwei Register wirklich synchron laufen — ohne 117 unbekannte
+Sensoren mitzuschleppen.
+
+**Migration:** Der Sammelschalter `dev_registers` aus 1.1.5-beta.1 wird noch
+gelesen. War er an, gelten beide neuen Optionen als an, solange die neuen
+Schluessel fehlen. Beim naechsten Speichern wird der alte Schluessel entfernt.
 
 **Namensschema:** `DEV <register> (<verdacht>?)`. Alle beginnen mit `DEV` und
 stehen dadurch in der Oberflaeche beieinander; das Fragezeichen macht deutlich,

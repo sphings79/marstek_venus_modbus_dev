@@ -66,9 +66,10 @@
       },
       "dev": {
         "title": "DEV-registers",
-        "description": "Voegt 131 extra diagnosesensoren toe: registers waarvan de betekenis nog niet vaststaat, plus registers in het 40000-bereik die aantoonbaar op een leesopdracht antwoorden.\n\nZe heten allemaal \"DEV <register> (<vermoeden>?)\" en staan daardoor bij elkaar. Het vraagteken betekent dat de naam een vermoeden is, geen bevinding.\n\nAlleen voor analyse. Sommige waarden blijven permanent 0 of hebben geen bekende eenheid. De integratie wordt na het omschakelen opnieuw geladen.",
+        "description": "Twee afzonderlijk schakelbare groepen extra diagnosesensoren. Beide heten \"DEV <register> (<vermoeden>?)\" en staan daardoor bij elkaar; het vraagteken betekent dat de naam een vermoeden is.\n\n**Onbekend (117)** – registers waarvan de betekenis niet vaststaat. Deels lage of middelmatige zekerheid uit de firmware-analyse, deels registers in het 40000-bereik die aantoonbaar op een leesopdracht antwoorden. Veel blijven permanent 0.\n\n**Dubbelingen (14)** – registers die dezelfde waarde geven als een bestaande sensor: aliassen op dezelfde geheugenplek, spiegelregisters, vervolgregisters van een blok. Handig om te controleren of twee registers echt gelijk lopen.\n\nAlleen voor analyse. De integratie wordt na het omschakelen opnieuw geladen.",
         "data": {
-          "dev_registers": "DEV-registers tonen"
+          "dev_registers_unknown": "Onbekende registers tonen (117)",
+          "dev_registers_duplicate": "Dubbelingen tonen (14)"
         }
       }
     }

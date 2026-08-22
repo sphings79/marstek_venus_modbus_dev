@@ -62,9 +62,10 @@
       },
       "dev": {
         "title": "DEV-Register",
-        "description": "Blendet 131 zusätzliche Diagnose-Sensoren ein: Register, deren Bedeutung noch nicht geklärt ist, sowie Register aus dem 40000er-Bereich, die nachweislich auf einen Lesezugriff antworten.\n\nAlle heißen \"DEV <Register> (<Verdacht>?)\" und stehen dadurch beieinander. Das Fragezeichen bedeutet: Der Name ist eine Vermutung, kein Befund.\n\nNur für Analysezwecke. Die Werte sind teilweise dauerhaft 0 oder ohne bekannte Einheit. Nach dem Umschalten wird die Integration neu geladen.",
+        "description": "Zwei getrennt schaltbare Gruppen zusätzlicher Diagnose-Sensoren. Beide heißen \"DEV <Register> (<Verdacht>?)\" und stehen dadurch beieinander; das Fragezeichen bedeutet, dass der Name eine Vermutung ist.\n\n**Unbekannt (117)** – Register ohne geklärte Bedeutung. Teils mit Konfidenz niedrig oder mittel aus der Firmware-Analyse, teils Register aus dem 40000er-Bereich, die nachweislich auf einen Lesezugriff antworten. Viele stehen dauerhaft auf 0.\n\n**Doppelungen (14)** – Register, die denselben Wert liefern wie ein bereits vorhandener Sensor: Aliase auf dieselbe Speicherstelle, Spiegelregister, Folgeregister eines mehrteiligen Blocks. Nützlich, um zu prüfen, ob zwei Register wirklich synchron laufen.\n\nNur für Analysezwecke. Nach dem Umschalten wird die Integration neu geladen.",
         "data": {
-          "dev_registers": "DEV-Register anzeigen"
+          "dev_registers_unknown": "Unbekannte Register anzeigen (117)",
+          "dev_registers_duplicate": "Doppelungen anzeigen (14)"
         }
       }
     }
