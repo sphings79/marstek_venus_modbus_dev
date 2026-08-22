@@ -194,6 +194,24 @@ class MarstekCoordinator(DataUpdateCoordinator):
             self.update_interval,
         )
 
+    def _is_entity_disabled(self, entity_registry, key: str, entity_type: str) -> bool:
+        """
+        Return True only when the entity is known to the registry and disabled.
+
+        An entity the registry does not know yet — during the first refresh, before
+        the platforms have added their entities — counts as enabled. Withholding a
+        calculated sensor's inputs on the first poll would leave it without a value
+        until the next cycle.
+        """
+        unique_id = f"{self.config_entry.entry_id}_{key}"
+        entity_id = entity_registry.async_get_entity_id(
+            entity_type, self.config_entry.domain, unique_id
+        )
+        entry = entity_registry.entities.get(entity_id) if entity_id else None
+        if entry is None:
+            return False
+        return entry.disabled or entry.disabled_by is not None
+
     @staticmethod
     def _definition_register_count(definition: dict) -> int:
         """Return the register span needed for a definition."""
@@ -852,12 +870,26 @@ class MarstekCoordinator(DataUpdateCoordinator):
             + self.GRID_POWER_SENSOR_DEFINITIONS
             + self.BMS_POWER_SENSOR_DEFINITIONS
         )
-        dependency_keys_set = {
-            dep_key
-            for defn in all_definitions_for_deps
-            for dep_key in defn.get("dependency_keys", {}).values()
-            if dep_key
-        }
+        # Only a calculated sensor that is actually enabled needs its inputs. Without
+        # this check the source registers are polled even when nothing consumes them,
+        # which for the per-pack sensors means touching the pack register regions on
+        # every cycle for no reason.
+        dependency_keys_set = set()
+        for defn in all_definitions_for_deps:
+            dep_keys = [key for key in defn.get("dependency_keys", {}).values() if key]
+            if not dep_keys:
+                continue
+            consumer = defn["key"]
+            if self._is_entity_disabled(
+                entity_registry, consumer, self._entity_types.get(consumer, "sensor")
+            ):
+                _LOGGER.debug(
+                    "Calculated sensor '%s' is disabled, not fetching its inputs: %s",
+                    consumer,
+                    ", ".join(dep_keys),
+                )
+                continue
+            dependency_keys_set.update(dep_keys)
 
         # Debug logging
         for dep_key in dependency_keys_set:
@@ -875,14 +907,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
         for sensor in self._all_definitions:
             key = sensor["key"]
             entity_type = self._entity_types.get(key, get_entity_type(sensor))
-            unique_id = f"{self.config_entry.entry_id}_{sensor['key']}"
-            registry_entry = entity_registry.async_get_entity_id(entity_type, self.config_entry.domain, unique_id)
-
-            # Determine if the entity is disabled in Home Assistant
-            is_disabled = False
-            entry = entity_registry.entities.get(registry_entry) if registry_entry else None
-            if entry:
-                is_disabled = entry.disabled or entry.disabled_by is not None
+            is_disabled = self._is_entity_disabled(entity_registry, key, entity_type)
 
             # Check if this key is a dependency key for any sensor
             is_dependency = key in dependency_keys_set
