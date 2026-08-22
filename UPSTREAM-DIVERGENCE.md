@@ -338,8 +338,8 @@ Ein Schalter in den Integrations-Optionen (`Optionen → DEV-Register`) blendet
 
 | Option | Anzahl | Inhalt |
 |---|---|---|
-| `dev_registers_unknown` | 117 | Register ohne geklaerte Bedeutung: Konfidenz `niedrig`/`mittel` aus der Firmware-Analyse, plus Register >= 40000, die im Live-Scan vom 2026-08-22 nachweislich auf einen FC03-Read geantwortet haben |
-| `dev_registers_duplicate` | 14 | Register mit demselben Wert wie ein bereits integrierter Sensor: Aliase auf dieselbe SRAM-Quelle, Spiegelregister, Folgeregister eines mehrteiligen Blocks |
+| `dev_registers_unknown` | 119 | Register ohne geklaerte Bedeutung: Konfidenz `niedrig`/`mittel` aus der Firmware-Analyse, plus Register >= 40000, die im Live-Scan vom 2026-08-22 nachweislich auf einen FC03-Read geantwortet haben |
+| `dev_registers_duplicate` | 13 | Register mit demselben Wert wie ein bereits integrierter Sensor: Aliase auf dieselbe SRAM-Quelle, Spiegelregister, Folgeregister eines mehrteiligen Blocks |
 
 Die Trennung erlaubt es, die Doppelungen einzeln einzuschalten — etwa um zu
 pruefen, ob zwei Register wirklich synchron laufen — ohne 117 unbekannte
@@ -381,3 +381,30 @@ ausschliesslich fuer Venus D. Venus A und E v3 teilen sich zwar die
 Firmware-Basis, aber weder die Scan-Ergebnisse noch die Konfidenzeinstufungen
 wurden dort geprueft. Venus E v1/v2 hat eine voellig andere Basis — dort darf
 nichts davon uebernommen werden.
+
+### Zurueckgezogen: `pv_year_capacity` (37021/37022)
+
+Der Sensor war als Energiezaehler angelegt — `device_class: energy`,
+`state_class: total_increasing`, u32 ueber 37021+37022, Einheit kWh. Grundlage
+war der Firmware-String `PV_Year_Cap_10Wh` am Inverter-Struct +0x2c.
+
+**Die Messung widerlegt das.** Ueber 70 Minuten an einem Geraet **ohne
+angeschlossenes PV** beobachtet: 37021 steht konstant auf 0, 37022 schwankt in
+beide Richtungen zwischen 535 und 561. Ein Jahres-Energiezaehler kann nicht
+fallen, und mit `total_increasing` haette jeder Ruecksetzer die
+Langzeitstatistik verfaelscht. Der Sensor war zwar `enabled_by_default: false`,
+die Definition aber trotzdem falsch.
+
+Entfernt aus `SENSOR_DEFINITIONS`. Beide Register laufen jetzt als
+eigenstaendige `uint16`-Eintraege in der Unbekannt-Gruppe.
+
+**Zweiter Fehler an derselben Stelle:** `dev_37022` hatte den Datentyp `uint32`
+aus der Register-Map uebernommen und las damit 37022 **und 37023** als einen
+32-Bit-Wert. 37023 ist `mppt_error`. Der angezeigte Wert war
+`register_37022 << 16 | mppt_error` — rund 35 Millionen. Das ist der Grund,
+warum der Sensor eine unsinnige Zahl zeigte, die sich bewegte.
+
+**Regel daraus:** Ein DEV-Eintrag uebernimmt nie den Datentyp `u32` aus der
+Register-Map, ohne dass geklaert ist, ob das Register der Anfang des Paares ist.
+Alle DEV-Eintraege sind jetzt `uint16` oder `int16`; ein automatischer Test
+prueft das.

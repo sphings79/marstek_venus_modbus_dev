@@ -2351,16 +2351,6 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         scan_interval: low
     # --- PV yield counter (37021, inverter MPPT struct +0x2C, unit 10 Wh) ---
-    pv_year_capacity:
-        register: 37021
-        scale: 0.01
-        unit: kWh
-        device_class: energy
-        state_class: total_increasing
-        data_type: uint32
-        precision: 2
-        enabled_by_default: false
-        scan_interval: low
     # --- Firmware-decoded diagnostic sensors (Venus D, from descriptor-table analysis) ---
     bms_pack_count:
         register: 32109
@@ -3948,6 +3938,20 @@ DEV_UNKNOWN_SENSOR_DEFINITIONS:
     category: diagnostic
     scan_interval: low
     icon: mdi:flask-outline
+  dev_37021:
+    register: 37021
+    name: "DEV 37021 (frueher pv_year_capacity, Deutung widerlegt)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_37022:
+    register: 37022
+    name: "DEV 37022 (frueher pv_year_capacity_w2, Deutung widerlegt)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
 
 # ---------------------------------------------------------------------------
 # DEV_DUPLICATE_SENSOR_DEFINITIONS — Option 'DEV-Register: Doppelungen'
@@ -4057,13 +4061,6 @@ DEV_DUPLICATE_SENSOR_DEFINITIONS:
     register: 37010
     name: "DEV 37010 (block_34007_34008[2]?)"
     data_type: uint16
-    category: diagnostic
-    scan_interval: low
-    icon: mdi:content-duplicate
-  dev_37022:
-    register: 37022
-    name: "DEV 37022 (pv_year_capacity_w2?)"
-    data_type: uint32
     category: diagnostic
     scan_interval: low
     icon: mdi:content-duplicate
