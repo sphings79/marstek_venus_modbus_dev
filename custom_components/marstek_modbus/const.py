@@ -25,3 +25,7 @@ SUPPORTED_VERSIONS = [
 
 # Note: register loading logic (get_registers) was moved to
 # `coordinator.py` to keep `const.py` focused on constants only.
+
+# Optionsschluessel: DEV-Register (unklare und lesbare Schreibregister) anzeigen
+CONF_DEV_REGISTERS = "dev_registers"
+DEFAULT_DEV_REGISTERS = False

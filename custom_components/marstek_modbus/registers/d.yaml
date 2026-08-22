@@ -3107,3 +3107,944 @@ BMS_POWER_SENSOR_DEFINITIONS:
             p4: battery_4_current
             p5: battery_5_current
             p6: battery_6_current
+
+# ---------------------------------------------------------------------------
+# DEV_SENSOR_DEFINITIONS — nur aktiv, wenn in den Integrations-Optionen
+# "DEV-Register anzeigen" eingeschaltet ist.
+#
+# Zwei Quellen:
+#   1. Register, deren Bedeutung im FW-Debug-Projekt als 'niedrig' oder 'mittel'
+#      eingestuft ist und die noch in keiner regulaeren Sektion stehen.
+#   2. Register >= 40000, die im Live-Scan vom 2026-08-22 nachweislich auf einen
+#      FC03-Read geantwortet haben.
+#
+# Bewusst NICHT enthalten:
+#   - 41500-41515: WLAN-Zugangsdaten-Puffer. Der Wert wuerde sonst in Datenbank,
+#     Backups und moeglicherweise Logs landen. Siehe FW-Debug-Projekt,
+#     security/WLAN_Credentials_ueber_Modbus_41500.md
+#   - alle Register, die im Scan die Verbindung haben abreissen lassen
+#     (40000, 41000, 45000-45031, 46000) — genau diese haben die Haenger
+#     der Integration verursacht.
+#
+# Namensschema: 'DEV <register> (<verdacht>?)'. Das Fragezeichen macht deutlich,
+# dass der Name eine Vermutung ist. Alle DEV-Entitaeten beginnen mit 'DEV' und
+# stehen dadurch in der Oberflaeche beieinander.
+# ---------------------------------------------------------------------------
+DEV_SENSOR_DEFINITIONS:
+  dev_30030:
+    register: 30030
+    name: "DEV 30030 (config_word_2000018A?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30031:
+    register: 30031
+    name: "DEV 30031 (inv_slot8_38?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30032:
+    register: 30032
+    name: "DEV 30032 (inv_slot8_3a?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30033:
+    register: 30033
+    name: "DEV 30033 (inv_slot8_3c?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30034:
+    register: 30034
+    name: "DEV 30034 (inv_slot8_3e?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30035:
+    register: 30035
+    name: "DEV 30035 (inv_boundary_20014F8C?)"
+    data_type: int16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30036:
+    register: 30036
+    name: "DEV 30036 (inv_base_voltage?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30102:
+    register: 30102
+    name: "DEV 30102 (pack1_max_cell_voltage_mirror?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30103:
+    register: 30103
+    name: "DEV 30103 (pack1_min_cell_voltage_mirror?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30104:
+    register: 30104
+    name: "DEV 30104 (pack1_max_cell_temp?)"
+    data_type: int16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30105:
+    register: 30105
+    name: "DEV 30105 (pack1_min_cell_temp?)"
+    data_type: int16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30106:
+    register: 30106
+    name: "DEV 30106 (pack1_temp_3_mirror?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30109:
+    register: 30109
+    name: "DEV 30109 (bms_factory_test?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30110:
+    register: 30110
+    name: "DEV 30110 (config_setpoint_mirror?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30210:
+    register: 30210
+    name: "DEV 30210 (pack1_mos_status_mirror?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30211:
+    register: 30211
+    name: "DEV 30211 (config_byte_can54?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30212:
+    register: 30212
+    name: "DEV 30212 (pack_config?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30213:
+    register: 30213
+    name: "DEV 30213 (config_byte_canc1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_30214:
+    register: 30214
+    name: "DEV 30214 (bms_self_check?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_32112:
+    register: 32112
+    name: "DEV 32112 (bms_lock_flag?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_32113:
+    register: 32113
+    name: "DEV 32113 (bms_factory_test?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_32114:
+    register: 32114
+    name: "DEV 32114 (config_setpoint_20014FAF?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_34009:
+    register: 34009
+    name: "DEV 34009 (pack1_bms_reserved_5a?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_34109:
+    register: 34109
+    name: "DEV 34109 (pack2_bms_reserved_5a?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_34209:
+    register: 34209
+    name: "DEV 34209 (pack3_bms_reserved_5a?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_34309:
+    register: 34309
+    name: "DEV 34309 (pack4_bms_reserved_5a?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_34409:
+    register: 34409
+    name: "DEV 34409 (pack5_bms_reserved_5a?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_34509:
+    register: 34509
+    name: "DEV 34509 (pack6_bms_reserved_5a?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_34602:
+    register: 34602
+    name: "DEV 34602 (pack7_soc?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_34604:
+    register: 34604
+    name: "DEV 34604 (pack7_mos_status?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_34609:
+    register: 34609
+    name: "DEV 34609 (pack7_bms_reserved_5a?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_37001:
+    register: 37001
+    name: "DEV 37001 (status_block_offset8?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_37006:
+    register: 37006
+    name: "DEV 37006 (pack1_max_cell_temp_mirror?)"
+    data_type: int16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_37009:
+    register: 37009
+    name: "DEV 37009 (block_34007_34008?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_37010:
+    register: 37010
+    name: "DEV 37010 (block_34007_34008[2]?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_37022:
+    register: 37022
+    name: "DEV 37022 (pv_year_capacity_w2?)"
+    data_type: uint32
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38000:
+    register: 38000
+    name: "DEV 38000 (can40_w1?)"
+    data_type: int16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38001:
+    register: 38001
+    name: "DEV 38001 (can40_w2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38002:
+    register: 38002
+    name: "DEV 38002 (can40_w3?)"
+    data_type: int16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38003:
+    register: 38003
+    name: "DEV 38003 (can40_w4?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38004:
+    register: 38004
+    name: "DEV 38004 (can41_w1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38005:
+    register: 38005
+    name: "DEV 38005 (can41_w2?)"
+    data_type: int16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38006:
+    register: 38006
+    name: "DEV 38006 (can41_w3?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38007:
+    register: 38007
+    name: "DEV 38007 (can42_w1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38008:
+    register: 38008
+    name: "DEV 38008 (can42_w2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38009:
+    register: 38009
+    name: "DEV 38009 (can42_w3?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38010:
+    register: 38010
+    name: "DEV 38010 (can42_w4?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38011:
+    register: 38011
+    name: "DEV 38011 (can43_w1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38012:
+    register: 38012
+    name: "DEV 38012 (can43_w2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38013:
+    register: 38013
+    name: "DEV 38013 (can43_w3?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_38014:
+    register: 38014
+    name: "DEV 38014 (can43_w4?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41600:
+    register: 41600
+    name: "DEV 41600 (schedule_power_00?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41601:
+    register: 41601
+    name: "DEV 41601 (schedule_power_01?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41602:
+    register: 41602
+    name: "DEV 41602 (schedule_power_02?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41603:
+    register: 41603
+    name: "DEV 41603 (schedule_power_03?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41604:
+    register: 41604
+    name: "DEV 41604 (schedule_power_04?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41605:
+    register: 41605
+    name: "DEV 41605 (schedule_power_05?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41606:
+    register: 41606
+    name: "DEV 41606 (schedule_power_06?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41607:
+    register: 41607
+    name: "DEV 41607 (schedule_power_07?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41608:
+    register: 41608
+    name: "DEV 41608 (schedule_power_08?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41609:
+    register: 41609
+    name: "DEV 41609 (schedule_power_09?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41610:
+    register: 41610
+    name: "DEV 41610 (schedule_power_10?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41611:
+    register: 41611
+    name: "DEV 41611 (schedule_power_11?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41612:
+    register: 41612
+    name: "DEV 41612 (schedule_power_12?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41613:
+    register: 41613
+    name: "DEV 41613 (schedule_power_13?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41614:
+    register: 41614
+    name: "DEV 41614 (schedule_power_14?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41615:
+    register: 41615
+    name: "DEV 41615 (schedule_power_15?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41616:
+    register: 41616
+    name: "DEV 41616 (schedule_power_16?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41617:
+    register: 41617
+    name: "DEV 41617 (schedule_power_17?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41618:
+    register: 41618
+    name: "DEV 41618 (schedule_power_18?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41619:
+    register: 41619
+    name: "DEV 41619 (schedule_power_19?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41620:
+    register: 41620
+    name: "DEV 41620 (schedule_power_20?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41621:
+    register: 41621
+    name: "DEV 41621 (schedule_power_21?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41622:
+    register: 41622
+    name: "DEV 41622 (schedule_power_22?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41623:
+    register: 41623
+    name: "DEV 41623 (schedule_power_23?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41624:
+    register: 41624
+    name: "DEV 41624 (schedule_power_24?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41625:
+    register: 41625
+    name: "DEV 41625 (schedule_power_25?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41626:
+    register: 41626
+    name: "DEV 41626 (schedule_power_26?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41627:
+    register: 41627
+    name: "DEV 41627 (schedule_power_27?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41628:
+    register: 41628
+    name: "DEV 41628 (schedule_power_28?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41629:
+    register: 41629
+    name: "DEV 41629 (schedule_power_29?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41630:
+    register: 41630
+    name: "DEV 41630 (schedule_power_30?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_41631:
+    register: 41631
+    name: "DEV 41631 (schedule_power_31?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_45603:
+    register: 45603
+    name: "DEV 45603 (adc_version_bcd_ch1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_45604:
+    register: 45604
+    name: "DEV 45604 (adc_version_bcd_ch2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_45605:
+    register: 45605
+    name: "DEV 45605 (status_query?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46501:
+    register: 46501
+    name: "DEV 46501 (eeprom_struct_00_reg1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46502:
+    register: 46502
+    name: "DEV 46502 (eeprom_struct_00_reg2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46503:
+    register: 46503
+    name: "DEV 46503 (eeprom_struct_01_reg0?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46504:
+    register: 46504
+    name: "DEV 46504 (eeprom_struct_01_reg1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46505:
+    register: 46505
+    name: "DEV 46505 (eeprom_struct_01_reg2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46506:
+    register: 46506
+    name: "DEV 46506 (eeprom_struct_02_reg0?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46507:
+    register: 46507
+    name: "DEV 46507 (eeprom_struct_02_reg1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46508:
+    register: 46508
+    name: "DEV 46508 (eeprom_struct_02_reg2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46509:
+    register: 46509
+    name: "DEV 46509 (eeprom_struct_03_reg0?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46510:
+    register: 46510
+    name: "DEV 46510 (eeprom_struct_03_reg1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46511:
+    register: 46511
+    name: "DEV 46511 (eeprom_struct_03_reg2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46512:
+    register: 46512
+    name: "DEV 46512 (eeprom_struct_04_reg0?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46513:
+    register: 46513
+    name: "DEV 46513 (eeprom_struct_04_reg1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46514:
+    register: 46514
+    name: "DEV 46514 (eeprom_struct_04_reg2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46515:
+    register: 46515
+    name: "DEV 46515 (eeprom_struct_05_reg0?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46516:
+    register: 46516
+    name: "DEV 46516 (eeprom_struct_05_reg1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46517:
+    register: 46517
+    name: "DEV 46517 (eeprom_struct_05_reg2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46518:
+    register: 46518
+    name: "DEV 46518 (eeprom_struct_06_reg0?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46519:
+    register: 46519
+    name: "DEV 46519 (eeprom_struct_06_reg1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46520:
+    register: 46520
+    name: "DEV 46520 (eeprom_struct_06_reg2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46521:
+    register: 46521
+    name: "DEV 46521 (eeprom_struct_07_reg0?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46522:
+    register: 46522
+    name: "DEV 46522 (eeprom_struct_07_reg1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46523:
+    register: 46523
+    name: "DEV 46523 (eeprom_struct_07_reg2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46524:
+    register: 46524
+    name: "DEV 46524 (eeprom_struct_08_reg0?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46525:
+    register: 46525
+    name: "DEV 46525 (eeprom_struct_08_reg1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46526:
+    register: 46526
+    name: "DEV 46526 (eeprom_struct_08_reg2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46527:
+    register: 46527
+    name: "DEV 46527 (eeprom_struct_09_reg0?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46528:
+    register: 46528
+    name: "DEV 46528 (eeprom_struct_09_reg1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46529:
+    register: 46529
+    name: "DEV 46529 (eeprom_struct_09_reg2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46530:
+    register: 46530
+    name: "DEV 46530 (eeprom_struct_10_reg0?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46531:
+    register: 46531
+    name: "DEV 46531 (eeprom_struct_10_reg1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46532:
+    register: 46532
+    name: "DEV 46532 (eeprom_struct_10_reg2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46533:
+    register: 46533
+    name: "DEV 46533 (eeprom_struct_11_reg0?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46534:
+    register: 46534
+    name: "DEV 46534 (eeprom_struct_11_reg1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46535:
+    register: 46535
+    name: "DEV 46535 (eeprom_struct_11_reg2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46536:
+    register: 46536
+    name: "DEV 46536 (eeprom_struct_12_reg0?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46537:
+    register: 46537
+    name: "DEV 46537 (eeprom_struct_12_reg1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46538:
+    register: 46538
+    name: "DEV 46538 (eeprom_struct_12_reg2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46539:
+    register: 46539
+    name: "DEV 46539 (eeprom_struct_13_reg0?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46540:
+    register: 46540
+    name: "DEV 46540 (eeprom_struct_13_reg1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46541:
+    register: 46541
+    name: "DEV 46541 (eeprom_struct_13_reg2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46542:
+    register: 46542
+    name: "DEV 46542 (eeprom_struct_14_reg0?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46543:
+    register: 46543
+    name: "DEV 46543 (eeprom_struct_14_reg1?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_46544:
+    register: 46544
+    name: "DEV 46544 (eeprom_struct_14_reg2?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline
+  dev_47400:
+    register: 47400
+    name: "DEV 47400 (debug_register?)"
+    data_type: uint16
+    category: diagnostic
+    scan_interval: low
+    icon: mdi:flask-outline

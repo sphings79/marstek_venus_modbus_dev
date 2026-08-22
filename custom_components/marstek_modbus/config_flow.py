@@ -9,6 +9,8 @@ from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.helpers.translation import async_get_translations
 
 from .const import (
+    CONF_DEV_REGISTERS,
+    DEFAULT_DEV_REGISTERS,
     DEFAULT_PORT,
     DEFAULT_SCAN_INTERVALS,
     DEFAULT_UNIT_ID,
@@ -216,7 +218,7 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
         """Show the options menu."""
         return self.async_show_menu(
             step_id="menu",
-            menu_options=["connection", "polling"],
+            menu_options=["connection", "polling", "dev"],
         )
 
     async def async_step_polling(self, user_input=None):
@@ -268,6 +270,49 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
             ),
             errors=errors,
             description_placeholders={"lowest": str(lowest)},
+            last_step=True,
+        )
+
+    async def async_step_dev(self, user_input=None):
+        """DEV-Register ein- oder ausschalten.
+
+        Schaltet eine zusaetzliche Gruppe von Diagnose-Sensoren frei: Register,
+        deren Bedeutung noch nicht geklaert ist, sowie Register aus dem
+        40000er-Bereich, die nachweislich auf einen Lesezugriff antworten.
+        Alle heissen "DEV <register> (<verdacht>?)" und liegen in der Kategorie
+        Diagnose.
+
+        Nach dem Umschalten wird der Config-Entry neu geladen, weil die
+        Registerdefinitionen beim Start eingelesen werden.
+        """
+        config = self._config_entry
+
+        if user_input is not None:
+            enabled = bool(user_input.get(CONF_DEV_REGISTERS, DEFAULT_DEV_REGISTERS))
+            previous = bool(
+                (config.options or {}).get(CONF_DEV_REGISTERS, DEFAULT_DEV_REGISTERS)
+            )
+            self.hass.config_entries.async_update_entry(
+                config,
+                options={**(config.options or {}), CONF_DEV_REGISTERS: enabled},
+            )
+            if enabled != previous:
+                # Definitionen werden nur beim Setup geladen -> Reload noetig.
+                self.hass.async_create_task(
+                    self.hass.config_entries.async_reload(config.entry_id)
+                )
+            return await self.async_step_menu()
+
+        current = bool(
+            (config.options or {}).get(CONF_DEV_REGISTERS, DEFAULT_DEV_REGISTERS)
+        )
+        return self.async_show_form(
+            step_id="dev",
+            data_schema=vol.Schema(
+                {
+                    vol.Optional(CONF_DEV_REGISTERS, default=current): bool,
+                }
+            ),
             last_step=True,
         )
 

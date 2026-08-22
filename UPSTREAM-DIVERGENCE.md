@@ -324,3 +324,52 @@ registers instead, which carry no scale code.
 Removals in 4 and 5 leave orphaned entities behind in existing installations. Home
 Assistant keeps them in the registry as `unavailable` until deleted by hand. Any upstream
 release carrying them needs that in its release notes.
+
+## 12. DEV-Register (Optionsschalter)
+
+**Dateien:** `const.py`, `config_flow.py`, `coordinator.py`, `sensor.py`,
+`registers/d.yaml`, `translations/{de,en,nl}.json`
+
+Ein Schalter in den Integrations-Optionen (`Optionen → DEV-Register`) blendet
+131 zusaetzliche Diagnose-Sensoren ein. Standardmaessig aus.
+
+**Zwei Quellen:**
+
+1. **51 Register mit ungeklaerter Bedeutung** — im FW-Debug-Projekt als
+   Konfidenz `niedrig` oder `mittel` eingestuft und in keiner regulaeren
+   Sektion vorhanden.
+2. **80 Register aus dem 40000er-Bereich**, die im Live-Scan vom 2026-08-22
+   nachweislich auf einen FC03-Read geantwortet haben.
+
+**Namensschema:** `DEV <register> (<verdacht>?)`. Alle beginnen mit `DEV` und
+stehen dadurch in der Oberflaeche beieinander; das Fragezeichen macht deutlich,
+dass der Name eine Vermutung ist. Kategorie `diagnostic`, `scan_interval: low`.
+
+**Eigene Entity-Klasse `MarstekDevSensor`:** setzt `_attr_name` direkt statt
+`translation_key`. Mit einem Uebersetzungsschluessel ohne hinterlegte
+Uebersetzung blieben die Entitaeten namenlos — genau der Fehler, der schon
+einmal auftrat.
+
+**Bewusst ausgeschlossen:**
+
+- `41500`–`41515`: WLAN-Zugangsdaten-Puffer (SRAM `0x20014DCC`, referenziert von
+  `WiFi_Set_Credentials`). Ein Sensorwert landet sonst in Datenbank, Backups und
+  moeglicherweise Logs.
+- `40000`, `41000`, `45000`–`45031`, `46000`: Diese Register liessen im Scan die
+  Modbus-Verbindung abreissen — dasselbe Verhalten, das die urspruenglichen
+  Haenger verursacht hat.
+
+**Warum das Polling sicher bleibt:** `_build_contiguous_read_groups` gruppiert
+nur strikt lueckenlose Register (`register == current_end + 1`). Eine Luecke
+bricht die Gruppe, ein Blockread kann also nie ueber ein nicht definiertes
+Register laufen. Gegengeprueft: 59 Blockgruppen ueber alle 423 Definitionen,
+keine ueberspannt ein Stoerregister, groesste Gruppe 44 Register.
+
+**Umschalten loest ein Reload aus,** weil die Registerdefinitionen nur beim
+Setup gelesen werden.
+
+**Fuer einen Upstream-Port:** Die Registerliste in `DEV_SENSOR_DEFINITIONS` gilt
+ausschliesslich fuer Venus D. Venus A und E v3 teilen sich zwar die
+Firmware-Basis, aber weder die Scan-Ergebnisse noch die Konfidenzeinstufungen
+wurden dort geprueft. Venus E v1/v2 hat eine voellig andere Basis — dort darf
+nichts davon uebernommen werden.

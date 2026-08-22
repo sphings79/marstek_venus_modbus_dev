@@ -41,6 +41,10 @@ async def async_setup_entry(
         (MarstekBitfieldTextSensor, coordinator.BITFIELD_TEXT_SENSOR_DEFINITIONS),
         (MarstekGridPowerSensor, coordinator.GRID_POWER_SENSOR_DEFINITIONS),
         (MarstekBmsBatteryPowerSensor, coordinator.BMS_POWER_SENSOR_DEFINITIONS),
+        # getattr: Die DEV-Sektion ist optional. Fehlt das Attribut (z. B. weil eine
+        # aeltere Coordinator-Version geladen ist), soll das nicht die gesamte
+        # Sensor-Plattform scheitern lassen.
+        (MarstekDevSensor, getattr(coordinator, "DEV_SENSOR_DEFINITIONS", []) or []),
     )
     for entity_cls, definitions in sensor_groups:
         entities.extend(entity_cls(coordinator, definition) for definition in definitions)
@@ -782,3 +786,24 @@ class MarstekVersionSensor(MarstekCalculatedSensor):
             return f"V{ems_str}.{vms}.{mppt}.{bms}"
         _LOGGER.warning("%s unknown version mode '%s'", self._key, mode)
         return None
+
+
+class MarstekDevSensor(MarstekSensor):
+    """Diagnose-Sensor fuer noch nicht gedeutete Register.
+
+    Unterschied zu MarstekSensor: Der Name kommt direkt aus der Definition statt
+    aus einem Uebersetzungsschluessel. Fuer DEV-Register gibt es keine
+    Uebersetzungen -- mit translation_key blieben die Entitaeten namenlos.
+
+    Das Schema ist "DEV <register> (<verdacht>?)". Alle DEV-Entitaeten beginnen
+    mit "DEV" und stehen dadurch in der Oberflaeche beieinander; das Fragezeichen
+    macht deutlich, dass der Name eine Vermutung ist und kein Befund.
+    """
+
+    def __init__(self, coordinator: MarstekCoordinator, definition: dict):
+        super().__init__(coordinator, definition)
+        # translation_key entfernen, sonst sucht HA eine Uebersetzung, findet
+        # keine und zeigt die Entitaet ohne Namen an.
+        self._attr_translation_key = None
+        self._attr_name = definition.get("name") or f"DEV {definition.get('register')}"
+        self._attr_has_entity_name = True

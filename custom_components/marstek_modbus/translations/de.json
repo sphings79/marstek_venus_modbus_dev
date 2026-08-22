@@ -39,7 +39,8 @@
         "description": "Wählen Sie, welche Einstellungen Sie konfigurieren möchten",
         "menu_options": {
           "connection": "Verbindungseinstellungen",
-          "polling": "Polling-Intervalle"
+          "polling": "Polling-Intervalle",
+          "dev": "DEV-Register (experimentell)"
         }
       },
       "polling": {
@@ -57,6 +58,13 @@
           "host": "IP-Adresse",
           "port": "Port",
           "unit_id": "Unit-ID"
+        }
+      },
+      "dev": {
+        "title": "DEV-Register",
+        "description": "Blendet 131 zusätzliche Diagnose-Sensoren ein: Register, deren Bedeutung noch nicht geklärt ist, sowie Register aus dem 40000er-Bereich, die nachweislich auf einen Lesezugriff antworten.\n\nAlle heißen \"DEV <Register> (<Verdacht>?)\" und stehen dadurch beieinander. Das Fragezeichen bedeutet: Der Name ist eine Vermutung, kein Befund.\n\nNur für Analysezwecke. Die Werte sind teilweise dauerhaft 0 oder ohne bekannte Einheit. Nach dem Umschalten wird die Integration neu geladen.",
+        "data": {
+          "dev_registers": "DEV-Register anzeigen"
         }
       }
     }

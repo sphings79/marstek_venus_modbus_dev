@@ -39,7 +39,8 @@
         "description": "Kies welke instellingen te configureren",
         "menu_options": {
           "connection": "Verbindingsgegevens",
-          "polling": "Polling-intervallen"
+          "polling": "Polling-intervallen",
+          "dev": "DEV-registers (experimenteel)"
         }
       },
       "polling": {
@@ -61,6 +62,13 @@
           "host": "IP-adres",
           "port": "Poort",
           "unit_id": "Unit-ID"
+        }
+      },
+      "dev": {
+        "title": "DEV-registers",
+        "description": "Voegt 131 extra diagnosesensoren toe: registers waarvan de betekenis nog niet vaststaat, plus registers in het 40000-bereik die aantoonbaar op een leesopdracht antwoorden.\n\nZe heten allemaal \"DEV <register> (<vermoeden>?)\" en staan daardoor bij elkaar. Het vraagteken betekent dat de naam een vermoeden is, geen bevinding.\n\nAlleen voor analyse. Sommige waarden blijven permanent 0 of hebben geen bekende eenheid. De integratie wordt na het omschakelen opnieuw geladen.",
+        "data": {
+          "dev_registers": "DEV-registers tonen"
         }
       }
     }

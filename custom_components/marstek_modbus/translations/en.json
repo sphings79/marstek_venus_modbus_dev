@@ -39,7 +39,8 @@
         "description": "Choose which settings to configure",
         "menu_options": {
           "connection": "Connection settings",
-          "polling": "Polling intervals"
+          "polling": "Polling intervals",
+          "dev": "DEV registers (experimental)"
         }
       },
       "polling": {
@@ -57,6 +58,13 @@
           "host": "IP Address",
           "port": "Port",
           "unit_id": "Unit ID"
+        }
+      },
+      "dev": {
+        "title": "DEV registers",
+        "description": "Adds 131 extra diagnostic sensors: registers whose meaning is not yet established, plus registers in the 40000 range that are proven to answer a read request.\n\nAll are named \"DEV <register> (<guess>?)\" so they group together. The question mark means the name is a guess, not a finding.\n\nFor analysis only. Some values stay 0 permanently or have no known unit. The integration reloads after toggling.",
+        "data": {
+          "dev_registers": "Show DEV registers"
         }
       }
     }
