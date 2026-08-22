@@ -2435,6 +2435,20 @@ BINARY_SENSOR_DEFINITIONS:
         scan_interval: high
 
 SELECT_DEFINITIONS:
+    discharge_power_class:
+        register: 44003
+        enabled_by_default: false
+        scan_interval: low
+        # Device power class, not a free limit. The cloud sets it via JSON-RPC and
+        # writes the value to EEPROM 0x204, which is this register's backend, so
+        # writing 44003 restores the power after the cloud has knocked it down.
+        # Note: the cloud command also sets a tier flag in EEPROM 0x90 and, for the
+        # 800 W step, clamps every schedule slot. Writing the register does neither.
+        # 44003 is write-only, so the current class cannot be read back.
+        options:
+            "800": 800
+            "2200": 2200
+            "2500": 2500
     user_work_mode:
         register: 43000
         enabled_by_default: true

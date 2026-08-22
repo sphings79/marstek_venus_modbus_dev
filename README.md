@@ -287,6 +287,8 @@ Below is a per-key table showing descriptive fields and the register defined in 
 | battery_cycle_count_calc          | Cycle count calculated from total discharge and capacity | calculated | - | - | - |  |  |  |  |
 
 _Notes:_
+- `charge_to_soc` (42011, "Maximaler SoC") is a command, not a passive setting: writing it makes the device drive the battery to that state of charge straight away — verified on hardware, writing 70 started a discharge that stopped at 70 %. It is **not** the backup reserve shown in the Marstek app; that is a separate, persistent parameter with no Modbus register at all.
+- `max_discharge_power` (44003) backs onto the same EEPROM word as the app's 800 / 2200 / 2500 W device power class, so writing it restores the power after the cloud has reset it. The cloud command also sets a tier flag and, at 800 W, clamps every schedule slot — writing the register does neither. The register is write-only, so the active class cannot be read back.
 - `max_cell_voltage` / `min_cell_voltage` are **not** device-wide on Venus D: 37007/37008 read the same firmware source as `battery_1_max_cell_voltage` / `battery_1_min_cell_voltage` (34005/34006), i.e. pack 1 only. They were removed from `d.yaml`; use the per-pack sensors instead.
 - Columns `a`, `d`, `e_v12` and `e_v3` correspond to the YAML files under `custom_components/marstek_modbus/registers/`.
 - `Bytes` shows the typical byte size for the key (each Modbus register = 2 bytes).

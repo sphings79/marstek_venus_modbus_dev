@@ -1035,6 +1035,14 @@
           "friday": "Friday",
           "saturday": "Saturday"
         }
+      },
+      "discharge_power_class": {
+        "name": "Discharge Power Class",
+        "state": {
+          "800": "800 W (export cap)",
+          "2200": "2200 W",
+          "2500": "2500 W"
+        }
       }
     },
     "switch": {
