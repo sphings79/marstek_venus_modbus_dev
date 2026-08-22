@@ -61,6 +61,30 @@ to the other firmware family and was left alone.
 
 **Strong upstream candidate** — it is a live defect, not a Venus D nicety.
 
+## 1c. Bug fix — a calculated sensor's inputs were fetched even when it was disabled
+
+`fffa643` · general · `coordinator.py`
+
+`dependency_keys_set` was built from the definitions alone, so the source registers of
+every calculated sensor were polled whether or not anything consumed them. Upstream this
+means `solar_power_total` has always pulled `mppt1..4_power` on every cycle even when
+nobody enabled it; in this fork the six per-pack cell voltage deltas added twelve more
+registers, spread across all six pack regions — the regions this device is most sensitive
+about.
+
+The collection now skips a calculated sensor whose own entity is disabled. A source that
+is enabled in its own right keeps being polled, and a source feeding several calculated
+sensors keeps being polled while any one of them is enabled.
+
+An entity the registry does not know yet counts as enabled — during the first refresh the
+platforms have not added their entities, and treating unknown as disabled would leave
+every calculated sensor without a value for one cycle.
+
+Also extracts the registry lookup the poll loop did inline into `_is_entity_disabled`, so
+the loop and the dependency collection cannot drift apart.
+
+**Strong upstream candidate** — it saves work on every installation.
+
 ## 2. Feature — `ipv4` data type
 
 `1529b55` · general · `helpers/modbus_client.py`
@@ -95,6 +119,70 @@ Three parts:
 
 The class and the section are model-agnostic. Only the definitions are Venus D specific,
 and only because the per-pack max/min registers were verified there.
+
+## 3b. Feature — fault bitfields in plain text
+
+`bcbdc74`, `72037d6`, `f10c1ec` · mechanism general, definitions Venus D · `coordinator.py`,
+`sensor.py`, `registers/d.yaml`, all three translations
+
+`bit_descriptions` had been present in the register YAML since before this fork but no
+Python ever read it — dead data. It is now rendered by `MarstekBitfieldTextSensor` in a new
+`BITFIELD_TEXT_SENSOR_DEFINITIONS` section.
+
+The numeric sensors are untouched: `fault_status` still reports `32`, and a companion
+`fault_status_description` reports `32 - BMS reports a fault (check pack firmware
+versions)`. Undecoded bits render as `unknown bit N` rather than being dropped. Each
+description sensor exposes `raw_value`, `active_bits`, `active_faults` and
+`undecoded_bits` as attributes so automations can test a single bit.
+
+An earlier attempt rendered the text on the numeric sensor itself. That changed the state
+type of Venus E v1/v2's `fault_status` and `alarm_status` as a side effect and was
+replaced by the companion-sensor design.
+
+Also exposes the other three fault registers for Venus D: the device splits each 32-bit
+error word across two registers, high word first, and only the high word of `error_code1`
+was readable. **36101** carries the backup/off-grid fault bit, confirmed on hardware, and
+was previously invisible.
+
+## 3c. Feature — the two values the firmware computes but never publishes
+
+`2b12368`, `8b28363`, `ab2a2e4` · Venus D · `coordinator.py`, `sensor.py`,
+`registers/d.yaml`, all three translations
+
+The device computes two power values for its Bluetooth payload and exposes no register for
+either. Both are rebuilt from the registers the firmware's own formulas read, decompiled
+from the BLE payload builder, and verified against hardware in all three operating states —
+discharge, bypass and charge.
+
+- **`grid_power`** — power at the grid connection point. Not a plain subtraction: in bypass
+  the backup output is fed straight from the grid, the inverter's own grid sample reads
+  zero, and inverter state 4 is the one state where that zero means something else.
+- **`battery_power_bms`** — BMS pack voltage times pack current. A *second* battery power
+  sensor beside `battery_power` (30001), not a replacement: 30001 is the inverter's
+  measurement, this one the BMS side. They agree within half a percent under load and
+  differ by the device's own consumption at idle.
+
+`battery_power_bms` deliberately does **not** read register 32101, which is where the
+firmware itself gets the current, because of the firmware defect described in section 11.
+
+## 3d. Correctness — entity categories and state classes
+
+`4409fb0`, `c7742d9` · mixed · `registers/d.yaml`
+
+Three measurements were filed as diagnostics, which files them separately on the device
+page and leaves them out of auto-generated dashboards: `battery_1..6_cell_voltage_delta`,
+`bms_battery_voltage` and `pv_year_capacity`. All three were introduced by this fork.
+
+Two more, from the Venus D branches and upstream:
+
+- `battery_1..6_cycle_count` and `battery_cycle_count_calc` used `state_class: measurement`
+  for monotonic counters, so long-term statistics recorded them as gauges. The device-level
+  `battery_cycle_count` already used `total_increasing`.
+- `wifi_signal_strength` had `device_class: signal_strength` but no `state_class` at all,
+  so it produced no long-term statistics.
+
+The per-pack sensors were audited and found internally consistent — all measurements
+uncategorised, all status fields diagnostic.
 
 ## 4. Register corrections — three registers named for the wrong quantity
 
@@ -180,8 +268,8 @@ Display names only — entity ids are untouched.
 - `README.md`: `d` column blanked for `max_cell_voltage` / `min_cell_voltage`, with a
   footnote.
 - `.gitignore`: `logs/`.
-- `manifest.json`: version `1.0.x-dev` instead of upstream's calendar scheme, so it is
-  obvious which build is installed. **Do not carry upstream.**
+- `manifest.json`: semantic versioning (`1.1.0`) instead of upstream's calendar scheme, so
+  it is obvious which build is installed. **Do not carry upstream.**
 
 `7849a29` and `4521d0d` added and then corrected a `registers/firmware-analysis.md`
 holding the Venus D firmware analysis. `0f2db67` removed it again when that research moved
@@ -200,6 +288,21 @@ carries the resolution so this does not get re-added.
 
 ---
 
+## 11. Firmware defect worked around, not fixed here
+
+Register **32101** (BMS battery current) cannot be read as documented. The device's FC03
+serializer sign-extends an `int16` into an unsigned word and then applies the descriptor's
+divide-by-ten scale to it, so negative values come back corrupted — `-122` arrives as
+`39309`. Positive values pass through correctly, so the defect only bites on discharge.
+
+Reproduced exactly against three hardware states and reported to the manufacturer. In
+firmware v150 exactly one of 246 descriptor entries combines a signed type with a divide
+scale, so 32101 is the only register affected today; the defect lives in the shared
+serializer.
+
+Nothing in this repository reads 32101. `battery_power_bms` sums the per-pack current
+registers instead, which carry no scale code.
+
 ## Porting checklist
 
 | # | Change | Upstream-ready | Note |
@@ -212,6 +315,10 @@ carries the resolution so this does not get re-added.
 | 5 | pack-1 cell extremes | verify first | same |
 | 6 | new registers | Venus D only | needs #2 for the IP sensors |
 | 7 | Cell NTC renaming | Venus D only | display names only |
+| 1c | calculated-sensor inputs only when enabled | **yes** | saves work everywhere |
+| 3b | bitfield description sensors | **yes** | mechanism is model-agnostic |
+| 3c | grid_power / battery_power_bms | Venus D | formulas are device-specific |
+| 3d | categories and state classes | **partly** | the two state_class fixes apply to all models |
 | 9 | version scheme | **no** | fork-specific |
 
 Removals in 4 and 5 leave orphaned entities behind in existing installations. Home
