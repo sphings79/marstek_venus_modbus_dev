@@ -57,6 +57,17 @@ This is a custom HACS-compatible integration for Marstek Venus battery systems, 
 
 ## ⚙️ Configuration
 
+### Connection Settings
+
+**Configurable via Options UI → Connection settings:**
+- **IP address, port and Unit ID** of the Modbus TCP gateway
+- **Wait between messages** (default: 80 ms) - the pause the integration keeps between two Modbus requests
+
+The wait applies to every request, so raising it lengthens every poll cycle and the
+integration's startup in proportion: at 300 ms a cycle of 50 requests takes 15 seconds
+where 80 ms would take 4. Raise it only when a gateway drops responses at the default,
+and lower it again once the connection is stable.
+
 ### Polling Intervals
 
 The integration uses intelligent polling with configurable intervals per entity type to balance responsiveness and network load.

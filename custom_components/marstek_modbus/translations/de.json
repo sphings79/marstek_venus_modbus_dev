@@ -53,11 +53,15 @@
       },
       "connection": {
         "title": "Verbindungsdetails bearbeiten",
-        "description": "Ändern Sie Host, Port und Unit-ID für Modbus TCP",
+        "description": "Ändern Sie Host, Port, Unit-ID und die Wartezeit zwischen Modbus-Nachrichten",
         "data": {
           "host": "IP-Adresse",
           "port": "Port",
-          "unit_id": "Unit-ID"
+          "unit_id": "Unit-ID",
+          "message_wait_milliseconds": "Wartezeit zwischen Nachrichten (ms)"
+        },
+        "data_description": {
+          "message_wait_milliseconds": "Pause zwischen zwei Modbus-Anfragen. Standard 80 ms. Jede Erhöhung verlängert jeden Abfragezyklus und den Start der Integration; höher stellen nur, wenn ein Gateway sonst Antworten verschluckt."
         }
       },
       "dev": {

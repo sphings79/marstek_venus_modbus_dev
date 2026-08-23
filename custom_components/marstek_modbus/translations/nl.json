@@ -57,11 +57,15 @@
       },
       "connection": {
         "title": "Verbindingsgegevens bewerken",
-        "description": "Wijzig de Modbus TCP host, poort en unit id",
+        "description": "Wijzig de Modbus TCP host, poort, unit id en de wachttijd tussen berichten",
         "data": {
           "host": "IP-adres",
           "port": "Poort",
-          "unit_id": "Unit-ID"
+          "unit_id": "Unit-ID",
+          "message_wait_milliseconds": "Wachttijd tussen berichten (ms)"
+        },
+        "data_description": {
+          "message_wait_milliseconds": "Pauze tussen twee Modbus-verzoeken. Standaard 80 ms. Elke verhoging verlengt iedere pollingcyclus en het opstarten van de integratie; verhoog dit alleen als een gateway anders antwoorden laat vallen."
         }
       },
       "dev": {

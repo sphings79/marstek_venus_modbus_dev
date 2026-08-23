@@ -474,3 +474,45 @@ ueberspringen, wenn **jedes** Register darin in der YAML definiert ist — wurde
 durchgerechnet und bringt fast nichts: bei den standardmaessig aktiven Entities
 0 Requests Ersparnis (D: 15, E v3: 13, A: 15, E v1/v2: 13), mit allen Entities
 nur D 52 → 46. Nicht das Risiko wert.
+
+## 14. Die Wartezeit zwischen Modbus-Nachrichten war unerreichbar
+
+**Dateien:** `const.py`, `config_flow.py`, `coordinator.py`, `translations/*.json`
+
+`message_wait_milliseconds` wurde an genau einer Stelle gelesen — im Coordinator
+aus `entry.data` — und an keiner Stelle geschrieben. Im Config Flow kam der
+Schluessel weder beim Einrichten noch in den Optionen vor. Ein Wert, der einmal
+in `entry.data` gelandet war (aus einer frueheren Version), liess sich damit
+ueber die Oberflaeche nicht mehr aendern; er blieb ueber jedes Update hinweg
+stehen.
+
+**Warum das teuer ist:** die Wartezeit gilt pro Request. Auf dem Testgeraet
+stand sie auf 300 ms bei ~10 ms tatsaechlicher Antwortzeit — 97 % der Zykluszeit
+war selbst gesetzte Pause. Gemessen an einem Reload mit aktiven DEV-Registern:
+
+```
+21:16:41.710  Coordinator initialized
+21:16:42.496  erster Poll-Tick     ->  Register laden + Connect + Plattformen:  0,79 s
+21:16:58.590  erste Entity-Aktualisierung ->  erstes Refresh:                  16,1 s
+```
+
+179 Register-Reads in dem Zyklus, ~300 ms je Request. Bei 80 ms waeren es
+ueberschlagen 4-5 s statt 16.
+
+**Behoben:** das Feld steht jetzt im Optionsschritt „Verbindung", vorbelegt mit
+dem aktuellen Wert, geclampt auf 0-1000 ms. Der Schritt schreibt ohnehin schon
+per `async_update_entry(data=...)` nach `entry.data` und baut den Client neu auf,
+die Aenderung greift also ohne Reload. Der Testverbindungs-Client bekommt den
+neuen Wert, statt wie vorher den alten vom Coordinator zu erben — sonst wuerde
+die Verbindung mit einer anderen Taktung geprueft als der, die anschliessend
+gespeichert wird.
+
+**Bewusst nicht im Einrichtungsformular.** Der Default von 80 ms hat auf allen
+getesteten Geraeten funktioniert; das Feld gehoert zur Fehlersuche, nicht zum
+ersten Kontakt. Neue Installationen schreiben den Schluessel gar nicht erst und
+laufen auf `DEFAULT_MESSAGE_WAIT_MS`.
+
+**Der Schluessel heisst jetzt `CONF_MESSAGE_WAIT_MS`** statt als Stringliteral im
+Coordinator zu stehen, und der Coordinator faellt sichtbar auf den Default
+zurueck, statt `None` weiterzureichen — dieselbe Klasse Fehler wie beim Timeout
+in Abschnitt 13c.

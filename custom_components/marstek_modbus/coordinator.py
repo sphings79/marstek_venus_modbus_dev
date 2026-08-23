@@ -14,9 +14,9 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .const import (DEFAULT_SCAN_INTERVALS, SUPPORTED_VERSIONS, DEFAULT_UNIT_ID,
-                    DEFAULT_TIMEOUT, CONF_DEV_REGISTERS_UNKNOWN,
-                    CONF_DEV_REGISTERS_DUPLICATE, CONF_DEV_REGISTERS_LEGACY,
-                    DEFAULT_DEV_REGISTERS)
+                    DEFAULT_TIMEOUT, DEFAULT_MESSAGE_WAIT_MS, CONF_MESSAGE_WAIT_MS,
+                    CONF_DEV_REGISTERS_UNKNOWN, CONF_DEV_REGISTERS_DUPLICATE,
+                    CONF_DEV_REGISTERS_LEGACY, DEFAULT_DEV_REGISTERS)
 
 from .helpers.modbus_client import MarstekModbusClient
 from pathlib import Path
@@ -48,7 +48,9 @@ class MarstekCoordinator(DataUpdateCoordinator):
                 "Please reconfigure the Marstek integration."
             )
 
-        self.message_wait_ms = entry_data.get("message_wait_milliseconds")
+        self.message_wait_ms = entry_data.get(
+            CONF_MESSAGE_WAIT_MS, DEFAULT_MESSAGE_WAIT_MS
+        )
         # The config flow has no timeout field, so this is None for UI-created
         # entries; fall back explicitly instead of handing None down the line.
         self.timeout = entry_data.get("timeout") or DEFAULT_TIMEOUT

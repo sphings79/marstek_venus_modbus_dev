@@ -12,7 +12,9 @@ from .const import (
     CONF_DEV_REGISTERS_DUPLICATE,
     CONF_DEV_REGISTERS_LEGACY,
     CONF_DEV_REGISTERS_UNKNOWN,
+    CONF_MESSAGE_WAIT_MS,
     DEFAULT_DEV_REGISTERS,
+    DEFAULT_MESSAGE_WAIT_MS,
     DEFAULT_PORT,
     DEFAULT_SCAN_INTERVALS,
     DEFAULT_UNIT_ID,
@@ -32,6 +34,17 @@ SCHEMA_HOST_BASE = vol.Schema(
         vol.Required(CONF_HOST): str,
         vol.Optional(CONF_PORT, default=DEFAULT_PORT): int,
         vol.Optional(CONF_UNIT_ID, default=DEFAULT_UNIT_ID): vol.Coerce(int),
+    }
+)
+
+# Connection options: the host fields plus the request pacing. The pacing is
+# deliberately absent from the initial setup form - the default is right for
+# every device tested, and it only needs raising when a gateway chokes.
+SCHEMA_CONNECTION = SCHEMA_HOST_BASE.extend(
+    {
+        vol.Optional(
+            CONF_MESSAGE_WAIT_MS, default=DEFAULT_MESSAGE_WAIT_MS
+        ): vol.All(vol.Coerce(int), vol.Clamp(min=0, max=1000)),
     }
 )
 
@@ -354,12 +367,18 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
             CONF_UNIT_ID: config.options.get(
                 CONF_UNIT_ID, config.data.get(CONF_UNIT_ID, DEFAULT_UNIT_ID)
             ),
+            CONF_MESSAGE_WAIT_MS: config.data.get(
+                CONF_MESSAGE_WAIT_MS, DEFAULT_MESSAGE_WAIT_MS
+            ),
         }
 
         if user_input is not None:
             host = user_input.get(CONF_HOST)
             port = user_input.get(CONF_PORT)
             unit_id = user_input.get(CONF_UNIT_ID)
+            message_wait_ms = int(
+                user_input.get(CONF_MESSAGE_WAIT_MS, DEFAULT_MESSAGE_WAIT_MS)
+            )
 
             # Validate ranges
             if not (1 <= int(port) <= 65535):
@@ -384,7 +403,7 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
                     test_client = MarstekModbusClient(
                         host,
                         int(port),
-                        message_wait_ms=getattr(coordinator, "message_wait_ms", None),
+                        message_wait_ms=message_wait_ms,
                         timeout=getattr(coordinator, "timeout", 3),
                         unit_id=int(unit_id),
                     )
@@ -408,6 +427,7 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
                         new_data[CONF_HOST] = host
                         new_data[CONF_PORT] = int(port)
                         new_data[CONF_UNIT_ID] = int(unit_id)
+                        new_data[CONF_MESSAGE_WAIT_MS] = message_wait_ms
                         self.hass.config_entries.async_update_entry(
                             config, data=new_data
                         )
@@ -417,11 +437,13 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
                             coordinator.host = host
                             coordinator.port = int(port)
                             coordinator.unit_id = int(unit_id)
+                            coordinator.message_wait_ms = message_wait_ms
                             _LOGGER.info(
-                                "Reconnected Modbus client to %s:%d (unit %d)",
+                                "Reconnected Modbus client to %s:%d (unit %d, %d ms between messages)",
                                 host,
                                 int(port),
                                 int(unit_id),
+                                message_wait_ms,
                             )
 
                             try:
@@ -443,7 +465,7 @@ class MarstekOptionsFlow(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="connection",
             data_schema=self.add_suggested_values_to_schema(
-                SCHEMA_HOST_BASE, defaults
+                SCHEMA_CONNECTION, defaults
             ),
             errors=errors,
             last_step=True,

@@ -53,11 +53,15 @@
       },
       "connection": {
         "title": "Edit connection details",
-        "description": "Change the Modbus TCP host, port and unit ID",
+        "description": "Change the Modbus TCP host, port, unit ID and the wait between messages",
         "data": {
           "host": "IP Address",
           "port": "Port",
-          "unit_id": "Unit ID"
+          "unit_id": "Unit ID",
+          "message_wait_milliseconds": "Wait between messages (ms)"
+        },
+        "data_description": {
+          "message_wait_milliseconds": "Pause between two Modbus requests. Default is 80 ms. Every increase lengthens each poll cycle and the integration's startup; raise it only when a gateway drops responses otherwise."
         }
       },
       "dev": {

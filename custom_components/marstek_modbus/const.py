@@ -8,6 +8,7 @@ MODEL = "Venus"
 # Default network configuration for Modbus connection
 DEFAULT_PORT = 502
 DEFAULT_MESSAGE_WAIT_MS = 80  # Default wait time for Modbus messages in milliseconds
+CONF_MESSAGE_WAIT_MS = "message_wait_milliseconds"
 DEFAULT_UNIT_ID = 1  # Default Modbus Unit ID (unit ID)
 DEFAULT_TIMEOUT = 3  # Default Modbus request timeout in seconds
 
