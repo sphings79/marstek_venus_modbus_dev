@@ -516,3 +516,31 @@ laufen auf `DEFAULT_MESSAGE_WAIT_MS`.
 Coordinator zu stehen, und der Coordinator faellt sichtbar auf den Default
 zurueck, statt `None` weiterzureichen — dieselbe Klasse Fehler wie beim Timeout
 in Abschnitt 13c.
+
+## 15. Bug fix — berechnete Sensoren ignorierten ihre `precision`
+
+**Datei:** `sensor.py`
+
+Die Zellspannungs-Differenz zeigte `0` statt `0,000`. Ursache: `precision`
+steht in den Definitionen (bei Venus D an allen sechs Delta-Sensoren, dazu
+`grid_power` und `battery_power_bms`), gelesen wurde der Schluessel aber nur von
+`MarstekSensor` ueber die Property `suggested_display_precision`.
+`MarstekCalculatedSensor` setzt Einheit, Device-Class, State-Class, Kategorie
+und Icon aus der Definition — die Nachkommastellen fehlten.
+
+Home Assistant liest `_attr_suggested_display_precision` ueber eine
+`cached_property`, die Zuweisung im Konstruktor genuegt also. Betroffen waren
+alle berechneten Sensoren gleichermassen; die Textsensoren (Version,
+Bitfield-Klartext) tragen keinen `precision`-Schluessel und bleiben unberuehrt.
+
+**Warum das mehr ist als Kosmetik:** ein Delta von `0` liest sich wie ein
+fehlender Wert, `0,000` wie ein perfekt balanciertes Pack. Genau bei dem Sensor,
+dessen Zweck es ist, eine schwaechelnde Zelle fruehzeitig sichtbar zu machen.
+
+**Hinweis fuer bestehende Installationen:** Home Assistant uebernimmt die
+vorgeschlagene Genauigkeit beim naechsten Laden — es sei denn, die Anzeige wurde
+fuer die Entitaet einmal von Hand eingestellt. Dann gewinnt die manuelle
+Einstellung und muss in den Entitaetsoptionen zurueckgesetzt werden.
+
+**Starker Upstream-Kandidat** — der Fehler betrifft jedes Modell, das
+berechnete Sensoren mit Nachkommastellen hat.

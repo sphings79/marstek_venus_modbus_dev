@@ -342,6 +342,15 @@ class MarstekCalculatedSensor(CoordinatorEntity, SensorEntity):
         self._attr_device_class = definition.get("device_class")
         self._attr_state_class = definition.get("state_class")
 
+        # Display precision. MarstekSensor exposes this through a property, but
+        # the calculated sensors never read the key their definitions already
+        # carry - so a cell voltage delta of 0.0 rendered as "0" instead of
+        # "0.000", which reads like a missing value rather than a perfectly
+        # balanced pack.
+        precision = definition.get("precision")
+        if precision is not None:
+            self._attr_suggested_display_precision = precision
+
         # Optional: entity category and icon
         if "category" in definition:
             self._attr_entity_category = EntityCategory(definition["category"])
