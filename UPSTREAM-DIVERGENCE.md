@@ -408,3 +408,69 @@ warum der Sensor eine unsinnige Zahl zeigte, die sich bewegte.
 Register-Map, ohne dass geklaert ist, ob das Register der Anfang des Paares ist.
 Alle DEV-Eintraege sind jetzt `uint16` oder `int16`; ein automatischer Test
 prueft das.
+
+## 13. Startup — warum das Laden des Config Entry so lange dauerte
+
+**Dateien:** `__init__.py`, `select.py`, `coordinator.py`, `const.py`,
+`helpers/modbus_client.py`
+
+Home Assistant meldete beim Start `Setup of select platform marstek_modbus is
+taking over 10 seconds` — und zwar nur fuer `select`. Vier unabhaengige
+Ursachen, alle im Setup-Pfad.
+
+**a) `update_before_add=True` zog einen kompletten Poll in den Plattform-Setup.**
+`select.py` war die einzige Plattform, die so addete. Bei einer
+`CoordinatorEntity` landet das in `async_device_update()` →
+`CoordinatorEntity.async_update()` → `coordinator.async_request_refresh()`.
+Dessen Debouncer laeuft mit `REQUEST_REFRESH_DEFAULT_IMMEDIATE = True`
+(`helpers/update_coordinator.py`), fuehrt `_async_refresh()` also **sofort aus
+und wartet darauf** — ein voller Poll ueber alle faelligen Register, blockierend
+im Setup. Die uebrigen Select-Entities liefen ins gesperrte `_execute_lock`,
+setzten den Debounce-Timer und loesten ~10 s spaeter einen **zweiten** Voll-Poll
+aus. Die Werte kommen ohnehin aus `async_config_entry_first_refresh()`.
+
+**b) `message_wait_ms` wirkte doppelt pro Request.** Nach jedem Request lief ein
+Sleep von `message_wait_sec` **innerhalb** des Request-Locks, danach wartete das
+Pacing nochmal denselben Betrag ab `_last_request_finished_at` — das aber erst
+nach dem ersten Sleep gesetzt wurde, der Abstand war also immer voll. Gemessen
+im Log vom 21.08.: 169–173 ms zwischen aufeinanderfolgenden Requests bei ~10 ms
+Antwortzeit des Geraets. Jetzt wartet eine Transaktion genau einmal
+(`_async_wait_for_request_slot` / `_mark_request_finished`), Writes eingeschlossen
+— die hatten vorher gar kein Pacing davor, nur den Sleep danach.
+
+Nachgemessen mit einem Fake-Client (6 Reads, 10 ms simulierte Antwortzeit):
+
+| | Abstand je Request | 6 Reads gesamt |
+|---|---|---|
+| vorher | 173 ms | 957 ms |
+| nachher | 92 ms | 471 ms |
+
+**c) Kein Timeout am pymodbus-Client.** Der Config Flow hat kein
+`timeout`-Feld, `entry.data.get("timeout")` war fuer jeden ueber die UI
+angelegten Eintrag `None`, und `AsyncModbusTcpClient(timeout=None)` wartet
+unbegrenzt. Genau deshalb brauchte jeder Aufrufer einen eigenen
+`asyncio.wait_for`-Mantel. `MarstekModbusClient` normalisiert den Wert jetzt
+gegen `DEFAULT_TIMEOUT = 3` — wie `message_wait_ms` und `unit_id` es schon taten.
+
+**d) Block-Timeout von 10–22 s.** `_block_read_timeout` war frei gegriffen und
+stand in keinem Verhaeltnis zum Client-Timeout. Ein Block liest mit
+`max_retries=1`; laenger zu warten als der Client selbst haelt nur den
+Poll-Zyklus auf — beim ersten Refresh also den Setup des Config Entry. Jetzt
+`2 x Client-Timeout + 0.02 je Register`, gedeckelt auf `3 x Client-Timeout`
+(bei 3 s: 6,1–6,9 s statt 10–22 s).
+
+**e) Setup schluckte jeden Fehler.** `async_setup_entry` fing alles ab und gab
+`False` zurueck: war die Batterie beim HA-Start kurz nicht erreichbar, blieb die
+Integration dauerhaft ungeladen. Jetzt `ConfigEntryNotReady` (HA wiederholt mit
+Backoff) bzw. `ConfigEntryError` bei fehlendem Host/Port, und der Fehlerpfad
+raeumt Plattformen, Socket und `hass.data` wieder ab.
+
+**Nicht geaendert: die strikt lueckenlose Blockbildung.** Naheliegend waere,
+`_build_contiguous_read_groups` kleine Luecken ueberspringen zu lassen (Venus D:
+52 → 32 Requests). Das verbietet Abschnitt 12: ein Blockread darf nie ueber ein
+nicht definiertes Register laufen, sonst sind die Stoerregister wieder im Spiel,
+die die Verbindung abreissen liessen. Die sichere Variante — eine Luecke nur
+ueberspringen, wenn **jedes** Register darin in der YAML definiert ist — wurde
+durchgerechnet und bringt fast nichts: bei den standardmaessig aktiven Entities
+0 Requests Ersparnis (D: 15, E v3: 13, A: 15, E v1/v2: 13), mit allen Entities
+nur D 52 → 46. Nicht das Risiko wert.

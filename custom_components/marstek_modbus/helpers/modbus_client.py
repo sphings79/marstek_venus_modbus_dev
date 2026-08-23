@@ -11,7 +11,7 @@ from typing import Optional
 
 import logging
 
-from ..const import DEFAULT_MESSAGE_WAIT_MS, DEFAULT_UNIT_ID
+from ..const import DEFAULT_MESSAGE_WAIT_MS, DEFAULT_TIMEOUT, DEFAULT_UNIT_ID
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ class MarstekModbusClient:
     for async reading/writing and interpreting common data types.
     """
 
-    def __init__(self, host: str, port: int, message_wait_ms: int = DEFAULT_MESSAGE_WAIT_MS, timeout: int = 3, unit_id: int = DEFAULT_UNIT_ID):
+    def __init__(self, host: str, port: int, message_wait_ms: int = DEFAULT_MESSAGE_WAIT_MS, timeout: int = DEFAULT_TIMEOUT, unit_id: int = DEFAULT_UNIT_ID):
         """
         Initialize Modbus client with host, port, message wait time, timeout, and unit ID.
 
@@ -35,7 +35,17 @@ class MarstekModbusClient:
         """
         self.host = host
         self.port = port
-        self.timeout = timeout
+
+        # Normalize and guard the timeout. The config flow has no timeout field,
+        # so entry.data.get("timeout") is None for every entry created through
+        # the UI — and pymodbus reads None as "wait forever", which turns a
+        # single unanswered request into a hanging poll cycle.
+        try:
+            self.timeout = float(timeout) if timeout is not None else float(DEFAULT_TIMEOUT)
+            if self.timeout <= 0:
+                raise ValueError
+        except (TypeError, ValueError):
+            self.timeout = float(DEFAULT_TIMEOUT)
 
         # Normalize and guard message_wait_ms so it is never None
         self.message_wait_ms = int(message_wait_ms) if message_wait_ms is not None else DEFAULT_MESSAGE_WAIT_MS
@@ -50,7 +60,7 @@ class MarstekModbusClient:
         self.client = AsyncModbusTcpClient(
             host=host,
             port=port,
-            timeout=timeout,
+            timeout=self.timeout,
         )
 
         # set message wait on client if supported
@@ -72,6 +82,27 @@ class MarstekModbusClient:
         self.wait_between_requests = self.message_wait_sec
         self._last_request_finished_at: float | None = None
         self._last_request_duration: float | None = None
+
+    async def _async_wait_for_request_slot(self) -> None:
+        """Keep at least `message_wait_ms` between two Modbus transactions.
+
+        The gap is measured from the end of the previous request, so a single
+        wait per transaction is enough — an extra sleep after the response
+        would only double the pause without giving the device more time.
+        """
+        if self.wait_between_requests <= 0 or self._last_request_finished_at is None:
+            return
+        wait_time = self.wait_between_requests - (
+            asyncio.get_running_loop().time() - self._last_request_finished_at
+        )
+        if wait_time > 0:
+            await asyncio.sleep(wait_time)
+
+    def _mark_request_finished(self, request_start: float | None = None) -> None:
+        """Record when the current transaction finished, for request pacing."""
+        self._last_request_finished_at = asyncio.get_running_loop().time()
+        if request_start is not None:
+            self._last_request_duration = self._last_request_finished_at - request_start
 
     async def async_connect(self) -> bool:
         """
@@ -394,12 +425,7 @@ class MarstekModbusClient:
                 result = None
                 async with self._request_lock:
                     # Pace requests to avoid overwhelming the device.
-                    if self.wait_between_requests > 0 and self._last_request_finished_at is not None:
-                        wait_time = self.wait_between_requests - (
-                            asyncio.get_running_loop().time() - self._last_request_finished_at
-                        )
-                        if wait_time > 0:
-                            await asyncio.sleep(wait_time)
+                    await self._async_wait_for_request_slot()
 
                     try:
                         read_method = getattr(self.client, "read_holding_registers")
@@ -411,10 +437,7 @@ class MarstekModbusClient:
                                 result = None
                                 continue
                     finally:
-                        try:
-                            await asyncio.sleep(self.message_wait_sec)
-                        except asyncio.CancelledError:
-                            raise
+                        self._mark_request_finished(request_start)
 
                 if result is None:
                     _LOGGER.error(
@@ -513,8 +536,9 @@ class MarstekModbusClient:
                     )
                     await self.async_reconnect()
             finally:
-                self._last_request_finished_at = asyncio.get_running_loop().time()
-                self._last_request_duration = self._last_request_finished_at - request_start
+                # Covers paths that never reached the request itself (e.g. an
+                # exception before the lock); the normal case already stamped.
+                self._mark_request_finished(request_start)
 
             attempt += 1
             if attempt < max_retries:
@@ -656,7 +680,11 @@ class MarstekModbusClient:
                 )
 
                 result = None
+                request_start = asyncio.get_running_loop().time()
                 async with self._request_lock:
+                    # Same pacing as for reads, so a write does not jump the queue.
+                    await self._async_wait_for_request_slot()
+
                     try:
                         # Try multiple kwarg names for compatibility
                         for unit_kw in ("device_id", "unit", "slave"):
@@ -669,11 +697,7 @@ class MarstekModbusClient:
                                 result = None
                                 continue
                     finally:
-                        # Spacing after write
-                        try:
-                            await asyncio.sleep(self.message_wait_sec)
-                        except asyncio.CancelledError:
-                            raise
+                        self._mark_request_finished(request_start)
 
                 # Check result
                 if result is None:

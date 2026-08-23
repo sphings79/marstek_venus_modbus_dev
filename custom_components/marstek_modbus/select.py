@@ -68,8 +68,11 @@ async def async_setup_entry(
     )
 
     if entities:
-        # Update_before_add: ensures faster first Status
-        async_add_entities(entities, update_before_add=True)
+        # No update_before_add here: for a CoordinatorEntity it ends up in
+        # coordinator.async_request_refresh(), whose debouncer runs immediately
+        # and is awaited — a full poll of every register inside the platform
+        # setup. The values arrive with the coordinator's first refresh anyway.
+        async_add_entities(entities)
 
 
 class MarstekSelect(CoordinatorEntity, SelectEntity):

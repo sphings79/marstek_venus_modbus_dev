@@ -14,8 +14,9 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .const import (DEFAULT_SCAN_INTERVALS, SUPPORTED_VERSIONS, DEFAULT_UNIT_ID,
-                    CONF_DEV_REGISTERS_UNKNOWN, CONF_DEV_REGISTERS_DUPLICATE,
-                    CONF_DEV_REGISTERS_LEGACY, DEFAULT_DEV_REGISTERS)
+                    DEFAULT_TIMEOUT, CONF_DEV_REGISTERS_UNKNOWN,
+                    CONF_DEV_REGISTERS_DUPLICATE, CONF_DEV_REGISTERS_LEGACY,
+                    DEFAULT_DEV_REGISTERS)
 
 from .helpers.modbus_client import MarstekModbusClient
 from pathlib import Path
@@ -48,7 +49,9 @@ class MarstekCoordinator(DataUpdateCoordinator):
             )
 
         self.message_wait_ms = entry_data.get("message_wait_milliseconds")
-        self.timeout = entry_data.get("timeout")
+        # The config flow has no timeout field, so this is None for UI-created
+        # entries; fall back explicitly instead of handing None down the line.
+        self.timeout = entry_data.get("timeout") or DEFAULT_TIMEOUT
         self.unit_id = entry_data.get("unit_id", DEFAULT_UNIT_ID)
 
         # DEV-Register: zwei getrennt schaltbare Gruppen, beide standardmaessig
@@ -239,9 +242,16 @@ class MarstekCoordinator(DataUpdateCoordinator):
         return 1
 
     def _block_read_timeout(self, block_count: int) -> float:
-        """Return a dynamic timeout for block reads based on request size."""
+        """Return a dynamic timeout for block reads based on request size.
+
+        Anchored to the client timeout instead of a fixed 10-22s: a block read
+        runs a single attempt, so waiting several times longer than the client
+        itself only stalls the poll cycle — and on the first refresh that means
+        stalling the config entry setup.
+        """
+        base = float(getattr(self.client, "timeout", DEFAULT_TIMEOUT) or DEFAULT_TIMEOUT)
         # Longer blocks need a bit more time; cap to avoid very slow failure detection.
-        return min(10.0 + 0.15 * block_count, 22.0)
+        return min(2.0 * base + 0.02 * block_count, 3.0 * base)
 
     def _build_contiguous_read_groups(self, sensors: list[dict]) -> list[list[dict]]:
         """Group sensor definitions into strictly contiguous register blocks."""
