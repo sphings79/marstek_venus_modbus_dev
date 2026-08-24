@@ -138,6 +138,12 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self._connection_established_at = None
         self._last_reconnect_time = None
         self._reconnect_attempts = 0
+        # Half-open recovery: a transaction cancelled by the outer guard leaves
+        # the socket unusable, so it is rebuilt right there instead of waiting
+        # for the cycle-level check. Throttled, so a stalled cycle cannot turn
+        # into one reconnect per register.
+        self._half_open_reconnects = 0
+        self._last_half_open_reconnect_at = None
         self._last_block_timeout_time = None
         self._last_block_timeout_registers = None
         self._last_block_timeout_count = None
@@ -243,6 +249,29 @@ class MarstekCoordinator(DataUpdateCoordinator):
             return 5
         return 1
 
+    def _client_timeout(self) -> float:
+        """Return the client's own request timeout, guarded against None."""
+        return float(getattr(self.client, "timeout", DEFAULT_TIMEOUT) or DEFAULT_TIMEOUT)
+
+    def _call_guard_timeout(self, max_retries: int = 3, retry_delay: float = 0.0) -> float:
+        """Return the outer guard for a single client call.
+
+        The guard is a backstop against a wedged coroutine, never the timeout
+        that is supposed to fire: it has to outlast the client's own retry
+        budget, otherwise it cancels a transaction mid-flight and leaves the
+        socket half-open — the failure this fork keeps chasing. On top of the
+        budget it allows one connect, which `_ensure_connected` may need before
+        the first attempt.
+        """
+        base = self._client_timeout()
+        try:
+            budget = float(self.client.request_budget(max_retries, retry_delay))
+        except (AttributeError, TypeError, ValueError):
+            # Older client without the helper: fall back to the same shape.
+            attempts = max(1, int(max_retries or 1))
+            budget = attempts * base + (attempts - 1) * (base + max(0.0, retry_delay))
+        return budget + max(1.0, base)
+
     def _block_read_timeout(self, block_count: int) -> float:
         """Return a dynamic timeout for block reads based on request size.
 
@@ -251,9 +280,54 @@ class MarstekCoordinator(DataUpdateCoordinator):
         itself only stalls the poll cycle — and on the first refresh that means
         stalling the config entry setup.
         """
-        base = float(getattr(self.client, "timeout", DEFAULT_TIMEOUT) or DEFAULT_TIMEOUT)
-        # Longer blocks need a bit more time; cap to avoid very slow failure detection.
-        return min(2.0 * base + 0.02 * block_count, 3.0 * base)
+        # Longer blocks need a bit more time; the guard itself already covers
+        # the single attempt plus one connect.
+        return self._call_guard_timeout(max_retries=1) + 0.02 * block_count
+
+    async def _async_recover_half_open(self, context: str) -> bool:
+        """Rebuild the connection after a call was cancelled by the outer guard.
+
+        A cancelled transaction never reads its response, so every later request
+        on that socket meets a stale frame or nothing at all. The cycle-level
+        check further down only reacts once a whole cycle is through, which in a
+        real outage means minutes: one observed Venus E v3 log spent 356 seconds
+        in a single cycle before anything reconnected. This reacts where the
+        damage happens.
+
+        Throttled to one reconnect per cooldown so a stalled cycle with dozens of
+        timing-out registers cannot turn into a reconnect storm.
+        """
+        from homeassistant.util.dt import utcnow
+
+        now = perf_counter()
+        cooldown = max(5.0, 2.0 * self._client_timeout())
+        last = self._last_half_open_reconnect_at
+        if last is not None and (now - last) < cooldown:
+            _LOGGER.debug(
+                "Half-open recovery for %s skipped - last reconnect was %.1fs ago (cooldown %.1fs)",
+                context,
+                now - last,
+                cooldown,
+            )
+            return False
+
+        self._last_half_open_reconnect_at = now
+        self._reconnect_attempts += 1
+        self._half_open_reconnects += 1
+        _LOGGER.info("Rebuilding the connection after a timeout on %s", context)
+        try:
+            connected = await self.client.async_reconnect()
+        except Exception as exc:
+            _LOGGER.error("Reconnect after the timeout on %s raised: %s", context, exc)
+            return False
+
+        if connected:
+            self._last_reconnect_time = utcnow()
+            _LOGGER.info("Connection rebuilt after the timeout on %s", context)
+            return True
+
+        _LOGGER.warning("Reconnect after the timeout on %s did not succeed", context)
+        return False
 
     def _build_contiguous_read_groups(self, sensors: list[dict]) -> list[list[dict]]:
         """Group sensor definitions into strictly contiguous register blocks."""
@@ -454,6 +528,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
             "last_failed_read": self._last_failed_read.isoformat() if self._last_failed_read else None,
             "last_reconnect_time": self._last_reconnect_time.isoformat() if self._last_reconnect_time else None,
             "reconnect_attempts": self._reconnect_attempts,
+            "half_open_reconnects": self._half_open_reconnects,
             "last_block_timeout_time": self._last_block_timeout_time.isoformat() if self._last_block_timeout_time else None,
             "last_block_timeout_registers": self._last_block_timeout_registers,
             "last_block_timeout_count": self._last_block_timeout_count,
@@ -576,7 +651,8 @@ class MarstekCoordinator(DataUpdateCoordinator):
             return None
 
         try:
-            # 10 second timeout for individual reads to prevent hanging
+            # Backstop against a wedged coroutine. The client is expected to give
+            # up first, on its own timeout, and to retry on a fresh socket.
             value = await asyncio.wait_for(
                 self.client.async_read_register(
                     register=sensor["register"],
@@ -584,7 +660,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
                     count=sensor.get("count"),
                     sensor_key=key,
                 ),
-                timeout=10.0
+                timeout=self._call_guard_timeout(retry_delay=0.1),
             )
 
             # Accept primitive values and structured types (dict/list) returned
@@ -617,6 +693,9 @@ class MarstekCoordinator(DataUpdateCoordinator):
             _LOGGER.warning(
                 "Timeout reading %s '%s' at register %d from %s:%d - connection may be slow or incorrect",
                 entity_type, key, sensor["register"], self.client.host, self.client.port
+            )
+            await self._async_recover_half_open(
+                f"{entity_type} '{key}' at register {sensor['register']}"
             )
             return None
         except Exception as e:
@@ -694,6 +773,10 @@ class MarstekCoordinator(DataUpdateCoordinator):
                 block_start,
                 block_end,
             )
+            # A block runs with max_retries=1, so the client never reconnects on
+            # its own here — whether it timed out or gave up cleanly. Without
+            # this, every fallback read below starts on the same suspect socket.
+            await self._async_recover_half_open(f"block read {block_start}-{block_end}")
             values: dict[str, object] = {}
             for sensor in due_sensors:
                 key = sensor["key"]
@@ -811,7 +894,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
             try:
                 success = await _asyncio.wait_for(
                     self.client.async_write_register(register=register, value=value_to_send),
-                    timeout=10.0,
+                    timeout=self._call_guard_timeout(retry_delay=0.2),
                 )
             except _asyncio.TimeoutError:
                 _LOGGER.error(
@@ -819,6 +902,11 @@ class MarstekCoordinator(DataUpdateCoordinator):
                     register,
                     entity_type,
                     key,
+                )
+                # Saying "half-open" and then doing nothing about it is how a
+                # dead socket survives into the next poll cycle.
+                await self._async_recover_half_open(
+                    f"write to {entity_type} '{key}' at register {register}"
                 )
                 return False
 

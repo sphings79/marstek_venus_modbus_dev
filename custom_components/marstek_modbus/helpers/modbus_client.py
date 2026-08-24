@@ -5,6 +5,7 @@ a Marstek Venus battery system asynchronously.
 """
 
 from pymodbus.client.tcp import AsyncModbusTcpClient
+from pymodbus.exceptions import ModbusIOException
 import asyncio
 import socket
 from typing import Optional
@@ -14,6 +15,15 @@ import logging
 from ..const import DEFAULT_MESSAGE_WAIT_MS, DEFAULT_TIMEOUT, DEFAULT_UNIT_ID
 
 _LOGGER = logging.getLogger(__name__)
+
+# pymodbus retries a request internally before it gives up, each attempt against
+# the full timeout — with its default of 3 a single call can occupy 4 x timeout.
+# That second retry ladder is both invisible from here and weaker than the one in
+# this module: it re-sends on the same socket, keeps the transaction id, and a
+# late response then fails the id check anyway. Ours reconnects between attempts.
+# One ladder, ours: a pymodbus call is one attempt and costs at most one timeout,
+# which is what `request_budget` promises its callers.
+PYMODBUS_RETRIES = 0
 
 
 class MarstekModbusClient:
@@ -61,6 +71,7 @@ class MarstekModbusClient:
             host=host,
             port=port,
             timeout=self.timeout,
+            retries=PYMODBUS_RETRIES,
         )
 
         # set message wait on client if supported
@@ -82,6 +93,51 @@ class MarstekModbusClient:
         self.wait_between_requests = self.message_wait_sec
         self._last_request_finished_at: float | None = None
         self._last_request_duration: float | None = None
+
+    def _pymodbus_call_cost(self) -> float:
+        """Return the worst-case duration of one call into pymodbus.
+
+        Read back off the live client rather than assumed from
+        `PYMODBUS_RETRIES`: the attribute moved between pymodbus releases, and a
+        version that ignores or clamps the argument would otherwise make every
+        budget built on top of this too small. pymodbus keeps the count on the
+        transaction manager (`client.ctx.retries`) and spends the full timeout on
+        each of its `retries + 1` attempts.
+        """
+        retries = None
+        for holder in (getattr(self.client, "ctx", None), self.client):
+            candidate = getattr(holder, "retries", None)
+            if candidate is not None:
+                retries = candidate
+                break
+        try:
+            attempts = 1 + max(0, int(retries if retries is not None else PYMODBUS_RETRIES))
+        except (TypeError, ValueError):
+            attempts = 1 + max(0, PYMODBUS_RETRIES)
+        return attempts * self.timeout
+
+    def request_budget(self, max_retries: int = 3, retry_delay: float = 0.0) -> float:
+        """Return how long one read or write call may legitimately take.
+
+        Counts every attempt against the client timeout and, between two
+        attempts, the retry delay, the pacing gap and one reconnect — a
+        reconnect is a connect and runs against the same timeout.
+
+        Callers guard these calls with their own `asyncio.wait_for`. That guard
+        has to sit *above* this value: a guard that fires first cancels a
+        transaction the client is still working on, and the request whose
+        response never gets read is exactly what leaves the socket half-open.
+        """
+        attempts = max(1, int(max_retries or 1))
+        try:
+            delay = max(0.0, float(retry_delay))
+        except (TypeError, ValueError):
+            delay = 0.0
+
+        per_call = self._pymodbus_call_cost()
+
+        between_attempts = delay + self.message_wait_sec + self.timeout
+        return attempts * per_call + (attempts - 1) * between_attempts
 
     async def _async_wait_for_request_slot(self) -> None:
         """Keep at least `message_wait_ms` between two Modbus transactions.
@@ -130,6 +186,7 @@ class MarstekModbusClient:
                 host=self.host,
                 port=self.port,
                 timeout=self.timeout,
+                retries=PYMODBUS_RETRIES,
             )
             # restore configured properties where supported
             try:
@@ -427,6 +484,31 @@ class MarstekModbusClient:
                     # Pace requests to avoid overwhelming the device.
                     await self._async_wait_for_request_slot()
 
+                    # Log the request before it goes out, not after it came back.
+                    # A request that is never answered is the one worth naming,
+                    # and logging it from the success branch hides exactly that.
+                    if count == 1:
+                        _LOGGER.debug(
+                            "Requesting single register %d (0x%04X) from '%s' for key '%s' (attempt %d)",
+                            register,
+                            register,
+                            self.host,
+                            sensor_key or "unknown",
+                            attempt + 1,
+                        )
+                    else:
+                        _LOGGER.debug(
+                            "Requesting register block %d-%d (0x%04X-0x%04X) from '%s' for keys '%s' (count: %s, attempt %d)",
+                            register,
+                            register + count - 1,
+                            register,
+                            register + count - 1,
+                            self.host,
+                            sensor_key or "unknown",
+                            count,
+                            attempt + 1,
+                        )
+
                     try:
                         read_method = getattr(self.client, "read_holding_registers")
                         for unit_kw in ("device_id", "unit", "slave"):
@@ -480,13 +562,6 @@ class MarstekModbusClient:
                     regs = list(result.registers)
                     if count == 1:
                         _LOGGER.debug(
-                            "Requesting single register %d (0x%04X) from '%s' for key '%s'",
-                            register,
-                            register,
-                            self.host,
-                            sensor_key or "unknown",
-                        )
-                        _LOGGER.debug(
                             "Received single register data from '%s' for register %d (0x%04X): %s",
                             self.host,
                             register,
@@ -494,16 +569,6 @@ class MarstekModbusClient:
                             regs,
                         )
                     else:
-                        _LOGGER.debug(
-                            "Requesting register block %d-%d (0x%04X-0x%04X) from '%s' for keys '%s' (count: %s)",
-                            register,
-                            register + count - 1,
-                            register,
-                            register + count - 1,
-                            self.host,
-                            sensor_key or "unknown",
-                            count,
-                        )
                         _LOGGER.debug(
                             "Received block data from '%s' for registers %d-%d (0x%04X-0x%04X): %s",
                             self.host,
@@ -516,6 +581,26 @@ class MarstekModbusClient:
                     return regs
             except asyncio.CancelledError:
                 raise
+            except ModbusIOException as e:
+                # pymodbus turns a cancellation into a ModbusIOException, so this
+                # branch has to let it through before treating it as a timeout —
+                # otherwise a caller's guard cannot stop the retry loop at all.
+                cause = getattr(e, "__cause__", None)
+                if isinstance(cause, asyncio.CancelledError):
+                    raise cause
+
+                # An unanswered request is the expected shape of a failure here,
+                # not something exceptional. It gets a readable line instead of a
+                # traceback — during an outage this fires once per register.
+                _LOGGER.warning(
+                    "No response for register %d (0x%04X) on attempt %d: %s",
+                    register,
+                    register,
+                    attempt + 1,
+                    e,
+                )
+                if attempt + 1 < max_retries:
+                    await self.async_reconnect()
             except Exception as e:
                 cause = getattr(e, "__cause__", None)
                 if isinstance(cause, asyncio.CancelledError):
@@ -670,20 +755,23 @@ class MarstekModbusClient:
                 return False
 
             try:
-                _LOGGER.debug(
-                    "Writing to register %d (0x%04X), value=%d (0x%04X), attempt=%d",
-                    register,
-                    register,
-                    value,
-                    value,
-                    attempt + 1,
-                )
-
                 result = None
                 request_start = asyncio.get_running_loop().time()
                 async with self._request_lock:
                     # Same pacing as for reads, so a write does not jump the queue.
                     await self._async_wait_for_request_slot()
+
+                    # Logged from inside the lock, so the timestamp is the moment
+                    # the frame goes out rather than the moment the write was
+                    # queued behind whatever request is still running.
+                    _LOGGER.debug(
+                        "Writing to register %d (0x%04X), value=%d (0x%04X), attempt=%d",
+                        register,
+                        register,
+                        value,
+                        value,
+                        attempt + 1,
+                    )
 
                     try:
                         # Try multiple kwarg names for compatibility
@@ -727,6 +815,20 @@ class MarstekModbusClient:
                 # Allow cancellation to propagate during shutdown
                 raise
 
+            except ModbusIOException as e:
+                cause = getattr(e, "__cause__", None)
+                if isinstance(cause, asyncio.CancelledError):
+                    raise cause
+
+                # Same reasoning as on the read side: no response is a plain
+                # failure, not a traceback.
+                _LOGGER.warning(
+                    "No response for the write to register %d (0x%04X) on attempt %d: %s",
+                    register,
+                    register,
+                    attempt + 1,
+                    e,
+                )
             except Exception as e:
                 # If underlying cause is CancelledError, propagate it
                 cause = getattr(e, "__cause__", None)
@@ -743,6 +845,15 @@ class MarstekModbusClient:
 
             attempt += 1
             if attempt < max_retries:
+                # A write that timed out or errored leaves the same doubt about
+                # the socket as a failed read does, so it gets the same answer:
+                # retry on a fresh connection instead of on the suspect one.
+                _LOGGER.debug(
+                    "Attempting reconnect before write retry for register %d (0x%04X)",
+                    register,
+                    register,
+                )
+                await self.async_reconnect()
                 await asyncio.sleep(retry_delay)
 
         _LOGGER.error(

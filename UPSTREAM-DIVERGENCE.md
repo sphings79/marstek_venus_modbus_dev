@@ -268,7 +268,7 @@ Display names only — entity ids are untouched.
 - `README.md`: `d` column blanked for `max_cell_voltage` / `min_cell_voltage`, with a
   footnote.
 - `.gitignore`: `logs/`.
-- `manifest.json`: semantic versioning (`1.1.0`) instead of upstream's calendar scheme, so
+- `manifest.json`: semantic versioning (`1.2.0`) instead of upstream's calendar scheme, so
   it is obvious which build is installed. **Do not carry upstream.**
 
 `7849a29` and `4521d0d` added and then corrected a `registers/firmware-analysis.md`
@@ -320,6 +320,10 @@ registers instead, which carry no scale code.
 | 3c | grid_power / battery_power_bms | Venus D | formulas are device-specific |
 | 3d | categories and state classes | **partly** | the two state_class fixes apply to all models |
 | 9 | version scheme | **no** | fork-specific |
+| 13 | setup time, client timeout, block guard | **yes** | fixes a live defect on every UI-created entry |
+| 14 | `message_wait_ms` reachable in the options | **yes** | the value was unwritable before |
+| 15 | `precision` on calculated sensors | **yes** | affects every model |
+| 16 | one retry ladder, half-open recovery, request logging | **yes** | model-agnostic, verified against a silent server |
 
 Removals in 4 and 5 leave orphaned entities behind in existing installations. Home
 Assistant keeps them in the registry as `unavailable` until deleted by hand. Any upstream
@@ -544,3 +548,99 @@ Einstellung und muss in den Entitaetsoptionen zurueckgesetzt werden.
 
 **Starker Upstream-Kandidat** — der Fehler betrifft jedes Modell, das
 berechnete Sensoren mit Nachkommastellen hat.
+
+## 16. Ein stummes Geraet legte das Polling minutenlang lahm
+
+**Dateien:** `helpers/modbus_client.py`, `coordinator.py`
+
+Gemeldet an der Upstream-Integration, Venus E v3, Firmware 150. Das Debug-Log
+zeigt den Ablauf lueckenlos:
+
+```
+09:39:17.909  letzte Antwort des Geraets (42021)      <- ab hier: 0 Antworten
+09:39:18.06   Read 43000 raus ................ nie beantwortet
+09:39:25.375  Automation schreibt force_mode + set_charge_power
+09:39:28.000  wait_for(10 s) bricht den 43000-Read ab
+...           28 Reads + 7 Bloecke, jeder volle 10 s
+09:46:04.543  "All read attempts failed (0/28)"  -> sofortiger Reconnect
+09:46:04.859  verbunden — alles laeuft wieder, inklusive 43000
+```
+
+Dazwischen: keine einzige Antwort, kein einziger Client-Fehler, ein einziger
+Poll-Zyklus (`Finished fetching MarstekCoordinator data in 356.622 seconds`).
+Das Geraet war nicht defekt — der frische Socket lieferte nach 316 ms wieder
+Daten. Der alte Socket war halboffen, und niemand hat ihn ersetzt.
+
+**a) Der aeussere Guard lag unter dem Retry-Budget des Clients.** Der
+Coordinator umgibt jeden Aufruf mit `asyncio.wait_for`, upstream fest auf 10 s.
+pymodbus wiederholt eine Anfrage aber selbst, `retries=3` per Default, jeder
+Versuch gegen den vollen Timeout. Gemessen gegen einen stummen Server:
+
+| pymodbus `retries` | Dauer **eines** Aufrufs bei `timeout=3` |
+|---|---|
+| 3 (Default) | 12,01 s |
+| 0 | 3,00 s |
+
+Ein Aufruf brauchte also laenger als der Guard, der ihn bewachen sollte. Der
+Guard hat **immer** zuerst gefeuert und die Transaktion mittendrin abgebrochen —
+und eine abgebrochene Transaktion liest ihre Antwort nie, was den Socket genau in
+den Zustand bringt, den die Meldung „connection may be half-open" beschreibt.
+Das war auch mit dem Timeout-Fix aus Abschnitt 13c noch so: 12 s > 10 s.
+
+Jetzt gibt es nur noch **eine** Retry-Ebene, die dieses Moduls
+(`PYMODBUS_RETRIES = 0`). Sie ist die staerkere: pymodbus sendet auf demselben
+Socket erneut und behaelt die Transaktions-ID, sodass eine spaet eintreffende
+Antwort ohnehin an der ID-Pruefung scheitert — dieser Client baut zwischen zwei
+Versuchen die Verbindung neu auf. `request_budget()` gibt an, was ein Aufruf
+kosten darf, `_call_guard_timeout()` legt den Guard darueber (plus einen
+Connect). Bei 3 s Timeout: Read 15,4 s Budget → 18,4 s Guard, Block 3,0 s →
+6,0–6,9 s. Die Blockwerte entsprechen damit weiter Abschnitt 13d.
+
+Die Zahl der pymodbus-internen Versuche liest `_pymodbus_call_cost()` am
+lebenden Client ab (`client.ctx.retries`) statt sie aus `PYMODBUS_RETRIES`
+anzunehmen: das Attribut ist zwischen pymodbus-Versionen umgezogen, und eine
+Version, die das Argument ignoriert, wuerde sonst jedes darauf aufgebaute Budget
+zu klein machen — also genau den Fehler wieder herstellen, den dieser Abschnitt
+behebt. Gegengeprueft: bei ignoriertem Argument waechst das Read-Budget von 15,4
+auf 42,4 s mit.
+
+Gegengemessen an einem Server, der wie im Log stumm bleibt:
+
+| | Ergebnis |
+|---|---|
+| vorher (`retries=3`, Guard 10 s) | Guard bricht nach 10,00 s ab, **1** Socket — kein Reconnect |
+| nachher (`retries=0`, Guard 18,4 s) | Client gibt nach 9,82 s sauber auf, **3** Sockets — zwei Reconnects |
+
+Und antwortet das Geraet auf einer frischen Verbindung wieder, ist der Read nach
+**3,41 s** durch statt nach 356 s.
+
+**b) „Half-open" sagen und nichts tun.** Feuert der Guard doch, raeumt
+`_async_recover_half_open()` den Socket jetzt an Ort und Stelle ab, statt auf die
+Zyklus-Auswertung zu warten. Die greift naemlich erst, wenn ein Zyklus zu Ende
+ist — im Log waren das 356 Sekunden — und ihre Quote (≥50 % Timeouts in drei
+Zyklen in Folge) wurde dabei kein einziges Mal ausgewertet. Der Reconnect ist auf
+einen pro `max(5 s, 2 x Timeout)` gedrosselt, damit ein haengender Zyklus mit
+dutzenden Registern keinen Reconnect-Sturm ausloest. Angeschlossen sind alle drei
+Stellen, die vorher nur protokolliert haben: Einzelread, Blockread (der laeuft mit
+`max_retries=1` und reconnectet nie von selbst) und Write. Der Write-Pfad im
+Client baut zwischen zwei Versuchen jetzt ebenfalls neu auf, wie der Read-Pfad es
+schon tat; FC06 ist idempotent, ein Wiederholungsschreiben desselben Werts ist
+harmlos.
+
+Zaehler `half_open_reconnects` in den Verbindungsattributen.
+
+**c) Der Request, der haengt, stand nicht im Log.** `Requesting single register
+…` wurde im Erfolgszweig protokolliert — ausgerechnet die unbeantwortete Anfrage
+tauchte also nie auf. Dass es 43000 war, liess sich nur ueber den Zeitstempel des
+Timeouts rekonstruieren. Die Zeile steht jetzt vor dem Request, mitsamt
+Versuchsnummer; beim Write steht sie innerhalb des Locks, damit der Zeitstempel
+den Moment auf der Leitung meint und nicht den Moment des Einreihens.
+
+Dazu: eine unbeantwortete Anfrage ist kein Ausnahmefall. `ModbusIOException`
+bekommt eine lesbare Warnung statt eines Tracebacks — bei einem Ausfall waere das
+sonst ein Traceback pro Register. Aufgepasst: pymodbus verpackt ein
+`CancelledError` in genau diese Exception, der Zweig muss sie also durchlassen,
+sonst kann kein Guard die Retry-Schleife mehr stoppen.
+
+**Alle drei Teile sind starke Upstream-Kandidaten** — sie haengen an keinem
+Modell und an keinem Register.
