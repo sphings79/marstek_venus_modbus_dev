@@ -25,6 +25,13 @@ _LOGGER = logging.getLogger(__name__)
 # which is what `request_budget` promises its callers.
 PYMODBUS_RETRIES = 0
 
+# The device does not accept a new session the instant the old one goes away.
+# Measured on a Venus E v3 (EMS 150), five reconnects in one log, every one the
+# same shape: a connect started right after the close was refused after ~110 ms,
+# and the retry ~100 ms later then succeeded in ~310 ms. Waiting here turns two
+# attempts and two warnings into one attempt that works.
+RECONNECT_SETTLE_SEC = 0.3
+
 
 class MarstekModbusClient:
     """
@@ -93,6 +100,9 @@ class MarstekModbusClient:
         self.wait_between_requests = self.message_wait_sec
         self._last_request_finished_at: float | None = None
         self._last_request_duration: float | None = None
+        # True once a connection has succeeded, so the settle delay before a
+        # reconnect is not paid on the very first connect.
+        self._connected_once = False
 
     def _pymodbus_call_cost(self) -> float:
         """Return the worst-case duration of one call into pymodbus.
@@ -136,7 +146,9 @@ class MarstekModbusClient:
 
         per_call = self._pymodbus_call_cost()
 
-        between_attempts = delay + self.message_wait_sec + self.timeout
+        # Between two attempts: the retry delay, the pacing gap, and a reconnect —
+        # which is the settle wait plus a connect against the same timeout.
+        between_attempts = delay + self.message_wait_sec + RECONNECT_SETTLE_SEC + self.timeout
         return attempts * per_call + (attempts - 1) * between_attempts
 
     async def _async_wait_for_request_slot(self) -> None:
@@ -173,6 +185,7 @@ class MarstekModbusClient:
         # and stale transaction id problems.
         try:
             # Close and discard any existing client first
+            replacing_a_session = self._connected_once
             if self.client:
                 try:
                     result = self.client.close()
@@ -180,6 +193,12 @@ class MarstekModbusClient:
                         await result
                 except Exception:
                     pass
+
+            if replacing_a_session:
+                # Give the device a moment to let go of the old session before
+                # asking for a new one; see RECONNECT_SETTLE_SEC. Skipped on the
+                # very first connect, where there is nothing to let go of.
+                await asyncio.sleep(RECONNECT_SETTLE_SEC)
 
             # Create a new client instance
             self.client = AsyncModbusTcpClient(
@@ -197,6 +216,7 @@ class MarstekModbusClient:
             connected = await self.client.connect()
 
             if connected:
+                self._connected_once = True
                 # Small settle time so the device has time to flush and be ready
                 await asyncio.sleep(max(0.2, self.message_wait_sec))
                 # Enable TCP keepalive so the OS probes dead connections quickly
@@ -629,8 +649,11 @@ class MarstekModbusClient:
             if attempt < max_retries:
                 await asyncio.sleep(retry_delay)
 
-        _LOGGER.error(
-            "Failed to read register %d (0x%04X) after %d attempts",
+        # A single-attempt read is the caller probing a block; it has an
+        # individual-read fallback ready, so this is not an error on its own.
+        log = _LOGGER.warning if max_retries <= 1 else _LOGGER.error
+        log(
+            "Failed to read register %d (0x%04X) after %d attempt(s)",
             register,
             register,
             max_retries,

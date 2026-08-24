@@ -268,7 +268,7 @@ Display names only — entity ids are untouched.
 - `README.md`: `d` column blanked for `max_cell_voltage` / `min_cell_voltage`, with a
   footnote.
 - `.gitignore`: `logs/`.
-- `manifest.json`: semantic versioning (`1.2.0`) instead of upstream's calendar scheme, so
+- `manifest.json`: semantic versioning (`1.2.1`) instead of upstream's calendar scheme, so
   it is obvious which build is installed. **Do not carry upstream.**
 
 `7849a29` and `4521d0d` added and then corrected a `registers/firmware-analysis.md`
@@ -644,3 +644,33 @@ sonst kann kein Guard die Retry-Schleife mehr stoppen.
 
 **Alle drei Teile sind starke Upstream-Kandidaten** — sie haengen an keinem
 Modell und an keinem Register.
+
+### Nachtrag 1.2.1 — der Reconnect kam zu frueh
+
+Ein zweites Log desselben Melders, diesmal mit 1.2.0, zeigt die Erholung wie
+gebaut: drei Ausfaelle in 18 Minuten, jeder nach 1–4 Sekunden vorbei, kein
+Blackout. Es zeigt aber auch, dass jeder Reconnect zweimal ansetzen musste:
+
+| Abstand zum Schliessen des alten Sockets | Ergebnis |
+|---|---|
+| ~0 ms | abgelehnt nach ~110 ms |
+| ~210 ms | verbunden nach ~310 ms |
+
+Fuenf von fuenf Reconnects liefen so. Das Geraet gibt die alte Sitzung nicht
+sofort frei. `RECONNECT_SETTLE_SEC = 0.3` wartet jetzt zwischen Schliessen und
+Neuverbinden — nicht beim allererste Connect, dort gibt es nichts freizugeben.
+Das spart je Vorfall einen vergeblichen Versuch und zwei Warnungen
+(`Failed to connect` / `Reconnect failed`) plus, wenn der Coordinator den
+Reconnect angestossen hat, dessen `did not succeed`. Die Wartezeit steckt im
+`request_budget`, damit der Guard weiter darueber liegt.
+
+Ausserdem: `Failed to read register … after 1 attempt(s)` ist keine Fehlermeldung
+mehr, sondern eine Warnung. Ein Read mit `max_retries=1` ist ein Blockversuch,
+fuer den der Coordinator den Einzelread-Fallback schon in der Hand haelt.
+
+**Was bleibt und nicht uns gehoert:** pymodbus protokolliert jede unbeantwortete
+Anfrage selbst mit `No response received after 0 retries` auf ERROR. Mit
+`retries=0` ist das eine Zeile je Vorfall statt einer je vier. Der Logger
+`pymodbus.logging` ist geteilt — auch die eingebaute `modbus`-Integration von
+Home Assistant haengt daran —, ein Filter von hier aus wuerde also fremde
+Integrationen mit stummschalten. Bleibt stehen.
