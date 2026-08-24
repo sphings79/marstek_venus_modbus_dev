@@ -32,6 +32,15 @@ PYMODBUS_RETRIES = 0
 # attempts and two warnings into one attempt that works.
 RECONNECT_SETTLE_SEC = 0.3
 
+# When the device stops accepting connections, every read attempt asking for a
+# fresh socket turns into a connect storm: measured at 61 attempts in one minute
+# against a device answering ECONNREFUSED, which keeps a bridge chip with a small
+# socket table saturated and stops it recovering at all. After a failed connect
+# the next attempt is held off, doubling from one second up to half a minute,
+# and any success clears it.
+CONNECT_BACKOFF_BASE_SEC = 1.0
+CONNECT_BACKOFF_MAX_SEC = 30.0
+
 
 class MarstekModbusClient:
     """
@@ -104,6 +113,17 @@ class MarstekModbusClient:
         # reconnect is not paid on the very first connect.
         self._connected_once = False
 
+        # Connection state is shared: the poll loop and a write from an
+        # automation both reach for it. Without a lock of its own they tear
+        # down each other's fresh socket, and a caller can end up holding a
+        # client that another coroutine already replaced.
+        self._connect_lock = asyncio.Lock()
+        # Bumped on every successful connect, so a caller that waited for the
+        # lock can tell whether somebody already did the work it queued up for.
+        self._connect_generation = 0
+        self._connect_failures = 0
+        self._connect_blocked_until = 0.0
+
     def _pymodbus_call_cost(self) -> float:
         """Return the worst-case duration of one call into pymodbus.
 
@@ -172,13 +192,74 @@ class MarstekModbusClient:
         if request_start is not None:
             self._last_request_duration = self._last_request_finished_at - request_start
 
+    def _connect_suppressed(self) -> bool:
+        """Return True while the backoff after failed connects is still running."""
+        if not self._connect_blocked_until:
+            return False
+        remaining = self._connect_blocked_until - asyncio.get_running_loop().time()
+        if remaining <= 0:
+            return False
+        _LOGGER.debug(
+            "Connect to %s:%s held off for another %.1fs after %d failed attempt(s)",
+            self.host,
+            self.port,
+            remaining,
+            self._connect_failures,
+        )
+        return True
+
+    def _note_connect_failure(self) -> None:
+        """Hold off the next connect, doubling the wait with every failure."""
+        self._connect_failures += 1
+        delay = min(
+            CONNECT_BACKOFF_BASE_SEC * (2 ** (self._connect_failures - 1)),
+            CONNECT_BACKOFF_MAX_SEC,
+        )
+        self._connect_blocked_until = asyncio.get_running_loop().time() + delay
+        _LOGGER.debug(
+            "Connect to %s:%s failed %d time(s), next attempt in %.1fs",
+            self.host,
+            self.port,
+            self._connect_failures,
+            delay,
+        )
+
+    def _note_connect_success(self) -> None:
+        """Clear the backoff and mark this connection as a new generation."""
+        self._connect_generation += 1
+        self._connect_failures = 0
+        self._connect_blocked_until = 0.0
+        self._connected_once = True
+
     async def async_connect(self) -> bool:
         """
         Connect asynchronously to the Modbus TCP server.
 
+        Serialised against other connect attempts, and skipped entirely when
+        another caller already built a working connection while this one was
+        queued — tearing that fresh session down again is how a handful of
+        callers turn one dropout into a connect storm.
+
         Returns:
             bool: True if connection succeeded, False otherwise.
         """
+        generation = self._connect_generation
+        async with self._connect_lock:
+            if self._connect_generation != generation and self.is_connected:
+                _LOGGER.debug(
+                    "Connect to %s:%s skipped - another caller already rebuilt it",
+                    self.host,
+                    self.port,
+                )
+                return True
+
+            if self._connect_suppressed():
+                return False
+
+            return await self._async_connect_locked()
+
+    async def _async_connect_locked(self) -> bool:
+        """Build a fresh connection. Only ever called with the connect lock held."""
         # Always create a fresh client instance to avoid reusing internal
         # buffers/state that may be left in an inconsistent state after
         # network interruptions. This reduces "extra data" / parse errors
@@ -216,7 +297,7 @@ class MarstekModbusClient:
             connected = await self.client.connect()
 
             if connected:
-                self._connected_once = True
+                self._note_connect_success()
                 # Small settle time so the device has time to flush and be ready
                 await asyncio.sleep(max(0.2, self.message_wait_sec))
                 # Enable TCP keepalive so the OS probes dead connections quickly
@@ -243,6 +324,7 @@ class MarstekModbusClient:
                     self.unit_id,
                 )
             else:
+                self._note_connect_failure()
                 _LOGGER.warning(
                     "Failed to connect to Modbus server at %s:%s with unit %s",
                     self.host,
@@ -252,6 +334,7 @@ class MarstekModbusClient:
 
             return bool(connected)
         except Exception as e:
+            self._note_connect_failure()
             _LOGGER.exception("Exception while connecting to Modbus server: %s", e)
             return False
 
@@ -300,8 +383,26 @@ class MarstekModbusClient:
             return False
 
     async def async_reconnect(self) -> bool:
-        """Reconnect to the Modbus TCP server by closing and re-opening the connection."""
+        """Reconnect to the Modbus TCP server by closing and re-opening the connection.
+
+        Callers that queue up behind each other are coalesced: once one of them
+        has rebuilt the connection, the rest take it instead of tearing it down
+        again. Three teardowns inside 600 ms were observed in the field, ending
+        with a caller reading from a client another coroutine had replaced.
+        """
+        generation = self._connect_generation
         async with self._request_lock:
+            if self._connect_generation != generation and self.is_connected:
+                _LOGGER.debug(
+                    "Reconnect to %s:%s skipped - another caller already rebuilt it",
+                    self.host,
+                    self.port,
+                )
+                return True
+
+            if self._connect_suppressed():
+                return False
+
             _LOGGER.info("Reconnecting to Modbus server at %s:%s", self.host, self.port)
 
             try:
@@ -763,7 +864,9 @@ class MarstekModbusClient:
                     register,
                     register,
                 )
-                connected = await self.async_connect()
+                # Through the same path reads use, so a write from an automation
+                # cannot build a second connection next to the poll loop's one.
+                connected = await self._ensure_connected()
                 if not connected:
                     _LOGGER.error(
                         "Reconnect failed, skipping write to register %d (0x%04X)",

@@ -268,7 +268,7 @@ Display names only — entity ids are untouched.
 - `README.md`: `d` column blanked for `max_cell_voltage` / `min_cell_voltage`, with a
   footnote.
 - `.gitignore`: `logs/`.
-- `manifest.json`: semantic versioning (`1.3.0`) instead of upstream's calendar scheme, so
+- `manifest.json`: semantic versioning (`1.3.1`) instead of upstream's calendar scheme, so
   it is obvious which build is installed. **Do not carry upstream.**
 
 `7849a29` and `4521d0d` added and then corrected a `registers/firmware-analysis.md`
@@ -325,6 +325,7 @@ registers instead, which carry no scale code.
 | 15 | `precision` on calculated sensors | **yes** | affects every model |
 | 16 | one retry ladder, half-open recovery, request logging | **yes** | model-agnostic, verified against a silent server |
 | 17 | repair issue for the RS485 control mode reset | verify first | needs 42000 confirmed on a second model |
+| 18 | serialised reconnect + connect backoff | **yes** | belongs with 16; without it 16 can storm |
 
 Removals in 4 and 5 leave orphaned entities behind in existing installations. Home
 Assistant keeps them in the registry as `unavailable` until deleted by hand. Any upstream
@@ -731,3 +732,60 @@ Text im Reparatur-Eintrag zu entschaerfen, der Mechanismus bleibt richtig.
 **Upstream-Kandidat**, sobald 42000 auf einem zweiten Modell so beobachtet wird.
 Auf einem Venus D mit Firmware 150 und altem Kommunikationsmodul tritt das
 Ruecksetzen nicht auf.
+
+## 18. Regression aus 1.2.x — nebenlaeufige Reconnects und ein Connect-Sturm
+
+**Datei:** `helpers/modbus_client.py`
+
+Gemeldet nach 1.3.0: die Verbindung ging dauerhaft offline, ein Reload half
+nicht („Cannot connect to Modbus device"), nur ein kompletter Neustart von Home
+Assistant. Der Fehler kommt nicht aus dem Reparatur-Eintrag, sondern aus der
+Reconnect-Arbeit von 1.2.0/1.2.1: die hat die Zahl der Reconnect-Aufrufer stark
+erhoeht und damit ein latentes Nebenlaeufigkeitsproblem aktiviert.
+
+**a) Jeder wartende Aufrufer riss die frische Verbindung wieder ab.**
+`async_reconnect` haelt zwar das `_request_lock`, aber wer dahinter wartet,
+baut nach dem Freiwerden seinerseits neu auf — obwohl die Verbindung laengst
+wieder steht. Im Log drei Abrisse in 600 ms:
+
+```
+21:30:16.541  Connected ... / Reconnected ... / Reconnecting ...
+21:30:17.153  Connected ... / Reconnected ... / Reconnecting ...
+21:30:17.764  Failed to connect  (Write-Pfad)
+21:30:17.764  Connected          (Poll-Pfad, anderer Client)
+21:30:17.765  ConnectionException: Not connected[AsyncModbusTcpClient]
+```
+
+Die letzte Zeile ist der Beleg: ein Aufrufer las auf `self.client`, den ein
+anderer inzwischen ersetzt hatte. **Der Write-Pfad rief `async_connect` sogar
+ganz ohne Lock auf** — eine Automation, die alle 10 s schreibt, und der
+Poll-Zyklus bauten also gleichzeitig zwei Verbindungen auf.
+
+Jetzt gibt es ein eigenes `_connect_lock` und einen Generationszaehler: wer
+nach dem Warten feststellt, dass ein anderer die Verbindung bereits neu
+aufgebaut hat, uebernimmt sie, statt sie abzureissen. Gemessen: sechs parallele
+`async_reconnect` → **ein** Neuaufbau. Der Write-Pfad geht ueber dasselbe
+`_ensure_connected` wie die Reads.
+
+**b) Ein ablehnendes Geraet wurde in Grund und Boden gefragt.** Sobald das
+Geraet `ECONNREFUSED` lieferte, forderte jeder Leseversuch einen neuen Socket
+an — 61 Verbindungsversuche in einer Minute, ueber drei Minuten hinweg. Bei
+einer Bridge mit kleiner Socket-Tabelle haelt genau das sie belegt: der Sturm
+verhindert die Erholung, die er erzwingen soll. Das erklaert auch, warum nur ein
+HA-Neustart half — er ist die einzige Pause, die das Geraet bekam.
+
+`CONNECT_BACKOFF_BASE_SEC`/`_MAX_SEC` halten den naechsten Versuch nach einem
+Fehlschlag zurueck, verdoppelnd von 1 s bis 30 s, zurueckgesetzt bei jedem
+Erfolg. Gemessen gegen einen ablehnenden Port: **4 Versuche in 12 Sekunden statt
+15**, und die Erholung dauert trotzdem nur 0,3 s, sobald das Geraet wieder
+antwortet.
+
+**c) Nebenbefund, nicht behoben:** viermal im Log steht
+`request ask for transaction_id=7 but got id=6, Skipping`. Nach einer verlorenen
+Antwort liegt der Strom um eine Transaktion versetzt, jede weitere Anfrage
+bekommt die Antwort der vorigen. Der Reconnect raeumt das auf (frischer Socket,
+frische IDs), und genau das passiert auch. Mit `PYMODBUS_RETRIES = 0` faellt es
+nur schneller auf als vorher.
+
+**Lehre fuer Abschnitt 16:** mehr Reconnect-Stellen sind nur dann eine
+Verbesserung, wenn der Reconnect selbst serialisiert und gedeckelt ist.
