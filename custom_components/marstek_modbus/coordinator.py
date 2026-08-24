@@ -383,8 +383,8 @@ class MarstekCoordinator(DataUpdateCoordinator):
             return
 
         _LOGGER.warning(
-            "The device left RS485 control mode on its own (register %s is %s, was %s) - "
-            "control commands have no effect until it is switched back on",
+            "The device dropped out of the control mode on its own (register %s is %s, was %s) - "
+            "forced charge/discharge commands are still acknowledged but no longer acted on",
             definition.get("register"),
             value,
             previous,

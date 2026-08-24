@@ -1164,12 +1164,12 @@
   },
   "issues": {
     "rs485_control_mode_reset": {
-      "title": "{device}: RS485 control mode was reset",
+      "title": "{device}: operating mode fell back — control commands have no effect",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Switch RS485 control mode back on",
-            "description": "The battery switched RS485 control mode off by itself — the integration did not change it. On firmware 150 this happens in the same moment as a brief Modbus dropout.\n\nReadings keep working, but **control commands have no effect** while the mode is off. That is why a control loop can appear to stop working for no reason.\n\nSubmitting switches the mode back on. If the device resets it again, this entry comes back."
+            "title": "Restore the control mode",
+            "description": "The battery reset its operating mode to the stored value by itself. The integration did not change it.\n\n**Forced charge and discharge commands no longer take effect.** The awkward part: writes are still acknowledged and readings keep coming — the device simply stops acting on the commands. Measured on a Venus D: an ongoing discharge dropped from 605 W to 12 W, the inverter's own consumption.\n\nSubmitting restores the control mode. If the device resets it again, this entry comes back.\n\n*Note: registers 42000 and 43000 are the same byte in the firmware. The control mode and the user work mode are one state with two faces — changing the work mode also ends the control.*"
           }
         },
         "abort": {

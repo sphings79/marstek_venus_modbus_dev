@@ -1168,12 +1168,12 @@
   },
   "issues": {
     "rs485_control_mode_reset": {
-      "title": "{device}: RS485-besturingsmodus is teruggezet",
+      "title": "{device}: bedrijfsmodus teruggevallen — stuurcommando's zonder effect",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "RS485-besturingsmodus weer inschakelen",
-            "description": "De batterij heeft de RS485-besturingsmodus zelf uitgeschakeld — de integratie heeft hem niet gewijzigd. Op firmware 150 gebeurt dit op hetzelfde moment als een korte onderbreking van de Modbus-verbinding.\n\nMetingen blijven werken, maar **stuurcommando's hebben geen effect** zolang de modus uit staat. Daardoor lijkt een regeling zonder aanleiding te stoppen met werken.\n\nVerzenden schakelt de modus weer in. Zet het apparaat hem opnieuw terug, dan verschijnt deze melding weer."
+            "title": "Besturingsmodus herstellen",
+            "description": "De batterij heeft haar bedrijfsmodus zelf teruggezet naar de opgeslagen waarde. De integratie heeft hem niet gewijzigd.\n\n**Geforceerde laad- en ontlaadcommando's hebben daardoor geen effect meer.** Het vervelende: schrijfacties worden nog steeds bevestigd en metingen blijven binnenkomen — het apparaat voert de commando's alleen niet meer uit. Gemeten op een Venus D: een lopende ontlading zakte van 605 W naar 12 W, het eigen verbruik van de omvormer.\n\nVerzenden herstelt de besturingsmodus. Zet het apparaat hem opnieuw terug, dan verschijnt deze melding weer.\n\n*Let op: registers 42000 en 43000 zijn hetzelfde byte in de firmware. De besturingsmodus en de gebruikersmodus zijn één toestand met twee gezichten — de werkmodus wijzigen beëindigt ook de besturing.*"
           }
         },
         "abort": {

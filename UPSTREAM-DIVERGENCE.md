@@ -268,7 +268,7 @@ Display names only — entity ids are untouched.
 - `README.md`: `d` column blanked for `max_cell_voltage` / `min_cell_voltage`, with a
   footnote.
 - `.gitignore`: `logs/`.
-- `manifest.json`: semantic versioning (`1.3.1`) instead of upstream's calendar scheme, so
+- `manifest.json`: semantic versioning (`1.3.2`) instead of upstream's calendar scheme, so
   it is obvious which build is installed. **Do not carry upstream.**
 
 `7849a29` and `4521d0d` added and then corrected a `registers/firmware-analysis.md`
@@ -723,15 +723,57 @@ Ruecknahme, Nutzer schaltet selbst aus, aus seit Start, verweigerte Reparatur,
 Register nicht im Zyklus, Modell ohne das Register), dazu sechs gegen den
 Reparatur-Flow.
 
-**Was nicht belegt ist:** dass Schreibbefehle bei ausgeschaltetem Modus
-tatsaechlich wirkungslos sind. Der Melder handelt danach und `README.md` sagt es
-fuer den 42000er-Bereich, aber ein direkter Gegentest — Write bei
-ausgeschaltetem Modus, Wirkung pruefen — fehlt. Faellt der anders aus, ist der
-Text im Reparatur-Eintrag zu entschaerfen, der Mechanismus bleibt richtig.
+### Nachtrag 1.3.2 — was 42000 wirklich ist
+
+Der offene Punkt ist geklaert, und zwar anders als der urspruengliche Text hier
+annahm. Aus dem dekompilierten `Write_Handler` der v150 (Zeilen 341-380,
+Variable `DAT_080525c4[1]`):
+
+```c
+// Register 42000
+if (param_4 == 0x55aa) { DAT_080525c4[1] = 0x0A; return 0; }        // "Unlock"
+if (param_4 == 0x55bb) { EEPROM_Read(0x301, DAT_080525c4+1, 1); }   // aus EEPROM zurueck
+
+// Register 43000 — dieselbe Variable
+if (read) { byte==0x01 ? 0 : byte==0x02 ? 2 : 1 }
+if (param_4 == 0) byte = 0x01;   // Eigenverbrauch
+if (param_4 == 1) byte = 0x00;   // Anti-Einspeisung
+if (param_4 == 2) byte = 0x05;   // Handel
+EEPROM_Write(0x301, ...);
+```
+
+**42000 und 43000 sind dasselbe Byte.** Es gibt keinen eigenen
+„RS485-Steuermodus" — es gibt ein Modus-Byte, das entweder auf `0x0A` steht
+(dann liest 42000 `0x55AA`) oder auf einem normalen Betriebsmodus. Keine der
+drei Optionen von 43000 schreibt `0x0A`.
+
+Bestaetigt in drei Feldlogs desselben Venus E v3: 42000 und 43000 wechseln
+**jedes Mal in derselben Sekunde** (21930/1 ↔ 21947/0).
+
+**Die Wirkung ist gemessen, nicht vermutet.** Test am Venus D am 2026-08-24: bei
+laufender erzwungener Entladung (605 W) den Schalter aus — die Entladung fiel auf
+12 W, den Eigenverbrauch des Wechselrichters. `force_mode` wird also nur befolgt,
+solange das Byte auf `0x0A` steht. Der Write-Handler selbst prueft das Byte
+**nicht** (die Zweige fuer 42011/42020 validieren nur den Wertebereich) — die
+Schreibbefehle werden bestaetigt, die Regelung fuehrt sie nur nicht aus. Genau
+deshalb sieht der Ausfall nach nichts aus.
+
+**Daraus folgt ein Modellfehler, den auch Upstream hat:** die Integration zeigt
+zwei unabhaengige Bedienelemente fuer einen einzigen Zustand. Wer
+`user_work_mode` umstellt, beendet damit die Steuerung; wer den Schalter
+einschaltet, nimmt das Geraet aus dem eingestellten Betriebsmodus (43000 liest
+danach `anti_feed`, weil `0x0A` in den else-Zweig faellt). In 1.3.2 ist das in
+allen vier Registerdateien dokumentiert, jeweils mit dem Vermerk, was auf dem
+Modell tatsaechlich geprueft wurde und was aus der gemeinsamen Firmware-Basis
+uebernommen ist. Am Verhalten der Entitaeten wurde bewusst nichts geaendert.
+
+**Weiter offen:** *warum* das Byte von selbst zurueckfaellt. Der periodische
+Reset der Ethernet-Bridge (siehe Firmware-Debug-Projekt) ist es nicht — der
+trifft nur die Netzwerkseite, nicht das Modus-Byte.
 
 **Upstream-Kandidat**, sobald 42000 auf einem zweiten Modell so beobachtet wird.
-Auf einem Venus D mit Firmware 150 und altem Kommunikationsmodul tritt das
-Ruecksetzen nicht auf.
+Der Rücksetzer trat sowohl auf einem Venus E v3 als auch auf einem Venus D mit
+Firmware 150 auf.
 
 ## 18. Regression aus 1.2.x — nebenlaeufige Reconnects und ein Connect-Sturm
 

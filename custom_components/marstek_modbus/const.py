@@ -41,13 +41,18 @@ DEFAULT_DEV_REGISTERS = False
 # Konfigurationen zu migrieren: war er an, gelten beide neuen Optionen als an.
 CONF_DEV_REGISTERS_LEGACY = "dev_registers"
 
-# RS485-Steuermodus (Register 42000). Auf Firmware 150 setzt das Geraet den
-# Modus selbst zurueck — beobachtet auf einem Venus E v3, dreimal in drei Logs,
-# jeweils im selben Moment wie eine Kommunikationsstoerung und ohne dass die
-# Integration geschrieben haette. Ohne den Modus laufen Steuerbefehle ins Leere,
-# gelesen wird weiter: der Ausfall ist also unsichtbar, bis jemand merkt, dass
-# die Regelung nichts mehr bewirkt. Deshalb ein Reparatur-Eintrag statt einer
-# Logzeile.
+# Steuermodus (Register 42000). Der Firmware-Write-Handler zeigt, was dahinter
+# steckt: 42000 und 43000 schreiben dieselbe Variable. `42000 = 0x55AA` setzt das
+# Modus-Byte auf 0x0A, `0x55BB` holt den gespeicherten Modus aus EEPROM 0x301
+# zurueck, und die drei Optionen von 43000 schreiben 0x01/0x00/0x05 — keine davon
+# ist 0x0A. Zwei Bedienelemente, ein Zustand.
+#
+# Faellt das Byte auf einen normalen Betriebsmodus zurueck, ignoriert die
+# Regelung `force_mode`. Schreibbefehle werden weiter bestaetigt und Messwerte
+# weiter geliefert, das Geraet fuehrt nur nichts mehr aus — am Venus D gemessen:
+# laufende Entladung 605 W -> 12 W (Eigenverbrauch des Wechselrichters). Der
+# Ausfall ist also unsichtbar, bis jemand merkt, dass die Regelung nichts
+# bewirkt. Deshalb ein Reparatur-Eintrag statt einer Logzeile.
 RS485_CONTROL_MODE_KEY = "rs485_control_mode"
 ISSUE_RS485_CONTROL_MODE_RESET = "rs485_control_mode_reset"
 

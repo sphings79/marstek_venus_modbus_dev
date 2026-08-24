@@ -566,6 +566,11 @@ BINARY_SENSOR_DEFINITIONS:
         scan_interval: high
 
 SELECT_DEFINITIONS:
+    # Verified on Venus D firmware v150. Venus E v3 shares that firmware base, so
+    # this is expected to hold here but was not separately confirmed.
+    # Shares its firmware byte with rs485_control_mode (42000) — see the note
+    # there. Selecting any option here writes 0x01/0x00/0x05 and therefore ends
+    # RS485 control; forced charge/discharge stops taking effect.
     user_work_mode:
         register: 43000
         enabled_by_default: true
@@ -669,6 +674,19 @@ SWITCH_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         scan_interval: high
+    # Verified on Venus D firmware v150. Venus E v3 shares that firmware base, so
+    # this is expected to hold here but was not separately confirmed.
+    # Register 42000 and 43000 are the SAME byte in the firmware. Verified in the
+    # v150 Write_Handler: 42000 = 0x55AA sets the mode byte to 0x0A, 0x55BB reads
+    # it back from EEPROM 0x301, and 43000's three options write 0x01/0x00/0x05 —
+    # none of which is 0x0A. Reading 42000 returns 0x55AA only while the byte is
+    # 0x0A, so this switch reports "off" whenever the work mode is a normal one.
+    #
+    # Consequence: changing user_work_mode silently ends RS485 control, and
+    # turning this switch on silently takes the device out of the configured work
+    # mode. Measured on a Venus D: with the byte off 0x0A, a running forced
+    # discharge fell from 605 W to 12 W (inverter self-consumption) while the
+    # writes were still being acknowledged.
     rs485_control_mode:
         register: 42000
         command_on: 21930
