@@ -268,7 +268,7 @@ Display names only — entity ids are untouched.
 - `README.md`: `d` column blanked for `max_cell_voltage` / `min_cell_voltage`, with a
   footnote.
 - `.gitignore`: `logs/`.
-- `manifest.json`: semantic versioning (`1.2.1`) instead of upstream's calendar scheme, so
+- `manifest.json`: semantic versioning (`1.3.0`) instead of upstream's calendar scheme, so
   it is obvious which build is installed. **Do not carry upstream.**
 
 `7849a29` and `4521d0d` added and then corrected a `registers/firmware-analysis.md`
@@ -324,6 +324,7 @@ registers instead, which carry no scale code.
 | 14 | `message_wait_ms` reachable in the options | **yes** | the value was unwritable before |
 | 15 | `precision` on calculated sensors | **yes** | affects every model |
 | 16 | one retry ladder, half-open recovery, request logging | **yes** | model-agnostic, verified against a silent server |
+| 17 | repair issue for the RS485 control mode reset | verify first | needs 42000 confirmed on a second model |
 
 Removals in 4 and 5 leave orphaned entities behind in existing installations. Home
 Assistant keeps them in the registry as `unavailable` until deleted by hand. Any upstream
@@ -674,3 +675,59 @@ Anfrage selbst mit `No response received after 0 retries` auf ERROR. Mit
 `pymodbus.logging` ist geteilt — auch die eingebaute `modbus`-Integration von
 Home Assistant haengt daran —, ein Filter von hier aus wuerde also fremde
 Integrationen mit stummschalten. Bleibt stehen.
+
+## 17. Reparatur-Eintrag: das Geraet verlaesst den RS485-Steuermodus von selbst
+
+**Dateien:** `const.py`, `coordinator.py`, `repairs.py` (neu), `__init__.py`,
+`translations/{de,en,nl}.json`
+
+Register 42000 schaltet sich auf Firmware 150 selbst ab. Dreimal in drei Logs
+desselben Venus E v3 belegt, jedes Mal im selben Moment wie eine
+Kommunikationsstoerung und nie nach einem Write der Integration:
+
+```
+15:59:49  21930 (an)
+16:26:24  Leseausfall 30001
+16:26:29  Leseausfall 37004
+16:26:33  21947 (aus)      <- ohne dass jemand geschrieben haette
+```
+
+Zwischen „an" und „aus" lagen mindestens 26 min 44 s — nah genug an den 30
+Minuten, in denen ein zweiter Melder per Ping Verbindungsabrisse ueber
+LAN-Kabel misst, um beides als dasselbe Ereignis zu behandeln.
+
+**Warum ein Reparatur-Eintrag und keine Logzeile.** Lesen funktioniert nach dem
+Rueckstellen weiter, nur Steuerbefehle laufen ins Leere. Von aussen sieht also
+nichts kaputt aus, waehrend die Regelung nichts mehr bewirkt. Der Melder hat
+sich das Wiedereinschalten in sein eigenes Steuerskript geschrieben — genau das,
+was ein normaler Nutzer nicht kann. Eine Warnung im Log erreicht ihn nicht.
+
+Der Eintrag steht in Einstellungen → System → Reparaturen, ist `is_fixable` und
+schreibt nach Bestaetigung 21930 zurueck. **Nicht automatisch**: das ist ein
+Schreibzugriff auf ein Steuerregister als Reaktion auf einen Zustand, dessen
+Mechanismus noch nicht geklaert ist. Ein Klick ist die Zustimmung.
+
+**Die Erkennung unterscheidet drei Faelle.** Nur ein Wechsel von „an" nach „aus"
+zaehlt — ein Modus, der beim Start schon aus ist, ist jemandes Einstellung und
+kein Fehler. Ob wir selbst geschaltet haben, entscheidet der **zuletzt von uns
+geschriebene Wert**, nicht ein Zeitfenster: nach einem „an" der Reparatur ist
+ein zurueckkommendes „aus" das Geraet, das den Befehl verweigert, und muss den
+Eintrag erneut ausloesen statt als eigener Write durchzugehen. Dafuer merkt sich
+`async_write_value` neben dem Zeitpunkt jetzt auch den Wert
+(`_last_write_values`). Der Eintrag verschwindet von selbst, sobald der Modus
+wieder an ist, und beim Entladen des Config Entry.
+
+Zehn Faelle sind gegen die echte Coordinator-Methode geprueft (Rueckstellung,
+Ruecknahme, Nutzer schaltet selbst aus, aus seit Start, verweigerte Reparatur,
+Register nicht im Zyklus, Modell ohne das Register), dazu sechs gegen den
+Reparatur-Flow.
+
+**Was nicht belegt ist:** dass Schreibbefehle bei ausgeschaltetem Modus
+tatsaechlich wirkungslos sind. Der Melder handelt danach und `README.md` sagt es
+fuer den 42000er-Bereich, aber ein direkter Gegentest — Write bei
+ausgeschaltetem Modus, Wirkung pruefen — fehlt. Faellt der anders aus, ist der
+Text im Reparatur-Eintrag zu entschaerfen, der Mechanismus bleibt richtig.
+
+**Upstream-Kandidat**, sobald 42000 auf einem zweiten Modell so beobachtet wird.
+Auf einem Venus D mit Firmware 150 und altem Kommunikationsmodul tritt das
+Ruecksetzen nicht auf.

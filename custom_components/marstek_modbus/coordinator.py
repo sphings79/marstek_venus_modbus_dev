@@ -16,7 +16,8 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from .const import (DEFAULT_SCAN_INTERVALS, SUPPORTED_VERSIONS, DEFAULT_UNIT_ID,
                     DEFAULT_TIMEOUT, DEFAULT_MESSAGE_WAIT_MS, CONF_MESSAGE_WAIT_MS,
                     CONF_DEV_REGISTERS_UNKNOWN, CONF_DEV_REGISTERS_DUPLICATE,
-                    CONF_DEV_REGISTERS_LEGACY, DEFAULT_DEV_REGISTERS)
+                    CONF_DEV_REGISTERS_LEGACY, DEFAULT_DEV_REGISTERS, DOMAIN,
+                    RS485_CONTROL_MODE_KEY, ISSUE_RS485_CONTROL_MODE_RESET)
 
 from .helpers.modbus_client import MarstekModbusClient
 from pathlib import Path
@@ -117,6 +118,9 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self._last_update_times: dict = {}
         # Timestamps of last successful writes per key (for post-write read suppression)
         self._last_write_times: dict = {}
+        # Last value successfully written per key, to tell our own change apart
+        # from one the device made on its own.
+        self._last_write_values: dict = {}
         # Timestamps when a read was last started per key (for stale-read detection)
         self._read_start_times: dict = {}
         # Pending post-write refresh task to avoid overlapping refresh loops
@@ -144,6 +148,9 @@ class MarstekCoordinator(DataUpdateCoordinator):
         # into one reconnect per register.
         self._half_open_reconnects = 0
         self._last_half_open_reconnect_at = None
+        # Last value seen in register 42000, to spot the device dropping out of
+        # RS485 control mode on its own. None until the register is first read.
+        self._last_rs485_control_mode = None
         self._last_block_timeout_time = None
         self._last_block_timeout_registers = None
         self._last_block_timeout_count = None
@@ -328,6 +335,124 @@ class MarstekCoordinator(DataUpdateCoordinator):
 
         _LOGGER.warning("Reconnect after the timeout on %s did not succeed", context)
         return False
+
+    def _rs485_control_mode_definition(self) -> dict | None:
+        """Return the switch definition for register 42000, if this model has it."""
+        return next(
+            (d for d in self.SWITCH_DEFINITIONS if d.get("key") == RS485_CONTROL_MODE_KEY),
+            None,
+        )
+
+    def _check_rs485_control_mode(self, updated_data: dict) -> None:
+        """Raise a repair issue when the device leaves RS485 control mode by itself.
+
+        On firmware 150 the device resets register 42000 on its own — observed
+        three times across three logs from one Venus E v3, each time in the same
+        moment as a communication glitch and never after a write of ours. Reads
+        keep working afterwards, so nothing looks broken; only control commands
+        stop having an effect. A log line would not reach the person who needs
+        to know, hence a repair issue with a button that switches it back on.
+
+        Only a transition from on to off counts. A mode that is already off when
+        Home Assistant starts is somebody's deliberate setting, not a fault.
+        """
+        value = updated_data.get(RS485_CONTROL_MODE_KEY)
+        if value is None:
+            return
+
+        definition = self._rs485_control_mode_definition()
+        if not definition:
+            return
+
+        previous = self._last_rs485_control_mode
+        self._last_rs485_control_mode = value
+
+        if value == definition.get("command_on"):
+            self._async_clear_rs485_control_mode_issue()
+            return
+
+        if previous != definition.get("command_on"):
+            return
+
+        # Our own change is not a device-side reset. Comparing the value rather
+        # than a timestamp also covers the case that matters most: after the
+        # repair flow has written "on", an "off" coming back is the device
+        # refusing it — and that has to raise the issue again, not be swallowed
+        # as a recent write of ours.
+        if self._last_write_values.get(RS485_CONTROL_MODE_KEY) == value:
+            return
+
+        _LOGGER.warning(
+            "The device left RS485 control mode on its own (register %s is %s, was %s) - "
+            "control commands have no effect until it is switched back on",
+            definition.get("register"),
+            value,
+            previous,
+        )
+        self._async_create_rs485_control_mode_issue()
+
+    async def async_restore_rs485_control_mode(self) -> bool:
+        """Switch RS485 control mode back on. Entry point for the repair flow."""
+        definition = self._rs485_control_mode_definition()
+        if not definition:
+            _LOGGER.error("This device has no RS485 control mode register")
+            return False
+
+        register = definition.get("register")
+        value = definition.get("command_on")
+        if register is None or value is None:
+            _LOGGER.error("The RS485 control mode definition is incomplete")
+            return False
+
+        written = await self.async_write_value(
+            register=register,
+            value=value,
+            key=RS485_CONTROL_MODE_KEY,
+            scale=definition.get("scale", 1),
+            unit=definition.get("unit"),
+            entity_type="switch",
+        )
+        if not written:
+            return False
+
+        # Show the new state right away, the way the switch does. The next poll
+        # confirms it — and raises the issue again if the device did not take it.
+        self.data[RS485_CONTROL_MODE_KEY] = value
+        self._last_rs485_control_mode = value
+        self._async_clear_rs485_control_mode_issue()
+        return True
+
+    def _async_create_rs485_control_mode_issue(self) -> None:
+        """Surface the reset in Settings > System > Repairs."""
+        try:
+            from homeassistant.helpers import issue_registry as ir
+
+            ir.async_create_issue(
+                self.hass,
+                DOMAIN,
+                self._rs485_control_mode_issue_id,
+                is_fixable=True,
+                severity=ir.IssueSeverity.WARNING,
+                translation_key=ISSUE_RS485_CONTROL_MODE_RESET,
+                translation_placeholders={"device": self.config_entry.title},
+                data={"entry_id": self.config_entry.entry_id},
+            )
+        except Exception as exc:
+            _LOGGER.debug("Could not raise the RS485 control mode issue: %s", exc)
+
+    def _async_clear_rs485_control_mode_issue(self) -> None:
+        """Withdraw the repair issue once the mode is back on."""
+        try:
+            from homeassistant.helpers import issue_registry as ir
+
+            ir.async_delete_issue(self.hass, DOMAIN, self._rs485_control_mode_issue_id)
+        except Exception as exc:
+            _LOGGER.debug("Could not clear the RS485 control mode issue: %s", exc)
+
+    @property
+    def _rs485_control_mode_issue_id(self) -> str:
+        """One issue per config entry, so two devices do not share one."""
+        return f"{ISSUE_RS485_CONTROL_MODE_RESET}_{self.config_entry.entry_id}"
 
     def _build_contiguous_read_groups(self, sensors: list[dict]) -> list[list[dict]]:
         """Group sensor definitions into strictly contiguous register blocks."""
@@ -923,6 +1048,7 @@ class MarstekCoordinator(DataUpdateCoordinator):
                 )
                 from homeassistant.util.dt import utcnow as _utcnow
                 self._last_write_times[key] = _utcnow()
+                self._last_write_values[key] = value_to_send
                 self._schedule_post_write_refresh(key)
                 return True
             else:
@@ -1339,6 +1465,8 @@ class MarstekCoordinator(DataUpdateCoordinator):
                     "Discarding stale read of '%s' — write completed after read started", _k
                 )
                 del updated_data[_k]
+
+        self._check_rs485_control_mode(updated_data)
 
         # Update the coordinator's data
         self.data.update(updated_data)

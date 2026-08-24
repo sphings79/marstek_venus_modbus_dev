@@ -1161,5 +1161,22 @@
         "name": "Werkseinstellungen"
       }
     }
+  },
+  "issues": {
+    "rs485_control_mode_reset": {
+      "title": "{device}: RS485-Steuermodus wurde zurückgesetzt",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "RS485-Steuermodus wieder einschalten",
+            "description": "Der Speicher hat den RS485-Steuermodus selbst ausgeschaltet — die Integration hat ihn nicht geändert. Das passiert auf Firmware 150 im selben Moment, in dem die Modbus-Verbindung kurz abreißt.\n\nMesswerte werden weiterhin gelesen, aber **Steuerbefehle bleiben wirkungslos**, solange der Modus aus ist. Das ist der Grund, warum eine Regelung scheinbar grundlos nichts mehr bewirkt.\n\nAbsenden schaltet den Modus wieder ein. Setzt das Gerät ihn erneut zurück, erscheint dieser Eintrag wieder."
+          }
+        },
+        "abort": {
+          "entry_not_loaded": "Die Integration ist gerade nicht geladen. Bitte später erneut versuchen.",
+          "write_failed": "Der Speicher hat den Befehl nicht angenommen. Bitte die Verbindung prüfen und erneut versuchen."
+        }
+      }
+    }
   }
 }

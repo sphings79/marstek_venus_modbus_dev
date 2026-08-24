@@ -143,6 +143,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             # Retrieve the coordinator and close it before removing
             coordinator = hass.data[DOMAIN][entry.entry_id]
             await coordinator.async_close()
+            # An open repair issue belongs to a loaded entry; without this it
+            # would outlive the integration with no way left to act on it.
+            coordinator._async_clear_rs485_control_mode_issue()
             # Remove coordinator reference from hass data
             hass.data[DOMAIN].pop(entry.entry_id, None)
 

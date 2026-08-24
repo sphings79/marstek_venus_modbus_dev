@@ -40,3 +40,14 @@ DEFAULT_DEV_REGISTERS = False
 # Alter Sammelschalter aus 1.1.5-beta.1. Wird nur noch gelesen, um bestehende
 # Konfigurationen zu migrieren: war er an, gelten beide neuen Optionen als an.
 CONF_DEV_REGISTERS_LEGACY = "dev_registers"
+
+# RS485-Steuermodus (Register 42000). Auf Firmware 150 setzt das Geraet den
+# Modus selbst zurueck — beobachtet auf einem Venus E v3, dreimal in drei Logs,
+# jeweils im selben Moment wie eine Kommunikationsstoerung und ohne dass die
+# Integration geschrieben haette. Ohne den Modus laufen Steuerbefehle ins Leere,
+# gelesen wird weiter: der Ausfall ist also unsichtbar, bis jemand merkt, dass
+# die Regelung nichts mehr bewirkt. Deshalb ein Reparatur-Eintrag statt einer
+# Logzeile.
+RS485_CONTROL_MODE_KEY = "rs485_control_mode"
+ISSUE_RS485_CONTROL_MODE_RESET = "rs485_control_mode_reset"
+

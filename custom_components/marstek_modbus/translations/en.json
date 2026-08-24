@@ -1161,5 +1161,22 @@
         "name": "Factory Reset"
       }
     }
+  },
+  "issues": {
+    "rs485_control_mode_reset": {
+      "title": "{device}: RS485 control mode was reset",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Switch RS485 control mode back on",
+            "description": "The battery switched RS485 control mode off by itself — the integration did not change it. On firmware 150 this happens in the same moment as a brief Modbus dropout.\n\nReadings keep working, but **control commands have no effect** while the mode is off. That is why a control loop can appear to stop working for no reason.\n\nSubmitting switches the mode back on. If the device resets it again, this entry comes back."
+          }
+        },
+        "abort": {
+          "entry_not_loaded": "The integration is not loaded right now. Please try again later.",
+          "write_failed": "The battery did not accept the command. Check the connection and try again."
+        }
+      }
+    }
   }
 }

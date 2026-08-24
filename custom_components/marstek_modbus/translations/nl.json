@@ -1165,5 +1165,22 @@
         "name": "Fabrieksinstellingen Herstellen"
       }
     }
+  },
+  "issues": {
+    "rs485_control_mode_reset": {
+      "title": "{device}: RS485-besturingsmodus is teruggezet",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "RS485-besturingsmodus weer inschakelen",
+            "description": "De batterij heeft de RS485-besturingsmodus zelf uitgeschakeld — de integratie heeft hem niet gewijzigd. Op firmware 150 gebeurt dit op hetzelfde moment als een korte onderbreking van de Modbus-verbinding.\n\nMetingen blijven werken, maar **stuurcommando's hebben geen effect** zolang de modus uit staat. Daardoor lijkt een regeling zonder aanleiding te stoppen met werken.\n\nVerzenden schakelt de modus weer in. Zet het apparaat hem opnieuw terug, dan verschijnt deze melding weer."
+          }
+        },
+        "abort": {
+          "entry_not_loaded": "De integratie is momenteel niet geladen. Probeer het later opnieuw.",
+          "write_failed": "De batterij heeft de opdracht niet geaccepteerd. Controleer de verbinding en probeer het opnieuw."
+        }
+      }
+    }
   }
 }
