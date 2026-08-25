@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 340" width="1200" height="340" role="img" aria-label="Marstek Venus Modbus - Home Assistant integration for Marstek Venus battery storage over Modbus TCP">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0B1B2B"/><stop offset="55%" stop-color="#10293F"/><stop offset="100%" stop-color="#0A2233"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#41BDF5"/><stop offset="100%" stop-color="#3DDC97"/>
+    </linearGradient>
+    <linearGradient id="wire" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#41BDF5" stop-opacity="0.15"/>
+      <stop offset="50%" stop-color="#41BDF5" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#3DDC97" stop-opacity="0.15"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="340" rx="18" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1200" height="4" rx="2" fill="url(#accent)"/>
+  <g stroke="#41BDF5" stroke-opacity="0.06" stroke-width="1"><path d="M0 60H1200M0 120H1200M0 180H1200M0 240H1200M0 300H1200M120 0V340M280 0V340M440 0V340M760 0V340M920 0V340M1080 0V340"/></g>
+  <text x="72" y="128" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="52" font-weight="700" fill="#F2F8FC">Marstek Venus Modbus</text>
+  <text x="72" y="174" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="26" font-weight="500" fill="#41BDF5">Home Assistant custom integration</text>
+  <text x="72" y="220" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="19" fill="#9FB6C6">Read and control a Venus storage over local Modbus TCP — no cloud.</text>
+  <rect x="72" y="248" width="159" height="34" rx="17" fill="#41BDF5" fill-opacity="0.13" stroke="#41BDF5" stroke-opacity="0.45"/>
+  <text x="152" y="270" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#41BDF5" text-anchor="middle">Venus A / D / E</text>
+  <rect x="243.0" y="248" width="116" height="34" rx="17" fill="#3DDC97" fill-opacity="0.13" stroke="#3DDC97" stroke-opacity="0.45"/>
+  <text x="301" y="270" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#3DDC97" text-anchor="middle">Modbus TCP</text>
+  <rect x="371.0" y="248" width="64" height="34" rx="17" fill="#41BDF5" fill-opacity="0.13" stroke="#41BDF5" stroke-opacity="0.45"/>
+  <text x="403" y="270" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#41BDF5" text-anchor="middle">HACS</text>
+  <rect x="447.4" y="248" width="73" height="34" rx="17" fill="#3DDC97" fill-opacity="0.13" stroke="#3DDC97" stroke-opacity="0.45"/>
+  <text x="484" y="270" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#3DDC97" text-anchor="middle">Local</text>
+  <g transform="translate(668,80) scale(0.86)"><rect x="0" y="20" width="132" height="120" rx="12" fill="#16344C" stroke="#3DDC97" stroke-opacity="0.6" stroke-width="2"/><rect x="22" y="44" width="88" height="20" rx="4" fill="#3DDC97" fill-opacity="0.3"/><rect x="22" y="72" width="88" height="20" rx="4" fill="#3DDC97" fill-opacity="0.55"/><rect x="22" y="100" width="88" height="20" rx="4" fill="#3DDC97" fill-opacity="0.8"/><path d="M52 10h28" stroke="#3DDC97" stroke-width="5" stroke-linecap="round"/><text x="66" y="166" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#9FB6C6" text-anchor="middle">Venus</text><path d="M132 80H206" stroke="#F5A623" stroke-width="3" stroke-linecap="round" stroke-dasharray="6 5"/><rect x="206" y="46" width="96" height="68" rx="10" fill="#16344C" stroke="#F5A623" stroke-opacity="0.6" stroke-width="2"/><circle cx="228" cy="70" r="4.5" fill="#F5A623"/><circle cx="246" cy="70" r="4.5" fill="#F5A623" fill-opacity="0.5"/><rect x="222" y="88" width="64" height="8" rx="4" fill="#F5A623" fill-opacity="0.35"/><text x="254" y="140" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="14" fill="#9FB6C6" text-anchor="middle">RS485 &#8594; TCP</text><path d="M302 80H376" stroke="#41BDF5" stroke-width="3" stroke-linecap="round"/><circle cx="339" cy="80" r="17" fill="#0B1B2B" stroke="#41BDF5" stroke-opacity="0.6" stroke-width="2"/><text x="339" y="85" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="10" font-weight="700" fill="#41BDF5" text-anchor="middle">502</text><rect x="376" y="20" width="132" height="120" rx="12" fill="#16344C" stroke="#41BDF5" stroke-opacity="0.6" stroke-width="2"/><path d="M442 44 L482 78 L474 78 L474 108 L410 108 L410 78 L402 78 Z" fill="none" stroke="#41BDF5" stroke-width="3.5" stroke-linejoin="round"/><text x="442" y="166" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#9FB6C6" text-anchor="middle">Home Assistant</text></g>
+</svg>

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 788" width="660" height="788" role="img" aria-label="Entities created by the Marstek Venus Modbus integration">
+  <rect width="660" height="788" rx="16" fill="#111111"/>
+  <text x="30" y="34" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="14" font-weight="400" fill="#6E6E6E">Illustration · device page in Home Assistant</text>
+  <rect x="30" y="52" width="600" height="704" rx="12" fill="#1C1C1C" stroke="#2E2E2E" stroke-width="1"/>
+  <text x="58" y="92" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="17" font-weight="600" fill="#E1E1E1">Marstek Venus D</text>
+  <text x="58" y="112" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="11.5" font-weight="400" fill="#7A7A7A">Modbus TCP 192.168.1.42:502 · unit 1 · firmware V150</text>
+  <rect x="58" y="128" width="544" height="44" rx="8" fill="#252525" fill-opacity="0.55"/>
+  <g transform="translate(72,140.0)" fill="none" stroke="#3DDC97" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="9" rx="2"/><path d="M18 9v3"/></g>
+  <text x="104" y="155.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#E1E1E1">Battery SoC</text>
+  <text x="586" y="155.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#3DDC97" text-anchor="end">68 %</text>
+  <rect x="58" y="178" width="544" height="44" rx="8" fill="#252525" fill-opacity="0.55"/>
+  <g transform="translate(72,190.0)" fill="none" stroke="#3DDC97" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2L4 11h5l-1 7 7-9h-5z"/></g>
+  <text x="104" y="205.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#E1E1E1">Battery power</text>
+  <text x="586" y="205.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#3DDC97" text-anchor="end">−1.240 W</text>
+  <rect x="58" y="228" width="544" height="44" rx="8" fill="#252525" fill-opacity="0.55"/>
+  <g transform="translate(72,240.0)" fill="none" stroke="#03A9F4" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2L4 11h5l-1 7 7-9h-5z"/></g>
+  <text x="104" y="255.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#E1E1E1">AC power</text>
+  <text x="586" y="255.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#9B9B9B" text-anchor="end">−1.180 W</text>
+  <rect x="58" y="278" width="544" height="44" rx="8" fill="#252525" fill-opacity="0.55"/>
+  <g transform="translate(72,290.0)" fill="none" stroke="#03A9F4" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="16" height="10" rx="2"/><path d="M6 5v10M10 5v10M14 5v10"/></g>
+  <text x="104" y="305.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#E1E1E1">Total charging energy</text>
+  <text x="586" y="305.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#9B9B9B" text-anchor="end">1.284,6 kWh</text>
+  <rect x="58" y="328" width="544" height="44" rx="8" fill="#252525" fill-opacity="0.55"/>
+  <g transform="translate(72,340.0)" fill="none" stroke="#03A9F4" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="16" height="10" rx="2"/><path d="M6 5v10M10 5v10M14 5v10"/></g>
+  <text x="104" y="355.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#E1E1E1">Total discharging energy</text>
+  <text x="586" y="355.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#9B9B9B" text-anchor="end">1.121,3 kWh</text>
+  <rect x="58" y="378" width="544" height="44" rx="8" fill="#252525" fill-opacity="0.55"/>
+  <g transform="translate(72,390.0)" fill="none" stroke="#03A9F4" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.5" cy="6.5" r="2.2"/><circle cx="13.5" cy="13.5" r="2.2"/><path d="M15 5L5 15"/></g>
+  <text x="104" y="405.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#E1E1E1">Round-trip efficiency</text>
+  <text x="586" y="405.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#9B9B9B" text-anchor="end">87,3 %</text>
+  <rect x="58" y="428" width="544" height="44" rx="8" fill="#252525" fill-opacity="0.55"/>
+  <g transform="translate(72,440.0)" fill="none" stroke="#03A9F4" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 11V4a2 2 0 1 1 4 0v7a4 4 0 1 1-4 0z"/></g>
+  <text x="104" y="455.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#E1E1E1">Internal temperature</text>
+  <text x="586" y="455.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#9B9B9B" text-anchor="end">24,6 °C</text>
+  <rect x="58" y="478" width="544" height="44" rx="8" fill="#252525" fill-opacity="0.55"/>
+  <g transform="translate(72,490.0)" fill="none" stroke="#03A9F4" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="9" rx="2"/><path d="M18 9v3"/></g>
+  <text x="104" y="505.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#E1E1E1">Max cell voltage</text>
+  <text x="586" y="505.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#9B9B9B" text-anchor="end">3,341 V</text>
+  <rect x="58" y="528" width="544" height="44" rx="8" fill="#252525" fill-opacity="0.55"/>
+  <g transform="translate(72,540.0)" fill="none" stroke="#03A9F4" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7.5a11 11 0 0 1 15 0"/><path d="M5.5 10.5a7 7 0 0 1 9 0"/><path d="M8.5 13.5a3 3 0 0 1 3 0"/><path d="M10 16.5h.01"/></g>
+  <text x="104" y="555.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#E1E1E1">WiFi signal strength</text>
+  <text x="586" y="555.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#9B9B9B" text-anchor="end">−58 dBm</text>
+  <rect x="58" y="578" width="544" height="44" rx="8" fill="#252525" fill-opacity="0.55"/>
+  <g transform="translate(72,590.0)" fill="none" stroke="#3DDC97" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><path d="M6.5 10.2l2.4 2.4 4.6-4.9"/></g>
+  <text x="104" y="605.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#E1E1E1">Modbus connection</text>
+  <text x="586" y="605.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#3DDC97" text-anchor="end">Connected</text>
+  <rect x="58" y="628" width="544" height="44" rx="8" fill="#252525" fill-opacity="0.55"/>
+  <g transform="translate(72,640.0)" fill="none" stroke="#03A9F4" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15a8 8 0 1 1 14 0"/><path d="M10 15l4-5"/></g>
+  <text x="104" y="655.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#E1E1E1">Forcible charge/discharge</text>
+  <text x="586" y="655.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#9B9B9B" text-anchor="end">Stop</text>
+  <rect x="58" y="678" width="544" height="44" rx="8" fill="#252525" fill-opacity="0.55"/>
+  <g transform="translate(72,690.0)" fill="none" stroke="#03A9F4" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15a8 8 0 1 1 14 0"/><path d="M10 15l4-5"/></g>
+  <text x="104" y="705.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#E1E1E1">User work mode</text>
+  <text x="586" y="705.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#9B9B9B" text-anchor="end">Self-consumption</text>
+</svg>

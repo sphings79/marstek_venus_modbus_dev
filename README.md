@@ -1,106 +1,230 @@
-# Marstek Venus Battery - Home Assistant Integration
+<div align="center">
 
-[![GitHub Release](https://img.shields.io/github/v/release/ViperRNMC/marstek_venus_modbus)](https://github.com/ViperRNMC/marstek_venus_modbus/releases)
-[![GitHub Issues](https://img.shields.io/github/issues/ViperRNMC/marstek_venus_modbus)](https://github.com/ViperRNMC/marstek_venus_modbus/issues)
-[![Downloads](https://img.shields.io/github/downloads/ViperRNMC/marstek_venus_modbus/total)](https://github.com/ViperRNMC/marstek_venus_modbus/releases)
+<img src="assets/banner.svg" alt="Marstek Venus Modbus — Home Assistant integration for Marstek Venus battery storage over local Modbus TCP" width="100%">
 
-This is a custom HACS-compatible integration for Marstek Venus battery systems, using **Modbus TCP** via an RS485-to-WiFi gateway or direct Ethernet where supported (e.g. Venus E3). No YAML required. The integration provides sensors, switches and number controls to monitor and manage the battery directly from Home Assistant.
+# Marstek Venus Modbus for Home Assistant
 
+**Read and control a Marstek Venus battery over local Modbus TCP — no cloud, no app, no YAML.**
 
-### 🧩 Requirements
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=flat-square)](https://hacs.xyz)
+[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.9%2B-41BDF5.svg?style=flat-square)](https://www.home-assistant.io)
+[![Local polling](https://img.shields.io/badge/local-no%20cloud-3DDC97.svg?style=flat-square)](#what-stays-local)
+[![Venus](https://img.shields.io/badge/Venus-A%20%C2%B7%20D%20%C2%B7%20E%20v1%2Fv2%20%C2%B7%20E%20v3-3DDC97.svg?style=flat-square)](#supported-devices)
 
-- A configured **Modbus RTU to Modbus TCP bridge** connected to the battery's RS485 port
-     - Alternativly: Ethernet Connection to Battery with Modbus TCP support
-- The IP address, port of the Modbus TCP (usually port 502) and Unit ID (also called Slave ID).
-- Home Assistant Core 2025.9 or later
-- HACS installed
+**English** · [Deutsch](README.de.md)
 
+</div>
 
-### 🔧 Features
+> [!NOTE]
+> **This is a development fork** of [ViperRNMC/marstek_venus_modbus](https://github.com/ViperRNMC/marstek_venus_modbus).
+> Credit for the integration goes to [@ViperRNMC](https://github.com/ViperRNMC). This fork carries
+> additional Venus D register research and bug fixes; what exactly differs, and why, is documented
+> in [UPSTREAM-DIVERGENCE.md](UPSTREAM-DIVERGENCE.md) so it can be carried upstream or dropped
+> deliberately. Please report problems with **this fork** in this repository's issue tracker.
 
-- Native Modbus TCP polling via `pymodbus`
-- Polling is handled centrally via the DataUpdateCoordinator with dynamic intervals per entity type
-- Smart contiguous block polling groups adjacent registers into single Modbus requests where possible, with automatic fallback to per-entity reads on failure
-- Configurable scan intervals via the integration options UI
-- Dependency entities are always polled, even if the related entity is disabled
-- Fully asynchronous operation for optimal performance and responsiveness
-- Sensors for voltage, current, SOC, power, energy, and fault/alarm status (combined bits)
-- Diagnostic entities for communication health, firmware version, BLE MAC address and communication-module firmware
-- Switches for force charge/discharge control
-- Adjustable charge/discharge power (model-dependent, up to 2500W)
-- Entities grouped under a device in Home Assistant
-- Select entity support for multi-state control (e.g., force mode)
-- Select entity for control modes (e.g., force mode, grid standard)
-- Backup mode control and charge/discharge to SOC included
-- Includes calculated sensors: round-trip efficiency (total/monthly) and stored energy
-- Includes cycle sensors: native cycle counter (where available) and calculated cycle count (`discharged_energy / capacity`)
-- Reset button to allow manual reset of the battery management system via Home Assistant
-- Some advanced sensors are disabled by default to keep the UI clean
-- UI-based configuration (Config Flow)
-- Fully local, no cloud required
+---
 
+## What this integration does
 
-## 🚀 Installation
+A Marstek Venus storage exposes its whole state over **Modbus** — state of charge, power, cell
+voltages, temperatures, energy counters — and it accepts commands over the same interface. This
+custom integration for [Home Assistant](https://www.home-assistant.io) speaks that protocol
+directly over TCP and turns the registers into Home Assistant entities.
 
-1. Add this repository to HACS **Integrations → Custom repositories**
-[![Add repository to HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ViperRNMC&repository=marstek_venus_modbus&category=integration)
-2. Install the “Marstek Venus Modbus” integration
+No Marstek cloud account, no MQTT broker, no YAML. Configuration happens entirely in the UI.
+
+<div align="center">
+<img src="assets/architecture.svg" alt="The integration opens one Modbus TCP connection to a gateway on the battery's RS485 port, or directly to the battery where it speaks Modbus TCP itself" width="100%">
+</div>
+
+### Why Modbus
+
+Bluetooth reaches the battery from one phone at a time. The cloud reaches it from anywhere, but
+only as far as Marstek's app allows, and only while their service is up. Modbus is the interface
+that is always there, answers in milliseconds, and is read by inverters, PLCs and energy managers
+alike — so Home Assistant sees **the same numbers from the same source** as everything else in
+your setup.
+
+---
+
+## Requirements
+
+- A **Modbus RTU-to-TCP bridge** on the battery's RS485 port
+  - or an **Ethernet connection** straight to a battery that speaks Modbus TCP itself (e.g. Venus E3)
+- The **IP address**, **port** (usually 502) and **Unit ID** (also called Slave ID) of that bridge
+- Home Assistant **2025.9** or newer
+- HACS, for convenient installation
+
+### Tested hardware
+
+| Gateway | Notes |
+|---|---|
+| Elfin EW11 | WiFi to RS485 |
+| PUSR DR134 | Modbus gateway |
+| Waveshare RS485 to RJ45 | Ethernet converter |
+| M5Stack RS485 + Atom S3 Lite | [#25](https://github.com/ViperRNMC/marstek_venus_modbus/issues/25) |
+| A / D / E v3 over Ethernet | No adapter needed — [#46](https://github.com/ViperRNMC/marstek_venus_modbus/issues/46#issuecomment-3631312782) · [#106](https://github.com/ViperRNMC/marstek_venus_modbus/issues/106) |
+
+---
+
+## Features
+
+- Native Modbus TCP polling via `pymodbus`, fully asynchronous
+- Central `DataUpdateCoordinator` with **per-entity polling priorities**
+- **Contiguous block polling** — adjacent registers are fetched in one request, with automatic
+  fallback to per-entity reads when a block read fails
+- Scan intervals configurable in the options UI
+- Dependency entities are always polled, even when the entity that needs them is disabled
+- Sensors for voltage, current, SoC, power, energy and fault/alarm status (combined bits)
+- Diagnostic entities for communication health, firmware version, BLE MAC address and
+  communication-module firmware
+- Adjustable charge/discharge power (model-dependent, up to 2500 W)
+- Select entities for multi-state control (force mode, grid standard)
+- Backup mode control, and charge/discharge to a target SoC
+- Calculated sensors: round-trip efficiency (total and monthly) and stored energy
+- Cycle sensors: the native counter where available, plus a calculated count
+  (`discharged_energy / capacity`)
+- Reset button for the battery management system
+- Advanced sensors disabled by default, to keep the UI readable
+- Entities grouped under one device
+- UI-based configuration (config flow) — fully local
+
+---
+
+## Supported devices
+
+| Device version | Register map |
+|---|---|
+| Venus A | `a.yaml` |
+| Venus D | `d.yaml` |
+| Venus E v1 / v2 | `e_v12.yaml` |
+| Venus E v3 | `e_v3.yaml` |
+
+> [!IMPORTANT]
+> Venus **A**, **D** and **E v3** share one firmware base. Venus **E v1/v2** is built on a
+> **completely different** one — a register finding from A/D/E3 firmware says nothing about E v1/v2,
+> where a matching register number is coincidence until proven otherwise.
+
+---
+
+## Installation
+
+1. Add this repository to HACS under **Integrations → Custom repositories** (category: Integration)
+2. Install **Marstek Venus Modbus**
 3. Restart Home Assistant
 4. Add the integration via **Settings → Devices & Services**
-[![Open your Home Assistant instance and show the integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=marstek_modbus)  
-5. Enter the connection details:
-   - IP address of your Modbus TCP gateway
-   - Port (default: 502)
-   - Unit ID / Slave ID (default: 1, valid range: 1-255)
-  - Device version (`A`, `D`, `E v1/v2` or `E v3`)
 
+<div align="center">
+<img src="assets/setup.svg" alt="Home Assistant config flow: IP address, port, unit ID and device version of the Marstek Venus battery" width="70%">
+</div>
 
-## ⚙️ Configuration
+> The images in this README are illustrations of the dialogs, not photographs of a running instance.
 
-### Connection Settings
+Enter the address of your Modbus TCP gateway, the port (default 502), the Unit ID (default 1,
+valid range 1–255) and the device version — `A`, `D`, `E v1/v2` or `E v3`. The device version picks
+the register map, so it has to match the actual hardware.
 
-**Configurable via Options UI → Connection settings:**
+---
+
+## Entities
+
+<div align="center">
+<img src="assets/entities.svg" alt="Device page in Home Assistant showing sensors created by the Marstek Venus Modbus integration" width="70%">
+</div>
+
+Everything lands on one device. Advanced and diagnostic entities ship disabled by default — enable
+what you need in the entity list rather than wading through everything at once.
+
+---
+
+## Configuration
+
+### Connection settings
+
+Configurable under **Options → Connection settings**:
+
 - **IP address, port and Unit ID** of the Modbus TCP gateway
-- **Wait between messages** (default: 80 ms) - the pause the integration keeps between two Modbus requests
+- **Wait between messages** (default 80 ms) — the pause the integration keeps between two Modbus
+  requests
 
-The wait applies to every request, so raising it lengthens every poll cycle and the
-integration's startup in proportion: at 300 ms a cycle of 50 requests takes 15 seconds
-where 80 ms would take 4. Raise it only when a gateway drops responses at the default,
-and lower it again once the connection is stable.
+The wait applies to every request, so raising it lengthens every poll cycle and the integration's
+startup in proportion: at 300 ms a cycle of 50 requests takes 15 seconds where 80 ms would take 4.
+Raise it only when a gateway drops responses at the default, and lower it again once the connection
+is stable.
 
-### Polling Intervals
+### Polling intervals
 
-The integration uses intelligent polling with configurable intervals per entity type to balance responsiveness and network load.
+The integration polls intelligently, with configurable intervals per class. Recent versions use
+**two** polling classes instead of four; the coordinator still respects per-entity priorities, but
+the user-facing options are reduced to the intervals that actually matter.
 
-Recent versions use two polling classes instead of four. The coordinator still respects per-entity priorities, but the user-facing options are simplified to the intervals that matter most.
-
-**Configurable via Options UI:**
-- **High priority** (default: 10 seconds) - Fast-changing sensors such as power, voltage, current, SOC and state entities
-- **Low priority** (default: 60 seconds) - Slower-changing sensors such as totals, diagnostics, firmware and device information
+| Class | Default | Covers |
+|---|---|---|
+| **High priority** | 10 s | Fast-changing values — power, voltage, current, SoC, state entities |
+| **Low priority** | 60 s | Slow-changing values — totals, diagnostics, firmware, device information |
 
 Notes:
-- The coordinator will combine adjacent due registers into a single block read when possible.
-- If a block read fails, the integration falls back to individual reads for the affected entities.
-- Disabled entities are normally skipped, except when they are required as dependencies for calculated sensors.
 
+- Adjacent due registers are combined into a single block read where possible.
+- If a block read fails, the affected entities fall back to individual reads.
+- Disabled entities are skipped, unless a calculated sensor depends on them.
 
-## ✅ Tested Devices for Modbus TCP
+---
 
-The Marstek Venus Modbus integration has been tested with the following hardware:
-- Elfin EW11 WiFi to RS485 Converter
-- PUSR DR134 Modbus Gateway
-- Waveshare RS485 to RJ45 Ethernet Converter
-- M5Stack RS485 + Atom S3 Lite [#25](https://github.com/ViperRNMC/marstek_venus_modbus/issues/25)
-- A/D/E-v3 with ethernet cable (no adapter required) [#46](https://github.com/ViperRNMC/marstek_venus_modbus/issues/46#issuecomment-3631312782) [#106](https://github.com/ViperRNMC/marstek_venus_modbus/issues/106)
+## What stays local
 
+The integration talks to your gateway and to nothing else. There is no Marstek account involved, no
+telemetry, and no outbound connection beyond the one TCP socket to the address you configured.
 
-## ⚠️ Known Issues / Bugs
+---
 
-- **User Work Mode (AI Optimized) not reflected correctly**  
-  Setting `User Work Mode` to `2 (Trade Mode)` in Home Assistant may not correctly show the updated state.  
-  The Marstek app shows the correct mode, but Home Assistant may continue to display the previous state due to a discrepancy in the Modbus register response.  
-  This is a known issue with the current Modbus firmware and integration handling.
+## Known issues
 
+- **User Work Mode (AI Optimized) not reflected correctly**
+  Setting `User Work Mode` to `2 (Trade Mode)` in Home Assistant may not show the updated state.
+  The Marstek app shows the correct mode while Home Assistant keeps displaying the previous one,
+  because of a discrepancy in the Modbus register response. This is a firmware-side issue.
+
+---
+
+## FAQ
+
+**Do I need a gateway, or can the battery do Modbus TCP itself?**
+Venus A, D and E v3 can be wired straight to Ethernet and speak Modbus TCP without an adapter. For
+everything else you need an RS485-to-TCP bridge on the battery's RS485 port.
+
+**Can I run this alongside another Modbus client?**
+Most gateways serve one TCP client at a time. If an inverter or energy manager already holds the
+connection, either use a gateway that multiplexes, or read the battery through that other system.
+
+**Why are so many entities disabled by default?**
+Because the register map is large. Everything is defined, but shipping all of it enabled would bury
+the ten values most people actually want. Enable what you need in the entity list.
+
+**Can this work together with venuscontrol?**
+Yes, and they complement each other:
+[venuscontrol](https://github.com/sphings79/venuscontrol) configures the battery over Bluetooth —
+including switching on the interfaces this integration then reads over Modbus.
+
+**Is my Venus E v1/v2 fully supported?**
+It is defined in `e_v12.yaml`, but that model runs a different firmware base, and the register
+research in this fork comes from A/D/E3 hardware. Treat E v1/v2 findings as unverified.
+
+---
+
+## Related projects
+
+- 🖥️ **[venuscontrol](https://github.com/sphings79/venuscontrol)** — cloud-free Web Bluetooth control
+  panel for Venus A / D, including OTA firmware updates
+- 📦 **[Marstek firmware archive](https://github.com/sphings79/marstek-firmware-archiv)**
+- 🔬 **[Venus D firmware reverse engineering](https://github.com/sphings79/Marstek-Venus-D-Firmware-Reverse-Engineering)**
+- 🌐 **[More projects and tools](https://sphings-dev.de/)**
+
+## Credits
+
+- Upstream integration: **[ViperRNMC/marstek_venus_modbus](https://github.com/ViperRNMC/marstek_venus_modbus)**
+
+---
 
 ## 📘 Modbus Registers Used
 

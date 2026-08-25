@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 470" width="640" height="470" role="img" aria-label="Connect to Marstek Venus Modbus">
+  <rect width="640" height="470" rx="16" fill="#111111"/>
+  <text x="30" y="34" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="14" font-weight="400" fill="#6E6E6E">Illustration · Home Assistant config flow</text>
+  <rect x="30" y="52" width="580" height="386" rx="12" fill="#1C1C1C" stroke="#2E2E2E" stroke-width="1"/>
+  <text x="58" y="96" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="19" font-weight="600" fill="#E1E1E1">Connect to Marstek Venus Modbus</text>
+  <text x="58" y="126" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#9B9B9B">Enter the Modbus TCP connection details of the gateway</text>
+  <text x="58" y="146" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#9B9B9B">attached to the battery's RS485 port.</text>
+  <rect x="58" y="162" width="524" height="58" rx="6" fill="#252525" stroke="#3A3A3A" stroke-width="1"/>
+  <text x="74" y="184" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="11" font-weight="400" fill="#03A9F4">IP Address</text>
+  <text x="74" y="206" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="14" font-weight="400" fill="#E1E1E1">192.168.1.42</text>
+  <rect x="58" y="232" width="254.0" height="58" rx="6" fill="#252525" stroke="#3A3A3A" stroke-width="1"/>
+  <text x="74" y="254" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="11" font-weight="400" fill="#03A9F4">Port</text>
+  <text x="74" y="276" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="14" font-weight="400" fill="#E1E1E1">502</text>
+  <rect x="328.0" y="232" width="254.0" height="58" rx="6" fill="#252525" stroke="#3A3A3A" stroke-width="1"/>
+  <text x="344.0" y="254" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="11" font-weight="400" fill="#03A9F4">Unit ID</text>
+  <text x="344.0" y="276" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="14" font-weight="400" fill="#E1E1E1">1</text>
+  <rect x="58" y="302" width="524" height="58" rx="6" fill="#252525" stroke="#3A3A3A" stroke-width="1"/>
+  <text x="74" y="324" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="11" font-weight="400" fill="#03A9F4">Device Version</text>
+  <text x="74" y="346" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="14" font-weight="400" fill="#E1E1E1">Venus D</text>
+  <path d="M552 328.0l8 9 8-9" stroke="#9B9B9B" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <rect x="58" y="378" width="524" height="34" rx="6" fill="#03A9F4" fill-opacity="0.1"/>
+  <circle cx="78" cy="395.0" r="7" fill="none" stroke="#03A9F4" stroke-width="1.6"/>
+  <path d="M78 391.0v5M78 398.0h.01" stroke="#03A9F4" stroke-width="1.6" stroke-linecap="round"/>
+  <text x="96" y="399.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="11.5" font-weight="400" fill="#03A9F4">The device version selects the register map — A, D, E v1/v2 or E v3.</text>
+  <rect x="466" y="354" width="116" height="40" rx="20.0" fill="#03A9F4"/>
+  <text x="524.0" y="379.0" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#0B1B2B" text-anchor="middle">Submit</text>
+</svg>
