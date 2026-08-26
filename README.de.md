@@ -190,6 +190,13 @@ der Adresse, die man konfiguriert hat.
   weiterhin den vorherigen darstellt — Ursache ist eine Abweichung in der Antwort des
   Modbus-Registers. Das Problem liegt auf Firmware-Seite.
 
+- **Die Batterie verschwindet alle 30 Minuten aus dem Netz**
+  Ein paar Sekunden ohne Modbus und ohne Ping, in festem Takt. Das ist die Firmware des Geräts, die
+  ihren Netzwerkchip zurücksetzt, wenn sie die Marstek-Cloud nicht erreicht — nicht diese
+  Integration und nicht dein Netz. Verhindern lässt es sich von hier aus nicht, nur schnell
+  überstehen, und genau das leisten 1.2.0 und neuer. Mechanismus und Abhilfe:
+  **[FIRMWARE-DROPOUTS.de.md](FIRMWARE-DROPOUTS.de.md)**.
+
 ---
 
 ## Häufige Fragen
@@ -225,6 +232,8 @@ unbestätigt zu behandeln.
 - 🖥️ **[venuscontrol](https://github.com/sphings79/venuscontrol)** — cloudfreie
   Web-Bluetooth-Steuerung für Venus A / D, inklusive OTA-Firmware-Updates
 - 📦 **[Marstek-Firmware-Archiv](https://github.com/sphings79/marstek-firmware-archiv)**
+- 🛰️ **[Marstek Offline Endpoint](https://github.com/sphings79/Marstek-offline-endpoint)** — beantwortet den
+  Telemetrie-Upload lokal, beendet damit die 30-Minuten-Ausfälle und behält die Daten im Haus
 - 🔬 **[Reverse Engineering der Venus-D-Firmware](https://github.com/sphings79/Marstek-Venus-D-Firmware-Reverse-Engineering)**
 - 🌐 **[Weitere Projekte und Tools](https://sphings-dev.de/)**
 

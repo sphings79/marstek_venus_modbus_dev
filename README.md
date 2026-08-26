@@ -185,6 +185,12 @@ telemetry, and no outbound connection beyond the one TCP socket to the address y
   The Marstek app shows the correct mode while Home Assistant keeps displaying the previous one,
   because of a discrepancy in the Modbus register response. This is a firmware-side issue.
 
+- **The battery disappears from the network every 30 minutes**
+  A few seconds with no Modbus and no ping, on a fixed rhythm. This is the device's own firmware
+  resetting its network chip when it cannot reach Marstek's cloud — not this integration, and not
+  your network. It cannot be prevented from here, only survived quickly, which is what 1.2.0 onwards
+  does. Mechanism, and how to stop it: **[FIRMWARE-DROPOUTS.md](FIRMWARE-DROPOUTS.md)**.
+
 ---
 
 ## FAQ
@@ -217,6 +223,8 @@ research in this fork comes from A/D/E3 hardware. Treat E v1/v2 findings as unve
 - 🖥️ **[venuscontrol](https://github.com/sphings79/venuscontrol)** — cloud-free Web Bluetooth control
   panel for Venus A / D, including OTA firmware updates
 - 📦 **[Marstek firmware archive](https://github.com/sphings79/marstek-firmware-archiv)**
+- 🛰️ **[Marstek Offline Endpoint](https://github.com/sphings79/Marstek-offline-endpoint)** — answers the
+  telemetry upload locally, which stops the 30-minute network dropouts and keeps your data at home
 - 🔬 **[Venus D firmware reverse engineering](https://github.com/sphings79/Marstek-Venus-D-Firmware-Reverse-Engineering)**
 - 🌐 **[More projects and tools](https://sphings-dev.de/)**
 
