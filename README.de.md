@@ -458,3 +458,12 @@ _Hinweise:_
   - Der Lade-/Entladebereich ist modellabhängig.
   - Venus A (ab FW v148): `-100` bis `-1500` (Laden), `100` bis `1500` (Entladen)
   - Venus D / Venus E: `-100` bis `-2500` (Laden), `100` bis `2500` (Entladen)
+
+---
+
+## ☕ Unterstützen
+
+Diese Tools entstehen in meiner Freizeit und bleiben kostenlos, quelloffen und cloudfrei.
+Wenn dir eines davon einen Nachmittag gespart hat, kannst du mir [einen Kaffee ausgeben](https://buymeacoffee.com/sphings).
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-sphings-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=000000)](https://buymeacoffee.com/sphings)
