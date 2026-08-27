@@ -61,6 +61,34 @@ Gemessen am Venus E v3 eines Nutzers: Die Ausfälle kommen weiterhin, aber die
 Integration ist nach Sekunden statt Minuten zurück und braucht dafür keinen
 Neustart von Home Assistant mehr.
 
+## Das zweite v150-Symptom: vier Sekunden Pause bei jedem Upload
+
+Vom Reset unabhängig — und von außerhalb der Batterie nicht behebbar.
+
+v150 hat den Telemetrie-Upload von Klartext-HTTP auf TLS umgestellt: v149.2
+schickte ihn offen an `hamedata.com`, v150 per HTTPS an
+`api-eu.marstekcloud.com`, und der gesamte TLS-Code ist neu in dieser Version.
+Jeder Upload kostet das Gerät damit einen Schlüsselaustausch, der auf diesem
+Mikrocontroller rund vier Sekunden dauert — und in dieser Zeit **beantwortet es
+keinen Modbus**. Ping und ARP laufen weiter, daran erkennt man den Unterschied zu
+einem Chip-Reset.
+
+Gemessen über 11,7 Stunden an einem Venus D mit leerem Puffer:
+
+| | |
+|---|---|
+| Modbus-Lücken länger als 3,5 s | **141** — 12,0 pro Stunde |
+| TLS-Handshakes im selben Zeitraum | **141** |
+| Lücken, die mit einem Handshake zusammenfallen | **141 von 141** |
+
+Zwölf pro Stunde ist einer pro Telemetrie-Datensatz, also einer pro Upload.
+
+**Praktische Folge: Ein Antwort-Timeout unter etwa 8 Sekunden erzeugt auf v150
+alle fünf Minuten einen Fehler** — mit oder ohne Cloud-Zugang, mit oder ohne diese
+Integration. Wer eine Warnung im Fünf-Minuten-Takt sieht, während die Batterie
+durchgehend auf Ping antwortet, hat genau das: keinen Ausfall, und nichts, das
+sich durch Wiederholen lösen ließe.
+
 ## Das zweite Symptom: der RS485-Steuermodus schaltet sich ab
 
 Register **42000** (`rs485_control_mode`) springt gelegentlich von `21930` auf

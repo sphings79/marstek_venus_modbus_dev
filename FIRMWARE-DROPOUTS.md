@@ -58,6 +58,33 @@ The practical result, measured on a user's Venus E v3: dropouts still happen, bu
 the integration is back within seconds rather than minutes, and no longer needs a
 Home Assistant restart to recover.
 
+## The other v150 symptom: a four-second stall on every upload
+
+Separate from the reset, and it cannot be fixed by anything outside the battery.
+
+v150 moved the telemetry upload from plain HTTP to TLS — v149.2 sent it in the
+clear to `hamedata.com`, v150 sends it to `api-eu.marstekcloud.com` over HTTPS,
+and the entire TLS session code is new in that release. So every upload now costs
+the device a key exchange, and on this MCU that takes about four seconds, during
+which it **stops answering Modbus**. It keeps answering ping and ARP throughout,
+which is how you tell it apart from a chip reset.
+
+Measured over 11.7 hours on a Venus D with a drained buffer:
+
+| | |
+|---|---|
+| Modbus gaps longer than 3.5 s | **141** — 12.0 per hour |
+| TLS handshakes in the same window | **141** |
+| gaps coinciding with a handshake | **141 of 141** |
+
+Twelve an hour is one per telemetry record, which is one per upload.
+
+**Practical consequence: a Modbus response timeout under about 8 seconds will
+produce an error every five minutes on v150**, with or without cloud access, with
+or without this integration. If you see a warning on a five-minute rhythm and the
+battery answers ping throughout, that is this — not a dropout, and not something
+the integration can retry its way out of.
+
 ## The other symptom: RS485 control mode switching itself off
 
 Register **42000** (`rs485_control_mode`) sometimes flips from `21930` to `21947`
