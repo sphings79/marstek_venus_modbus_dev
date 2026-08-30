@@ -1,15 +1,24 @@
-# Venus A registers are untested.
-# Base register map generated from CSV (v3 Description).
-# Verify all addresses, names, and mappings on real hardware before use.
-# Some entries may be incorrect, duplicated, or unmatched.
-# See `# UNMATCHED_CSV_ENTRIES` at the end of this file.
+# Venus A register map, adopted 1:1 from the Venus D map (d.yaml).
+#
+# Basis: the Modbus descriptor table of the Venus A control firmware v149 was
+# unpacked statically and compared with the Venus D v150 table. Both expose the
+# same 246 entries, register 30000-38014, with identical type, scale, element
+# size and count; only the SRAM source pointers differ. Every read register used
+# here exists in the Venus A table.
+#
+# Differences to d.yaml, and the only ones:
+#   - 13 cells per pack instead of 16. The firmware declares 16 slots per pack
+#     on both models; the Venus A hardware has 13, so cells 14-16 would read 0.
+#   - no DEV register sections. Those are a research switch on the Venus D and
+#     nothing in them has been measured on a Venus A.
+#
+# NOT verified on Venus A hardware. Comments claiming a measurement name the
+# model they were measured on.
 
 MISSING:
     sensor:
         - sn_code
         - software_version
-        - fault_status
-        - alarm_status
     binary:
         - discharge_limit_mode
     select:
@@ -189,16 +198,6 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 2
         scan_interval: high
-    internal_mos2_temperature:
-        register: 35002
-        scale: 0.1
-        unit: °C
-        device_class: temperature
-        state_class: measurement
-        enabled_by_default: false
-        data_type: int16
-        precision: 2
-        scan_interval: high
     ac_voltage:
         register: 32200
         scale: 0.1
@@ -207,16 +206,6 @@ SENSOR_DEFINITIONS:
         state_class: measurement
         enabled_by_default: true
         data_type: uint16
-        precision: 1
-        scan_interval: high
-    ac_current:
-        register: 37004
-        scale: 0.004
-        unit: A
-        device_class: current
-        state_class: measurement
-        enabled_by_default: true
-        data_type: int16
         precision: 1
         scan_interval: high
     ac_power:
@@ -335,26 +324,6 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         data_type: int16
         precision: 1
-        scan_interval: high
-    max_cell_voltage:
-        register: 37007
-        scale: 0.001
-        unit: V
-        device_class: voltage
-        state_class: measurement
-        enabled_by_default: false
-        data_type: int16
-        precision: 3
-        scan_interval: high
-    min_cell_voltage:
-        register: 37008
-        scale: 0.001
-        unit: V
-        device_class: voltage
-        state_class: measurement
-        enabled_by_default: false
-        data_type: int16
-        precision: 3
         scan_interval: high
     battery_1_cell_1_voltage:
         register: 34018
@@ -1136,6 +1105,57 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 3
         scan_interval: high
+    alarm_status:
+        register: 36000
+        count: 2
+        data_type: uint16
+        device_class: problem
+        icon: "mdi:alert"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+        # 36000-36001 (uint32). Bit semantics not decoded on either model (read 0 in all Venus D test scans).
+    fault_status:
+        register: 36100
+        data_type: uint16
+        icon: "mdi:alert"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: high
+        # The device splits its 32-bit error words across two registers, high word
+        # first: error_code1 = 36100 << 16 | 36101, error_code2 = 36102 << 16 | 36103.
+        # Bit N in this register is therefore overall bit 16+N.
+        # Bit 4 (= overall 20) and bit 5 (= overall 21) are confirmed on hardware.
+    fault_status_low:
+        register: 36101
+        data_type: uint16
+        icon: "mdi:alert"
+        category: diagnostic
+        enabled_by_default: true
+        scan_interval: high
+        # Low word of error_code1, so bit N here is overall bit N.
+        # Bit 7 is confirmed across several hardware logs. Bits 6 and 9 were only
+        # ever seen together during DC discharge and are not established.
+    fault_status_2:
+        register: 36102
+        data_type: uint16
+        icon: "mdi:alert"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+        # High word of error_code2, so bit N here is overall bit 16+N.
+        # Derived from firmware only - error_code2 stayed zero in every log so far.
+    fault_status_2_low:
+        register: 36103
+        data_type: uint16
+        icon: "mdi:alert"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+        # Low word of error_code2, so bit N here is overall bit N.
+        # Derived from firmware only - error_code2 stayed zero in every log so far.
+        # Bits 0, 1 and 3 latch individual hardware protections that the firmware
+        # never names; bit 4 is set alongside any of them.
     inverter_state:
         register: 35100
         scale: 1
@@ -1167,16 +1187,6 @@ SENSOR_DEFINITIONS:
         data_type: uint16
         precision: 1
         scan_interval: high
-    ac_offgrid_current:
-        register: 32301
-        scale: 0.01
-        unit: A
-        device_class: current
-        state_class: measurement
-        enabled_by_default: false
-        data_type: uint16
-        precision: 1
-        scan_interval: high
     ac_offgrid_power:
         register: 32302
         scale: 1
@@ -1187,9 +1197,9 @@ SENSOR_DEFINITIONS:
         data_type: int16
         precision: 0
         scan_interval: high
-        # Venus D firmware exposes 32302 as a single i16 register with no 32303.
-        # Venus A shares that firmware base; reading it as int32 requests a register
-        # the descriptor table does not cover and stalls the Modbus stack.
+        # Firmware exposes 32302 as a single i16 register and there is no 32303.
+        # Reading it as int32 requests a register the descriptor table does not
+        # cover, which stalls the device's Modbus stack.
     wifi_signal_strength:
         register: 30303
         scale: -1
@@ -1201,6 +1211,7 @@ SENSOR_DEFINITIONS:
         enabled_by_default: false
         precision: 0
         scan_interval: high
+        state_class: measurement
     mppt1_voltage:
         register: 30020
         scale: 0.1
@@ -1328,6 +1339,903 @@ SENSOR_DEFINITIONS:
         category: diagnostic
         enabled_by_default: false
         scan_interval: high
+    # --- Per-pack temperatures and protection bitmasks (firmware-confirmed 2026-08-16) ---
+    battery_1_env_temperature:
+        register: 34011
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_1_mos_temperature:
+        register: 34012
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_1_protection_1:
+        register: 34007
+        data_type: int16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_1_protection_2:
+        register: 34008
+        data_type: uint16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_2_env_temperature:
+        register: 34111
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_mos_temperature:
+        register: 34112
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_protection_1:
+        register: 34107
+        data_type: int16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_2_protection_2:
+        register: 34108
+        data_type: uint16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_3_env_temperature:
+        register: 34211
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_mos_temperature:
+        register: 34212
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_protection_1:
+        register: 34207
+        data_type: int16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_3_protection_2:
+        register: 34208
+        data_type: uint16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_4_env_temperature:
+        register: 34311
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_mos_temperature:
+        register: 34312
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_protection_1:
+        register: 34307
+        data_type: int16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_4_protection_2:
+        register: 34308
+        data_type: uint16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_5_env_temperature:
+        register: 34411
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_mos_temperature:
+        register: 34412
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_protection_1:
+        register: 34407
+        data_type: int16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_5_protection_2:
+        register: 34408
+        data_type: uint16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_6_env_temperature:
+        register: 34511
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_mos_temperature:
+        register: 34512
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_protection_1:
+        register: 34507
+        data_type: int16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_6_protection_2:
+        register: 34508
+        data_type: uint16
+        icon: "mdi:shield-alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    # --- Per-pack cell voltage extremes and cell NTC block (firmware-confirmed) ---
+    battery_1_max_cell_voltage:
+        register: 34005
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_1_min_cell_voltage:
+        register: 34006
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_1_cell_temperature_1:
+        register: 34013
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_1_cell_temperature_2:
+        register: 34014
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_1_cell_temperature_3:
+        register: 34015
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_1_cell_temperature_4:
+        register: 34016
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_max_cell_voltage:
+        register: 34105
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_min_cell_voltage:
+        register: 34106
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_cell_temperature_1:
+        register: 34113
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_cell_temperature_2:
+        register: 34114
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_cell_temperature_3:
+        register: 34115
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_cell_temperature_4:
+        register: 34116
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_max_cell_voltage:
+        register: 34205
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_min_cell_voltage:
+        register: 34206
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_cell_temperature_1:
+        register: 34213
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_cell_temperature_2:
+        register: 34214
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_cell_temperature_3:
+        register: 34215
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_cell_temperature_4:
+        register: 34216
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_max_cell_voltage:
+        register: 34305
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_min_cell_voltage:
+        register: 34306
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_cell_temperature_1:
+        register: 34313
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_cell_temperature_2:
+        register: 34314
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_cell_temperature_3:
+        register: 34315
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_cell_temperature_4:
+        register: 34316
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_max_cell_voltage:
+        register: 34405
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_min_cell_voltage:
+        register: 34406
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_cell_temperature_1:
+        register: 34413
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_cell_temperature_2:
+        register: 34414
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_cell_temperature_3:
+        register: 34415
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_cell_temperature_4:
+        register: 34416
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_max_cell_voltage:
+        register: 34505
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_min_cell_voltage:
+        register: 34506
+        scale: 0.001
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 3
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_cell_temperature_1:
+        register: 34513
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_cell_temperature_2:
+        register: 34514
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_cell_temperature_3:
+        register: 34515
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_cell_temperature_4:
+        register: 34516
+        scale: 0.1
+        unit: "°C"
+        device_class: temperature
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    # --- Per-pack cycle count, MOS status and BMS version (firmware-confirmed) ---
+    battery_1_mos_status:
+        register: 34004
+        data_type: uint16
+        icon: "mdi:electric-switch"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_1_bms_version:
+        register: 34010
+        data_type: uint16
+        icon: "mdi:battery-check-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_cycle_count:
+        register: 34103
+        data_type: int16
+        state_class: total_increasing
+        icon: "mdi:counter"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_mos_status:
+        register: 34104
+        data_type: uint16
+        icon: "mdi:electric-switch"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_2_bms_version:
+        register: 34110
+        data_type: uint16
+        icon: "mdi:battery-check-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_cycle_count:
+        register: 34203
+        data_type: int16
+        state_class: total_increasing
+        icon: "mdi:counter"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_mos_status:
+        register: 34204
+        data_type: uint16
+        icon: "mdi:electric-switch"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_3_bms_version:
+        register: 34210
+        data_type: uint16
+        icon: "mdi:battery-check-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_cycle_count:
+        register: 34303
+        data_type: int16
+        state_class: total_increasing
+        icon: "mdi:counter"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_mos_status:
+        register: 34304
+        data_type: uint16
+        icon: "mdi:electric-switch"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_4_bms_version:
+        register: 34310
+        data_type: uint16
+        icon: "mdi:battery-check-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_cycle_count:
+        register: 34403
+        data_type: int16
+        state_class: total_increasing
+        icon: "mdi:counter"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_mos_status:
+        register: 34404
+        data_type: uint16
+        icon: "mdi:electric-switch"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_5_bms_version:
+        register: 34410
+        data_type: uint16
+        icon: "mdi:battery-check-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_cycle_count:
+        register: 34503
+        data_type: int16
+        state_class: total_increasing
+        icon: "mdi:counter"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_mos_status:
+        register: 34504
+        data_type: uint16
+        icon: "mdi:electric-switch"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    battery_6_bms_version:
+        register: 34510
+        data_type: uint16
+        icon: "mdi:battery-check-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    # --- Per-pack terminal voltage / current (packs 2-6; pack 1 = battery_voltage/current) ---
+    battery_2_voltage:
+        register: 34100
+        scale: 0.01
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 2
+        enabled_by_default: false
+        scan_interval: low
+    battery_2_current:
+        register: 34101
+        scale: 0.1
+        unit: A
+        device_class: current
+        state_class: measurement
+        data_type: int16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_voltage:
+        register: 34200
+        scale: 0.01
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 2
+        enabled_by_default: false
+        scan_interval: low
+    battery_3_current:
+        register: 34201
+        scale: 0.1
+        unit: A
+        device_class: current
+        state_class: measurement
+        data_type: int16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_voltage:
+        register: 34300
+        scale: 0.01
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 2
+        enabled_by_default: false
+        scan_interval: low
+    battery_4_current:
+        register: 34301
+        scale: 0.1
+        unit: A
+        device_class: current
+        state_class: measurement
+        data_type: int16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_voltage:
+        register: 34400
+        scale: 0.01
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 2
+        enabled_by_default: false
+        scan_interval: low
+    battery_5_current:
+        register: 34401
+        scale: 0.1
+        unit: A
+        device_class: current
+        state_class: measurement
+        data_type: int16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_voltage:
+        register: 34500
+        scale: 0.01
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 2
+        enabled_by_default: false
+        scan_interval: low
+    battery_6_current:
+        register: 34501
+        scale: 0.1
+        unit: A
+        device_class: current
+        state_class: measurement
+        data_type: int16
+        precision: 1
+        enabled_by_default: false
+        scan_interval: low
+    # --- System diagnostics (firmware-decoded) ---
+    work_mode:
+        register: 30010
+        data_type: uint16
+        icon: "mdi:cog-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    ems_boot_version:
+        register: 30201
+        data_type: uint16
+        icon: "mdi:chip"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    vns_boot_version:
+        register: 30203
+        data_type: uint16
+        icon: "mdi:chip"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    # --- BMS CAN aggregate (32100). Feeds the calculated battery_power_bms. ---
+    bms_battery_voltage:
+        register: 32100
+        scale: 0.01
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 2
+        enabled_by_default: false
+        scan_interval: high
+    # --- Network configuration (30400-30403, decoded from the device IP block) ---
+    device_ip_address:
+        register: 30400
+        count: 2
+        data_type: ipv4
+        icon: "mdi:ip-network"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    gateway_ip_address:
+        register: 30402
+        count: 2
+        data_type: ipv4
+        icon: "mdi:router-network"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    # --- PV yield counter (37021, inverter MPPT struct +0x2C, unit 10 Wh) ---
+    # --- Firmware-decoded diagnostic sensors (from the descriptor table, identical on A and D) ---
+    bms_pack_count:
+        register: 32109
+        data_type: uint16
+        icon: "mdi:counter"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    bms_online_mask:
+        register: 32110
+        data_type: uint16
+        icon: "mdi:format-list-checks"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    bms_active_pack_index:
+        register: 32111
+        data_type: uint16
+        icon: "mdi:battery-sync"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    bms_charge_voltage_limit:
+        register: 35110
+        scale: 0.1
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        data_type: uint16
+        precision: 1
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
+    mppt_error:
+        register: 37023
+        data_type: uint16
+        icon: "mdi:alert"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    mppt_warning:
+        register: 37024
+        data_type: uint16
+        icon: "mdi:alert-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: high
+    mppt_version:
+        register: 30205
+        data_type: uint16
+        icon: "mdi:ticket-confirmation-outline"
+        category: diagnostic
+        enabled_by_default: false
+        scan_interval: low
 
 BINARY_SENSOR_DEFINITIONS:
     wifi_status:
@@ -1348,8 +2256,8 @@ BINARY_SENSOR_DEFINITIONS:
         scan_interval: high
 
 SELECT_DEFINITIONS:
-    # Verified on Venus D firmware v150. Venus A shares that firmware base, so
-    # this is expected to hold here but was not separately confirmed.
+    # Taken from the Venus D map, verified there on firmware v150 - not yet
+    # re-verified on Venus A hardware.
     # Shares its firmware byte with rs485_control_mode (42000) — see the note
     # there. Selecting any option here writes 0x01/0x00/0x05 and therefore ends
     # RS485 control; forced charge/discharge stops taking effect.
@@ -1372,7 +2280,7 @@ SELECT_DEFINITIONS:
     schedule_1_days:
         register: 43100
         enabled_by_default: false
-        scan_interval: low
+        scan_interval: high
         category: config
         options:
             sunday: 64
@@ -1385,7 +2293,7 @@ SELECT_DEFINITIONS:
     schedule_2_days:
         register: 43105
         enabled_by_default: false
-        scan_interval: low
+        scan_interval: high
         category: config
         options:
             sunday: 64
@@ -1456,8 +2364,8 @@ SWITCH_DEFINITIONS:
         enabled_by_default: true
         data_type: uint16
         scan_interval: high
-    # Verified on Venus D firmware v150. Venus A shares that firmware base, so
-    # this is expected to hold here but was not separately confirmed.
+    # Taken from the Venus D map, verified there on firmware v150 - not yet
+    # re-verified on Venus A hardware.
     # Register 42000 and 43000 are the SAME byte in the firmware. Verified in the
     # v150 Write_Handler: 42000 = 0x55AA sets the mode byte to 0x0A, 0x55BB reads
     # it back from EEPROM 0x301, and 43000's three options write 0x01/0x00/0x05 —
@@ -1484,7 +2392,7 @@ SWITCH_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: high
     schedule_2_enabled:
         register: 43109
         command_on: 1
@@ -1493,7 +2401,7 @@ SWITCH_DEFINITIONS:
         enabled_by_default: false
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: high
     schedule_3_enabled:
         register: 43114
         command_on: 1
@@ -1537,7 +2445,7 @@ NUMBER_DEFINITIONS:
         enabled_by_default: false
         icon: "mdi:battery-arrow-up-outline"
         min: 0
-        max: 1500
+        max: 2500
         step: 50
         unit: W
         data_type: uint16
@@ -1550,7 +2458,7 @@ NUMBER_DEFINITIONS:
         enabled_by_default: false
         icon: "mdi:battery-arrow-down-outline"
         min: 0
-        max: 1500
+        max: 2500
         step: 50
         unit: W
         data_type: uint16
@@ -1563,7 +2471,7 @@ NUMBER_DEFINITIONS:
         enabled_by_default: false
         icon: "mdi:battery-arrow-up-outline"
         min: 0
-        max: 1500
+        max: 2500
         step: 50
         unit: W
         data_type: uint16
@@ -1576,7 +2484,7 @@ NUMBER_DEFINITIONS:
         enabled_by_default: false
         icon: "mdi:battery-arrow-down-outline"
         min: 0
-        max: 1500
+        max: 2500
         step: 50
         unit: W
         data_type: uint16
@@ -1595,6 +2503,7 @@ NUMBER_DEFINITIONS:
         scale: 1
         data_type: uint16
         scan_interval: high
+
     schedule_1_start:
         register: 43101
         enabled_by_default: false
@@ -1605,7 +2514,7 @@ NUMBER_DEFINITIONS:
         unit: "min"
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: high
     schedule_2_start:
         register: 43106
         enabled_by_default: false
@@ -1616,7 +2525,7 @@ NUMBER_DEFINITIONS:
         unit: "min"
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: high
     schedule_3_start:
         register: 43111
         enabled_by_default: false
@@ -1671,7 +2580,7 @@ NUMBER_DEFINITIONS:
         unit: "min"
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: high
     schedule_2_end:
         register: 43107
         enabled_by_default: false
@@ -1682,7 +2591,7 @@ NUMBER_DEFINITIONS:
         unit: "min"
         data_type: uint16
         category: config
-        scan_interval: low
+        scan_interval: high
     schedule_3_end:
         register: 43112
         enabled_by_default: false
@@ -1731,30 +2640,30 @@ NUMBER_DEFINITIONS:
         register: 43103
         enabled_by_default: false
         icon: "mdi:cog"
-        min: -1500
-        max: 1500
+        min: -2500
+        max: 2500
         step: 1
         unit: W
         data_type: int16
         category: config
-        scan_interval: low
+        scan_interval: high
     schedule_2_mode:
         register: 43108
         enabled_by_default: false
         icon: "mdi:cog"
-        min: -1500
-        max: 1500
+        min: -2500
+        max: 2500
         step: 1
         unit: W
         data_type: int16
         category: config
-        scan_interval: low
+        scan_interval: high
     schedule_3_mode:
         register: 43113
         enabled_by_default: false
         icon: "mdi:cog"
-        min: -1500
-        max: 1500
+        min: -2500
+        max: 2500
         step: 1
         unit: W
         data_type: int16
@@ -1764,8 +2673,8 @@ NUMBER_DEFINITIONS:
         register: 43118
         enabled_by_default: false
         icon: "mdi:cog"
-        min: -1500
-        max: 1500
+        min: -2500
+        max: 2500
         step: 1
         unit: W
         data_type: int16
@@ -1775,8 +2684,8 @@ NUMBER_DEFINITIONS:
         register: 43123
         enabled_by_default: false
         icon: "mdi:cog"
-        min: -1500
-        max: 1500
+        min: -2500
+        max: 2500
         step: 1
         unit: W
         data_type: int16
@@ -1786,8 +2695,8 @@ NUMBER_DEFINITIONS:
         register: 43128
         enabled_by_default: false
         icon: "mdi:cog"
-        min: -1500
-        max: 1500
+        min: -2500
+        max: 2500
         step: 1
         unit: W
         data_type: int16
@@ -1817,10 +2726,11 @@ VERSION_SENSOR_DEFINITIONS:
         icon: "mdi:chip"
         category: diagnostic
         enabled_by_default: true
-        mode: ems_vms_bms
+        mode: ems_vms_mppt_bms
         dependency_keys:
             ems: ems_version
             vms: vms_version
+            mppt: mppt_version
             bms: bms_version
 
 EFFICIENCY_SENSOR_DEFINITIONS:
@@ -1828,7 +2738,6 @@ EFFICIENCY_SENSOR_DEFINITIONS:
         key: round_trip_efficiency_total
         unit: "%"
         icon: "mdi:percent"
-        category: diagnostic
         state_class: measurement
         mode: round_trip
         dependency_keys:
@@ -1838,7 +2747,6 @@ EFFICIENCY_SENSOR_DEFINITIONS:
         key: round_trip_efficiency_monthly
         unit: "%"
         icon: "mdi:percent"
-        category: diagnostic
         state_class: measurement
         mode: round_trip
         dependency_keys:
@@ -1847,7 +2755,6 @@ EFFICIENCY_SENSOR_DEFINITIONS:
     conversion_efficiency:
         key: conversion_efficiency
         unit: "%"
-        category: diagnostic
         state_class: measurement
         mode: conversion
         dependency_keys:
@@ -1869,7 +2776,7 @@ CYCLE_SENSOR_DEFINITIONS:
         key: battery_cycle_count_calc
         icon: "mdi:counter"
         category: diagnostic
-        state_class: measurement
+        state_class: total_increasing
         dependency_keys:
             discharge: total_discharging_energy
             capacity: battery_total_energy
@@ -1886,3 +2793,156 @@ SOLAR_POWER_SENSOR_DEFINITIONS:
             mppt2: mppt2_power
             mppt3: mppt3_power
             mppt4: mppt4_power
+
+CELL_VOLTAGE_DELTA_SENSOR_DEFINITIONS:
+    battery_1_cell_voltage_delta:
+        key: battery_1_cell_voltage_delta
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        precision: 3
+        icon: "mdi:delta"
+        enabled_by_default: false
+        dependency_keys:
+            max: battery_1_max_cell_voltage
+            min: battery_1_min_cell_voltage
+    battery_2_cell_voltage_delta:
+        key: battery_2_cell_voltage_delta
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        precision: 3
+        icon: "mdi:delta"
+        enabled_by_default: false
+        dependency_keys:
+            max: battery_2_max_cell_voltage
+            min: battery_2_min_cell_voltage
+    battery_3_cell_voltage_delta:
+        key: battery_3_cell_voltage_delta
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        precision: 3
+        icon: "mdi:delta"
+        enabled_by_default: false
+        dependency_keys:
+            max: battery_3_max_cell_voltage
+            min: battery_3_min_cell_voltage
+    battery_4_cell_voltage_delta:
+        key: battery_4_cell_voltage_delta
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        precision: 3
+        icon: "mdi:delta"
+        enabled_by_default: false
+        dependency_keys:
+            max: battery_4_max_cell_voltage
+            min: battery_4_min_cell_voltage
+    battery_5_cell_voltage_delta:
+        key: battery_5_cell_voltage_delta
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        precision: 3
+        icon: "mdi:delta"
+        enabled_by_default: false
+        dependency_keys:
+            max: battery_5_max_cell_voltage
+            min: battery_5_min_cell_voltage
+    battery_6_cell_voltage_delta:
+        key: battery_6_cell_voltage_delta
+        unit: V
+        device_class: voltage
+        state_class: measurement
+        precision: 3
+        icon: "mdi:delta"
+        enabled_by_default: false
+        dependency_keys:
+            max: battery_6_max_cell_voltage
+            min: battery_6_min_cell_voltage
+
+BITFIELD_TEXT_SENSOR_DEFINITIONS:
+    fault_status_description:
+        key: fault_status_description
+        icon: "mdi:alert-circle-outline"
+        category: diagnostic
+        enabled_by_default: true
+        dependency_keys:
+            source: fault_status
+        bit_descriptions:
+            4: BMS offline / Battery disconnected
+            5: BMS reports a fault (check pack firmware versions)
+    fault_status_low_description:
+        key: fault_status_low_description
+        icon: "mdi:alert-circle-outline"
+        category: diagnostic
+        enabled_by_default: true
+        dependency_keys:
+            source: fault_status_low
+        bit_descriptions:
+            6: Seen during DC discharge (unconfirmed)
+            7: Backup / off-grid branch cannot operate (overload, too little energy, no battery)
+            9: Seen during DC discharge (unconfirmed)
+    fault_status_2_description:
+        key: fault_status_2_description
+        icon: "mdi:alert-circle-outline"
+        category: diagnostic
+        enabled_by_default: false
+        dependency_keys:
+            source: fault_status_2
+        bit_descriptions:
+            0: Self-test failed
+    fault_status_2_low_description:
+        key: fault_status_2_low_description
+        icon: "mdi:alert-circle-outline"
+        category: diagnostic
+        enabled_by_default: false
+        dependency_keys:
+            source: fault_status_2_low
+        bit_descriptions:
+            0: Hardware protection latch B
+            1: Hardware protection latch A
+            3: Hardware protection latch C
+            4: Hardware protection triggered
+            7: Shut down by supervisor, retry after 60 s
+            9: Supervisor fault (low confidence)
+            11: Limit exceeded for more than 3000 cycles
+
+GRID_POWER_SENSOR_DEFINITIONS:
+    grid_power:
+        key: grid_power
+        unit: W
+        device_class: power
+        state_class: measurement
+        precision: 0
+        icon: "mdi:transmission-tower"
+        enabled_by_default: false
+        # Rebuilt from the formula the firmware uses for its Bluetooth payload
+        # (FUN_0800b024, offset 0x90). No register carries this value.
+        # Positive = export to grid, negative = import.
+        dependency_keys:
+            grid: ac_power
+            offgrid: ac_offgrid_power
+            state: inverter_state
+
+BMS_POWER_SENSOR_DEFINITIONS:
+    battery_power_bms:
+        key: battery_power_bms
+        unit: W
+        device_class: power
+        state_class: measurement
+        precision: 0
+        icon: "mdi:battery-sync-outline"
+        enabled_by_default: false
+        # Reproduces the firmware's own Bluetooth value (FUN_0800b024, offset 0x8C):
+        # BMS pack voltage times pack current. The device discharges one pack at a
+        # time, so the inactive packs contribute zero to the sum.
+        dependency_keys:
+            voltage: bms_battery_voltage
+            p1: battery_current
+            p2: battery_2_current
+            p3: battery_3_current
+            p4: battery_4_current
+            p5: battery_5_current
+            p6: battery_6_current

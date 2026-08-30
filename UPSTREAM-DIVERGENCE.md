@@ -890,3 +890,77 @@ jetzt genau einmal.
 **Upstream-Kandidat**, beide Teile. Der YAML-Teil ist eine Einwort-Korrektur an
 zwei Stellen; die Entprellung verhindert, dass die naechste solche Unstimmigkeit
 wieder ein Logfile fuellt.
+
+## 20. Venus A — die Registerkarte der D gilt unveraendert
+
+**Dateien:** `registers/a.yaml`
+
+`a.yaml` trug seit jeher den Kopf „Venus A registers are untested. Base register map
+generated from CSV." Diese CSV-Herkunft ist jetzt ersetzt: die Karte kommt aus der
+Firmware selbst.
+
+**Die Descriptor-Tabelle der Venus A wurde statisch entpackt.** Dasselbe Verfahren wie
+bei der D (LZ77-gepacktes `.data` am Flash-Ende, siehe FW-Debug-Projekt,
+`Descriptor_Table_Unpack_Format.md`), angewendet auf
+`149_control_VNSA-0_app_0149_0528_102448.bin`:
+
+```
+gepackter Stream 0x0805C544-0x0805D146, Start 0x0805C5F8, 8 Escape-Opcodes
+-> 246 Eintraege, Register 30000-38014
+```
+
+*Hinweis fuer das FW-Debug-Projekt: `marstek_descriptor_unpack.py` sucht den Streamanfang
+nur im Fenster `lo-0x800 … lo+0x60`. Bei der A liegt er bei `lo+0xB4` und wird deshalb
+nicht gefunden. Das Skript ist hier nicht geaendert worden.*
+
+**Der Vergleich mit der D v150 ist eindeutig:**
+
+| | |
+|---|---|
+| Register nur in A | 0 |
+| Register nur in D | 0 |
+| Abweichung bei Typ / Skala / Elementgroesse / Count | 0 von 246 |
+| gleicher SRAM-Quellzeiger | 29 von 246 |
+
+Die beiden Modbus-Tabellen sind semantisch identisch; nur die Quellzeiger liegen anders,
+weil es ein anderer Build ist. Ebenso geprueft: **jedes** Leseregister, das `d.yaml`
+benutzt — auch alle 132 DEV-Register — existiert in der A-Tabelle, und keine Definition
+liest ueber ihren Descriptor-Eintrag hinaus.
+
+**`a.yaml` ist daher aus `d.yaml` erzeugt worden**, mit genau zwei Abzuegen:
+
+1. **13 statt 16 Zellen je Pack.** Die Firmware deklariert auf *beiden* Modellen
+   `34018 count=16`, und zwar fuer sieben Packs. Die 13 sind eine Hardware-Eigenschaft
+   der A, keine Firmware-Eigenschaft; Zelle 14-16 laese dort 0.
+2. **Keine DEV-Sektionen.** Auf der D sind sie ein Forschungsschalter, auf der A ist
+   nichts davon gemessen.
+
+Ergebnis: 294 statt bisher 182 Definitionen, 117 neu. Alle gemeinsamen Keys stimmen mit
+`d.yaml` in `register`, `count`, `data_type`, `scale`, `unit`, `device_class`, `precision`
+und `enabled_by_default` ueberein — nachgerechnet, nicht angenommen. Uebersetzungen
+mussten nicht angefasst werden: der Key-Namensraum ist modellunabhaengig, alle 294 Keys
+sind in `en/de/nl` bereits vorhanden.
+
+**Fuenf Definitionen sind entfallen**, alle aus der CSV-Zeit und alle Spiegelregister.
+Belegt an den Quellzeigern der A-Firmware selbst:
+
+| entfernt | Register | Quellzeiger | zeigt in Wahrheit auf |
+|---|---|---|---|
+| `max_cell_voltage` | 37007 | `0x20014F9C` | 34005 = `battery_1_max_cell_voltage` |
+| `min_cell_voltage` | 37008 | `0x20014F9E` | 34006 = `battery_1_min_cell_voltage` |
+| `ac_current` | 37004 | `0x20014E8C` | 30006 = `ac_power` — kein Strom |
+| `ac_offgrid_current` | 32301 | `0x20014E88` | 32300 = `ac_offgrid_voltage` — kein Strom |
+| `internal_mos2_temperature` | 35002 | `0x20014E96` | 35001 = `internal_mos1_temperature` |
+
+Die ersten beiden sind exakt der Fall aus Abschnitt 5, den die D hinter sich hat: auf
+einem Mehr-Pack-Geraet liest sich Pack 1 wie ein geraeteweiter Extremwert. Die anderen
+drei sind derselbe Fehlertyp und waren in `d.yaml` nie definiert.
+
+**Offener Befund, nicht umgesetzt:** die Firmware kennt auf A und D **sieben** Pack-Bloecke
+(`34018`, `34118` … `34618`). Beide YAMLs definieren sechs. Ob ein siebter Pack real
+existiert, ist nicht geklaert.
+
+**Status: nicht auf Hardware verifiziert.** Die Gleichheit der Tabellen ist bewiesen, die
+Belegung der Register nicht — bei der D gab es Eintraege, die sauber dekodieren und
+trotzdem konstant 0 liefern. Deshalb ein Pre-Release. Kommentare, die eine Messung
+behaupten, nennen jetzt das Modell, auf dem gemessen wurde.
