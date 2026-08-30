@@ -831,3 +831,62 @@ nur schneller auf als vorher.
 
 **Lehre fuer Abschnitt 16:** mehr Reconnect-Stellen sind nur dann eine
 Verbesserung, wenn der Reconnect selbst serialisiert und gedeckelt ist.
+
+## 19. Bug fix — `very_low` war kein gueltiges Scan-Intervall mehr
+
+**Dateien:** `registers/e_v3.yaml`, `coordinator.py`
+
+Gemeldet an der Upstream-Integration (2026.6.4, Venus E): Home Assistant schreibt
+im Sekundentakt
+
+```
+WARNING [custom_components.marstek_modbus.coordinator]
+sensor 'device_ip' has no scan_interval defined, skipping this poll
+```
+
+805 Mal in einem einzigen Log, etwa alle 12 Sekunden — also einmal pro
+Poll-Zyklus und Sensor.
+
+Die Ursache ist eine halbe Umbenennung. `DEFAULT_SCAN_INTERVALS` in `const.py`
+kennt nur noch zwei Namen, `high` (10 s) und `low` (60 s); die frueheren Stufen
+`medium` und `very_low` wurden darauf zusammengezogen. In `e_v3.yaml` sind zwei
+Definitionen dabei stehengeblieben — `device_ip` und `gateway_ip` tragen weiter
+`scan_interval: very_low`. Es sind die einzigen zwei Vorkommen in allen vier
+Register-Dateien.
+
+Im Poll-Zyklus liefert `self.scan_intervals.get("very_low")` dann `None`, und
+der Zweig schreibt eine Warnung und ueberspringt den Sensor. Der Sensor wird
+also **nie** gelesen; die Warnung ist nicht nur Laerm, sondern die Meldung eines
+dauerhaft toten Sensors.
+
+Die Options-Normalisierung in `_update_scan_intervals` bildet `very_low` auf
+`low` ab, aber nur fuer die vom Benutzer gespeicherten Optionen, nicht fuer die
+Register-Definitionen. Deshalb greift sie hier nicht.
+
+**Zwei Aenderungen:**
+
+1. Beide Definitionen in `e_v3.yaml` stehen jetzt auf `low`. Damit werden
+   `device_ip` und `gateway_ip` tatsaechlich alle 60 s gelesen.
+2. Die Warnung im Coordinator kommt nur noch **einmal pro Schluessel** (Set
+   `_unknown_interval_warned`, zurueckgesetzt beim Reload) und nennt den
+   gefundenen Wert sowie die bekannten Namen:
+
+   ```
+   sensor 'device_ip' has no usable scan_interval (got 'very_low',
+   known: high, low), it will not be polled
+   ```
+
+   Ein Options-Wechsel kann keinen unbekannten Namen nachtraeglich gueltig
+   machen — `_update_scan_intervals` uebernimmt ausschliesslich die Schluessel
+   aus `DEFAULT_SCAN_INTERVALS` —, deshalb wird das Set dort nicht geleert.
+
+**Warum es nicht jeder sieht:** beide Sensoren sind `enabled_by_default: false`,
+und deaktivierte Entitaeten werden vor der Intervall-Pruefung uebersprungen. Die
+Dauerwarnung bekommt nur, wer sie von Hand aktiviert. Beim allerersten Refresh
+gilt eine der Registry noch unbekannte Entitaet allerdings als aktiviert (siehe
+Abschnitt 1c) — dort erscheint die Zeile also auch bei Standardkonfiguration,
+jetzt genau einmal.
+
+**Upstream-Kandidat**, beide Teile. Der YAML-Teil ist eine Einwort-Korrektur an
+zwei Stellen; die Entprellung verhindert, dass die naechste solche Unstimmigkeit
+wieder ein Logfile fuellt.

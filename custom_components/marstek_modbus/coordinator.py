@@ -170,6 +170,9 @@ class MarstekCoordinator(DataUpdateCoordinator):
         self._register_failures: dict[str, int] = {}
         # Tracks last *attempt* time (success or failure) for backoff interval calculation.
         self._last_attempt_times: dict = {}
+        # Keys already warned about for an unknown scan_interval. The condition is a
+        # static definition error, so one warning per key and reload is enough.
+        self._unknown_interval_warned: set[str] = set()
 
         # Prepare scan intervals (from config_entry.options or default)
         options = entry.options or {}
@@ -1191,11 +1194,16 @@ class MarstekCoordinator(DataUpdateCoordinator):
                 interval = self.scan_intervals.get(interval_name)
 
             if interval is None:
-                _LOGGER.warning(
-                    "%s '%s' has no scan_interval defined, skipping this poll",
-                    entity_type,
-                    key,
-                )
+                if key not in self._unknown_interval_warned:
+                    self._unknown_interval_warned.add(key)
+                    _LOGGER.warning(
+                        "%s '%s' has no usable scan_interval (got %r, known: %s), "
+                        "it will not be polled",
+                        entity_type,
+                        key,
+                        interval_name,
+                        ", ".join(sorted(self.scan_intervals)),
+                    )
                 continue
 
             # Skip read for 3s after a write to avoid reading back stale device state
